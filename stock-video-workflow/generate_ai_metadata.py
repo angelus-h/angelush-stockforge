@@ -6,6 +6,7 @@ import json
 import csv
 import argparse
 import time
+import re
 import google.generativeai as genai
 from PIL import Image
 
@@ -158,6 +159,12 @@ def main():
         
         metadata = generate_metadata(model, fs, vid_meta)
         if metadata:
+            # ensure extension is correct and safe
+            orig_ext = os.path.splitext(orig_video)[1]
+            new_name = os.path.splitext(metadata["new_filename"])[0] + orig_ext
+            new_name = re.sub(r'[^a-z0-9_.]', '', new_name.lower())
+            metadata["new_filename"] = new_name
+            
             metadata["original_filename"] = orig_video
             results.append(metadata)
             processed_files.add(orig_video)
@@ -168,6 +175,27 @@ def main():
             time.sleep(2) # rate limit mitigation
 
     print(f"Finished generating metadata. Newly processed: {new_results}. Total: {len(results)}")
+    
+    # Optional renaming of files
+    print("\nRenaming original video files...")
+    rename_count = 0
+    for r in results:
+        old_path = os.path.join(base_dir, r["original_filename"])
+        new_path = os.path.join(base_dir, r["new_filename"])
+        if os.path.exists(old_path) and old_path != new_path:
+            if not os.path.exists(new_path):
+                try:
+                    os.rename(old_path, new_path)
+                    rename_count += 1
+                except Exception as e:
+                    print(f"Warning: Failed to rename {r['original_filename']} -> {r['new_filename']}: {e}")
+            else:
+                print(f"Warning: Target filename {r['new_filename']} already exists. Skipping {r['original_filename']}.")
+    
+    if rename_count > 0:
+        print(f"Successfully renamed {rename_count} video files.")
+    else:
+        print("No files required renaming.")
     
     # CSV Generation
     # 1. Adobe
