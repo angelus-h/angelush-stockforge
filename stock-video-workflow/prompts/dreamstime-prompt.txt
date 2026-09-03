@@ -33,9 +33,18 @@ You must respond strictly in JSON format with exactly four keys: "title", "descr
    - Do not include subjective fluff like "stunning photo", "beautiful design", or "gorgeous colors". Keep it factual, descriptive, and conceptual.
 
 3. "category":
-   - Select the most appropriate commercial category.
-   - STRICT AI RULE: If [IS_AI_GENERATED] is True, the category must strictly be set to: "Illustrations & Clipart/Generative AI".
-   - For regular photography, choose a standard category path (e.g., "Travel", "Nature/Landscapes", "Buildings/Architecture").
+   - Select the most appropriate commercial category using strictly official Dreamstime numeric IDs or names.
+   - STRICT AI RULE: If [IS_AI_GENERATED] is True, the category must strictly be set to: "Illustrations & Clipart/Generative AI" (ID 212).
+   - IMPORTANT - NUMERIC CATEGORY IDs (STRICT DREAMSTIME STANDARD):
+     * NEVER USE category ID "2" (ID 2 is Adobe Stock only, does NOT exist on Dreamstime and causes fatal upload errors!).
+     * For Landmarks, Monuments & Bridges use: 70 ("Arts & Architecture -> Landmarks")
+     * For Generic Architecture use: 71 ("Arts & Architecture -> Generic architecture")
+     * For Historic Buildings & Castles use: 132 ("Arts & Architecture -> Historic buildings")
+     * For European Travel use: 59 ("Travel -> Europe")
+     * For Destination scenics use: 61 ("Travel -> Destination scenics")
+     * For Lakes and Rivers use: 16 ("Nature -> Lakes and rivers")
+     * For Landscapes use: 146 ("Nature -> Landscapes")
+     * For Transportation use: 98 ("Industries -> Transportation") or 82 ("Business -> Transportation")
 
 4. "comma_separated_keywords":
    - Generate between 15 and 40 highly relevant, precise keywords separated by commas.
@@ -55,7 +64,10 @@ A végső kimeneti CSV fájlnak szigorúan a következő formátumot és fejléc
 `Filename,Video Name,Description,Category 1,Category 2,Category 3,keywords,W-EL,SR-EL,SR-Price,Editorial,MR doc Ids,Pr Docs`
 
 Példa sor:
-`telc_lookout_tower.mp4,Video címe angolul,Leírás angolul,132,59,0.0,"kulcsszavak, vesszővel",0.0,0.0,0.0,0.0,,`
+`telc_lookout_tower.mp4,Video címe angolul,Leírás angolul,132,59,70,"kulcsszavak, vesszővel",0.0,0.0,0.0,0.0,,`
+
+FONTOS SZABÁLY:
+A Dreamstime-on NEM létezik 2-es kategóriakód (az Adobe-os kód). Építészetre/látványosságra a 70 (Landmarks), 71 (Generic Architecture) vagy a 132 (Historic buildings) használandó!
 
 <Nudge> Szeretnéd, hogy írjunk egy Python mintaszkriptet, ami beolvassa a képeid mappáját, meghívja ezt a Dreamstime promptot, majd automatikusan a megfelelő Dreamstime-formátumú CSV táblázatba menti a válaszokat? ⚙️ </Nudge>
 

@@ -81,9 +81,19 @@ A stock videókat a nyers kameranevekről (pl. `20250713_115545.mp4`, `VID_20250
 - **Filename:** A videó fájlneve (pl. `telc_lookout_tower.mp4`).
 - **Video Name:** Rövid angol nyelvű cím.
 - **Description:** Részletes angol nyelvű leírás.
-- **Category 1, 2, 3:** Numerikus kategória kódok (pl. 132, 59, 70).
+- **Category 1, 2, 3:** Numerikus kategória kódok szigorúan a Dreamstime hivatalos listájából (`Video_spreadsheet_template.xls`):
+  - `70` = Arts & Architecture -> Landmarks *(Nevezetességek, hidak, emlékművek)*
+  - `71` = Arts & Architecture -> Generic architecture *(Általános építészet)*
+  - `72` = Arts & Architecture -> Outdoor *(Kültér)*
+  - `132` = Arts & Architecture -> Historic buildings *(Történelmi épületek, várak)*
+  - `59` = Travel -> Europe *(Európai utazás)*
+  - `61` = Travel -> Destination scenics *(Turisztikai látványosságok)*
+  - `16` = Nature -> Lakes and rivers *(Tavak és folyók)*
+  - `146` = Nature -> Landscapes *(Tájak)*
+  - `98` = Industries -> Transportation *(Közlekedés)*
+  - **SZIGORÚ TILALOM:** A **`2`**-es kategória ID **TILOS**, mert az az Adobe Stock kódja, a Dreamstime-on NEM létezik és azonnali hibát (`Invalid category id(s): 2`) dob a feltöltésnél! Helyette mindig a `70`, `71` vagy `132` használandó!
 - **keywords:** Vesszővel elválasztott kulcsszavak idézőjelben (pl. `"keyword1, keyword2"`).
 - **W-EL, SR-EL, SR-Price:** Alapértelmezetten `0.0`.
-- **Editorial:** Alapértelmezetten `0.0` (ha nem editorial).
+- **Editorial:** Alapértelmezetten `0.0` (vagy `1` szerkesztőségi tartalomnál).
 - **MR doc Ids, Pr Docs:** Üresen hagyható.
 
