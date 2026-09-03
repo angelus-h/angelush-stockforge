@@ -63,7 +63,18 @@ You are an expert Commercial Stock Metadata Optimizer. Analyze the provided film
 5. **Dreamstime**:
    - Video Name: Short descriptive title.
    - Description: Detailed description.
-   - Categories: 3 numeric codes (e.g., 16, 59, 132 for travel/outdoor, 20 for transport).
+   - Categories: 3 numeric codes strictly from Dreamstime official list:
+     * 70: Arts & Architecture -> Landmarks
+     * 71: Arts & Architecture -> Generic architecture
+     * 72: Arts & Architecture -> Outdoor
+     * 132: Arts & Architecture -> Historic buildings
+     * 59: Travel -> Europe
+     * 61: Travel -> Destination scenics
+     * 65: Travel -> Arts & Architecture
+     * 16: Nature -> Lakes and rivers
+     * 146: Nature -> Landscapes
+     * 98: Industries -> Transportation
+     * (STRICT RULE: Category ID 2 DOES NOT EXIST on Dreamstime! Do NOT use 2!).
 6. **Keywords**: 25-45 highly relevant lowercase keywords, comma separated. Do not include brands if Commercial. Always include '{loc_city.lower()}, {loc_country.lower()}'.
 
 # JSON Output Format STRICTLY:
@@ -321,7 +332,16 @@ def main():
         for r in results:
             ed_val = "1" if r["editorial"] else "0.0" 
             d = r.get("dreamstime", {})
-            w.writerow([r["new_filename"], d.get("video_name", ""), d.get("description", ""), d.get("cat1", ""), d.get("cat2", ""), d.get("cat3", "0"), f'"{r["keywords"]}"', "0.0", "0.0", "0.0", ed_val, "", ""])
+            c1 = str(d.get("cat1", "132"))
+            c2 = str(d.get("cat2", "59"))
+            c3 = str(d.get("cat3", "0"))
+            
+            # Category 2 is Adobe Architecture ID, on Dreamstime 70 is Landmarks / 71 Generic Architecture
+            if c1 == "2": c1 = "70"
+            if c2 == "2": c2 = "70"
+            if c3 == "2": c3 = "70"
+            
+            w.writerow([r["new_filename"], d.get("video_name", ""), d.get("description", ""), c1, c2, c3, f'"{r["keywords"]}"', "0.0", "0.0", "0.0", ed_val, "", ""])
             
     print(f"CSVs generated in {out_dir}")
 
