@@ -23,6 +23,8 @@ You must respond strictly in JSON format with exactly three keys: "title_descrip
    - No keyword spamming is allowed. Avoid irrelevant or overly generic terms.
 
 3. "categories":
-   - Provide exactly 1 or 2 categories separated by a comma.
+   - Provide exactly 1 or 2 categories separated by a comma (without spaces after comma).
+   - STRICT RULE: "Travel" DOES NOT EXIST on Shutterstock! Never use "Travel"!
    - Select these categories strictly from the official Shutterstock Category list:
      Abstract, Animals/Wildlife, Art, Backgrounds/Textures, Beauty/Fashion, Buildings/Landmarks, Business/Finance, Celebrities, Editorial, Education, Food and Drink, Healthcare/Medical, Holidays, Industrial, Miscellaneous, Nature, Objects, Parks/Outdoor, People, Religion, Science, Signs/Symbols, Sports/Recreation, Technology, Transportation, Vintage.
+   - For travel/city/sightseeing scenes, use: "Buildings/Landmarks", "Parks/Outdoor", or "Nature" instead of Travel!

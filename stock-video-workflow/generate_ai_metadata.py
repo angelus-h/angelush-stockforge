@@ -56,7 +56,7 @@ You are an expert Commercial Stock Metadata Optimizer. Analyze the provided film
    - Category: Select best numeric ID (2=Buildings/Arch, 14=Plants, 20=Transport, 21=Travel, 11=Nature).
 3. **Shutterstock**:
    - Description: IF Editorial, strictly use this format: `{loc_city.upper()}, {loc_country.upper()} - {date_rec.split(' ')[0] if date_rec != 'Unknown' else 'JANUARY 01, 2024'}: <description>`. IF Commercial, just write the standard description.
-   - Categories: Max 2 categories (e.g., "Transportation, Travel", or "Nature, Parks").
+   - Categories: Max 2 categories separated by a comma without spaces. Strictly from official list: Abstract, Animals/Wildlife, Art, Backgrounds/Textures, Beauty/Fashion, Buildings/Landmarks, Business/Finance, Celebrities, Editorial, Education, Food and Drink, Healthcare/Medical, Holidays, Industrial, Miscellaneous, Nature, Objects, Parks/Outdoor, People, Religion, Science, Signs/Symbols, Sports/Recreation, Technology, Transportation, Vintage. (IMPORTANT: 'Travel' DOES NOT EXIST on Shutterstock! Use 'Buildings/Landmarks' or 'Parks/Outdoor' instead).
 4. **Pond5**:
    - Title: strictly 40-80 chars. `[Main subject] + [Action] + [Environment] + [Type of shot]`.
    - Description: Similar to Shutterstock but without the strict editorial prefix (though location should be mentioned).
@@ -224,14 +224,85 @@ def main():
         for r in results:
             w.writerow([r["new_filename"], r["adobe"]["title"], r["keywords"], r["adobe"]["category"], ""])
             
+    # Helper to clean and validate Shutterstock categories
+    VALID_SHUTTERSTOCK_CATS = {
+        "abstract": "Abstract",
+        "animals/wildlife": "Animals/Wildlife",
+        "animals": "Animals/Wildlife",
+        "wildlife": "Animals/Wildlife",
+        "art": "Art",
+        "backgrounds/textures": "Backgrounds/Textures",
+        "backgrounds": "Backgrounds/Textures",
+        "textures": "Backgrounds/Textures",
+        "beauty/fashion": "Beauty/Fashion",
+        "beauty": "Beauty/Fashion",
+        "fashion": "Beauty/Fashion",
+        "buildings/landmarks": "Buildings/Landmarks",
+        "buildings": "Buildings/Landmarks",
+        "landmarks": "Buildings/Landmarks",
+        "architecture": "Buildings/Landmarks",
+        "buildings/architecture": "Buildings/Landmarks",
+        "business/finance": "Business/Finance",
+        "business": "Business/Finance",
+        "finance": "Business/Finance",
+        "celebrities": "Celebrities",
+        "editorial": "Editorial",
+        "education": "Education",
+        "food and drink": "Food and Drink",
+        "food & drink": "Food and Drink",
+        "food": "Food and Drink",
+        "healthcare/medical": "Healthcare/Medical",
+        "medical": "Healthcare/Medical",
+        "healthcare": "Healthcare/Medical",
+        "holidays": "Holidays",
+        "industrial": "Industrial",
+        "industry": "Industrial",
+        "miscellaneous": "Miscellaneous",
+        "nature": "Nature",
+        "objects": "Objects",
+        "parks/outdoor": "Parks/Outdoor",
+        "parks": "Parks/Outdoor",
+        "outdoor": "Parks/Outdoor",
+        "people": "People",
+        "religion": "Religion",
+        "science": "Science",
+        "signs/symbols": "Signs/Symbols",
+        "sports/recreation": "Sports/Recreation",
+        "sports": "Sports/Recreation",
+        "technology": "Technology",
+        "transportation": "Transportation",
+        "transport": "Transportation",
+        "vintage": "Vintage",
+    }
+
+    def sanitize_shutterstock_categories(cat_str):
+        if not cat_str:
+            return "Buildings/Landmarks"
+        parts = [p.strip() for p in cat_str.replace(";", ",").split(",") if p.strip()]
+        valid_cats = []
+        for p in parts:
+            p_lower = p.lower()
+            # If AI hallucinated Travel, replace with Buildings/Landmarks or Parks/Outdoor
+            if "travel" in p_lower:
+                mapped = "Buildings/Landmarks"
+            else:
+                mapped = VALID_SHUTTERSTOCK_CATS.get(p_lower)
+            if mapped and mapped not in valid_cats:
+                valid_cats.append(mapped)
+        if not valid_cats:
+            valid_cats = ["Buildings/Landmarks"]
+        return ",".join(valid_cats[:2])
+
     # 2. Shutterstock
     shutter_csv = os.path.join(out_dir, "shutterstock_video.csv")
     with open(shutter_csv, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
-        w.writerow(["Filename", "Description", "Keywords", "Categories", "Illustration", "Mature content", "Editorial"])
+        w.writerow(["Filename", "Description", "Keywords", "Categories", "Editorial", "Mature content", "illustration"])
         for r in results:
             ed = "yes" if r["editorial"] else "no"
-            w.writerow([r["new_filename"], r["shutterstock"]["description"], r["keywords"], r["shutterstock"]["categories"], "no", "no", ed])
+            shutter_meta = r.get("shutterstock", {})
+            cats = sanitize_shutterstock_categories(shutter_meta.get("categories", ""))
+            w.writerow([r["new_filename"], shutter_meta.get("description", ""), r["keywords"], cats, ed, "no", "no"])
             
     # 3. Pond5
     pond5_csv = os.path.join(out_dir, "pond5_video.csv")
