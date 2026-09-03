@@ -148,18 +148,24 @@ def main():
     filmstrips = glob.glob(os.path.join(frames_dir, "*_filmstrip.jpg"))
     new_results = 0
     
+    # Map filmstrip directly to exact filename matching base_name + extension
     for fs in filmstrips:
         base_name = os.path.basename(fs).replace("_filmstrip.jpg", "")
-        # Match original video
-        orig_video = next((v for v in all_videos if v.startswith(base_name)), None)
-        if not orig_video or orig_video in processed_files:
+        
+        # Check cache: already processed if any entry has original_filename matching base_name
+        cached_entry = next((r for r in results if os.path.splitext(r["original_filename"])[0] == base_name), None)
+        if cached_entry:
+            continue
+
+        # Match original video strictly with matching extension
+        orig_video = next((v for v in all_videos if os.path.splitext(v)[0] == base_name), None)
+        if not orig_video:
             continue
             
         vid_meta = meta_lookup.get(orig_video, {})
         
         metadata = generate_metadata(model, fs, vid_meta)
         if metadata:
-            # ensure extension is correct and safe
             orig_ext = os.path.splitext(orig_video)[1]
             new_name = os.path.splitext(metadata["new_filename"])[0] + orig_ext
             new_name = re.sub(r'[^a-z0-9_.]', '', new_name.lower())
@@ -167,7 +173,6 @@ def main():
             
             metadata["original_filename"] = orig_video
             results.append(metadata)
-            processed_files.add(orig_video)
             new_results += 1
             
             with open(cache_file, "w", encoding="utf-8") as f:
@@ -176,21 +181,34 @@ def main():
 
     print(f"Finished generating metadata. Newly processed: {new_results}. Total: {len(results)}")
     
-    # Optional renaming of files
+    # Ensure unique new_filenames across results to avoid collisions
+    seen_names = {}
+    for r in results:
+        base_target, ext = os.path.splitext(r["new_filename"])
+        if r["new_filename"] in seen_names:
+            seen_names[r["new_filename"]] += 1
+            r["new_filename"] = f"{base_target}_{seen_names[r['new_filename']]}{ext}"
+        else:
+            seen_names[r["new_filename"]] = 1
+
+    # Save cache with deduplicated filenames
+    with open(cache_file, "w", encoding="utf-8") as f:
+        json.dump(results, f, indent=2, ensure_ascii=False)
+
+    # Renaming of files
     print("\nRenaming original video files...")
     rename_count = 0
     for r in results:
+        # The file might have its original name or already be partially renamed
         old_path = os.path.join(base_dir, r["original_filename"])
         new_path = os.path.join(base_dir, r["new_filename"])
+        
         if os.path.exists(old_path) and old_path != new_path:
-            if not os.path.exists(new_path):
-                try:
-                    os.rename(old_path, new_path)
-                    rename_count += 1
-                except Exception as e:
-                    print(f"Warning: Failed to rename {r['original_filename']} -> {r['new_filename']}: {e}")
-            else:
-                print(f"Warning: Target filename {r['new_filename']} already exists. Skipping {r['original_filename']}.")
+            try:
+                os.rename(old_path, new_path)
+                rename_count += 1
+            except Exception as e:
+                print(f"Warning: Failed to rename {r['original_filename']} -> {r['new_filename']}: {e}")
     
     if rename_count > 0:
         print(f"Successfully renamed {rename_count} video files.")
