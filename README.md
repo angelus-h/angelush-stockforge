@@ -11,6 +11,7 @@ The most advanced workflow for **Stock Video Footage**.
 - Extracts representative keyframes (10%, 25%, 50%, 75%, 90%) from MP4/MOV files.
 - Reads embedded GPS metadata.
 - Uses AI to classify content as Editorial vs. Commercial (e.g., detecting recognizable faces or brands).
+- **Auto-renames raw video files** directly on disk to clean, descriptive names (`<location>_<subject>_<shot>.<ext>`).
 - Generates platform-specific metadata CSVs for **Adobe Stock, Shutterstock, Pond5, and Dreamstime**.
 - *[Read the detailed documentation inside the folder]*
 

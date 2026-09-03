@@ -72,7 +72,7 @@ python3 extract_video_keyframes.py -i /path/to/your/videos
 - Generates a composite `*_filmstrip.jpg` for each video.
 - Saves `video_metadata_summary.json` containing durations, FPS, and GPS location hints.
 
-### Step 2: Generate AI Metadata & CSVs
+### Step 2: Generate AI Metadata & CSVs (with Auto-Renaming)
 Run the AI generation script pointing to the *same* video directory.
 ```bash
 python3 generate_ai_metadata.py -i /path/to/your/videos
@@ -82,6 +82,7 @@ python3 generate_ai_metadata.py -i /path/to/your/videos
 - Reads the filmstrips and the GPS metadata.
 - Calls the Gemini AI API to analyze the visuals.
 - Caches results progressively into `ai_metadata_cache.json`.
+- **Automatically renames** the raw video files on disk into descriptive, sanitized names.
 - Outputs four strictly formatted CSV files ready for upload:
   - `adobe_stock_video.csv`
   - `shutterstock_video.csv`
@@ -95,8 +96,12 @@ python3 generate_ai_metadata.py -i /path/to/your/videos
 - **Pond5:** Strict Title length (40-80 characters, usually `[Subject] [Action] [Environment] [Shot type]`) + Keywords.
 - **Dreamstime:** Video Name + Description + 3 separate Numeric Categories + Editorial Flags. 
 
-## 🔄 File Renaming
-The AI generates a highly optimized, lowercase, underscore-separated `new_filename` (e.g., `budapest_traffic_timelapse_wide.mp4`). Currently, this is stored in the CSVs, allowing you to easily write a simple bash loop to bulk-rename your local files prior to upload.
+## 🔄 Automatic File Renaming
+The script automatically renames your original raw video files directly on disk to match stock agency best practices.
+- **Naming Pattern:** `<city_or_location>_<theme_or_subject>_<shot_type>.<ext>` (e.g. `budapest_szechenyi_bridge_traffic_wide.mp4`).
+- **Sanitization:** Converts to lowercase ASCII, replaces invalid characters, and preserves the original file extension (`.mp4`, `.mov`, etc.).
+- **Collision Safe:** Checks if the target filename already exists before renaming to prevent accidental overwrites.
+- **Consistency:** The generated CSV files (`adobe_stock_video.csv`, `shutterstock_video.csv`, etc.) will reference these exact new filenames, making the batch upload completely seamless.
 
 ---
 **Disclaimer:** *Always review the AI-generated CSVs before uploading to ensure 100% compliance with agency guidelines. While the prompts are heavily optimized, AI can occasionally hallucinate specific landmarks.*
