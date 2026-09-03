@@ -1,0 +1,35 @@
+# Python environment
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv
+env/
+venv/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Media files (Ignore raw photos and videos)
+*.mp4
+*.mov
+*.mkv
+*.avi
+*.jpg
+*.jpeg
+*.png
+*.tif
+*.tiff
+*.raw
+
+# Ignore results and temporary processing folders
+stock-video-workflow/_temp_frames/
+stock-video-workflow/_metadata/
+stock-metadata/results/
+pod-workflow/results/
+
+# Ignore generated output files in root or specific folders
+*.csv
+!*/templates/*.csv
