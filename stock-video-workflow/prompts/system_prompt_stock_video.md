@@ -59,14 +59,15 @@ A stock videókat a nyers kameranevekről (pl. `20250713_115545.mp4`, `VID_20250
 - **Kulcsszavak:** 25-45 releváns angol kulcsszó vesszővel elválasztva.
 
 #### B) Shutterstock Video
-- **CSV Fejléc Structure:** `Filename,Description,Keywords,Categories,Editorial,Mature content,illustration`
+- **CSV Fejléc Structure:** Pontosan megegyezik a hivatalos `shutterstock_content_upload.csv` sablonnal:  
+  `Filename,Description,Keywords,Categories,Editorial,Mature content,illustration`
 - **Leírás (`Description`):** Editorial esetén `CITY, COUNTRY - DATE: ...`, commercial esetén tiszta leírás.
-- **Kategóriák (`Categories`):** Max. 2 kategória vesszővel elválasztva SZÓKÖZ NÉLKÜL (pl. `Transportation,Buildings/Landmarks` vagy `Parks/Outdoor,Nature`).  
-  **FIGYELEM:** A Shutterstockon **NINCS "Travel" kategória!** (Helyette használandó: `Buildings/Landmarks`, `Parks/Outdoor`, `Nature`, `Transportation`).
+- **Kategóriák (`Categories`):** Max. 2 kategória kisbetűvel, vesszővel elválasztva SZÓKÖZ NÉLKÜL (pl. `nature,transportation` vagy `buildings/landmarks,parks/outdoor`).  
+  **FIGYELEM:** A Shutterstockon **NINCS "travel" kategória!** (Helyette használandó: `buildings/landmarks`, `parks/outdoor`, `nature`, `transportation`).
 - **Editorial mező:** `yes` vagy `no`.
 - **Mature content:** `yes` vagy `no` (alapértelmezett: `no`).
-- **Illustration:** `yes` vagy `no` (alapértelmezett: `no`).
-- **Kulcsszavak:** Min. 7, max. 50 kulcsszó.
+- **illustration:** `yes` vagy `no` (alapértelmezett: `no`).
+- **Kulcsszavak:** Min. 7, max. 50 kulcsszó idézőjelben, vesszővel elválasztva.
 
 #### C) Pond5 Video
 - **CSV Fejléc Structure:** Kötelezően pontosan 5 oszlop: `originalfilename,title,description,keywords,editorial`

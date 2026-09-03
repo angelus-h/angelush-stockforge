@@ -226,71 +226,71 @@ def main():
             
     # Helper to clean and validate Shutterstock categories
     VALID_SHUTTERSTOCK_CATS = {
-        "abstract": "Abstract",
-        "animals/wildlife": "Animals/Wildlife",
-        "animals": "Animals/Wildlife",
-        "wildlife": "Animals/Wildlife",
-        "art": "Art",
-        "backgrounds/textures": "Backgrounds/Textures",
-        "backgrounds": "Backgrounds/Textures",
-        "textures": "Backgrounds/Textures",
-        "beauty/fashion": "Beauty/Fashion",
-        "beauty": "Beauty/Fashion",
-        "fashion": "Beauty/Fashion",
-        "buildings/landmarks": "Buildings/Landmarks",
-        "buildings": "Buildings/Landmarks",
-        "landmarks": "Buildings/Landmarks",
-        "architecture": "Buildings/Landmarks",
-        "buildings/architecture": "Buildings/Landmarks",
-        "business/finance": "Business/Finance",
-        "business": "Business/Finance",
-        "finance": "Business/Finance",
-        "celebrities": "Celebrities",
-        "editorial": "Editorial",
-        "education": "Education",
-        "food and drink": "Food and Drink",
-        "food & drink": "Food and Drink",
-        "food": "Food and Drink",
-        "healthcare/medical": "Healthcare/Medical",
-        "medical": "Healthcare/Medical",
-        "healthcare": "Healthcare/Medical",
-        "holidays": "Holidays",
-        "industrial": "Industrial",
-        "industry": "Industrial",
-        "miscellaneous": "Miscellaneous",
-        "nature": "Nature",
-        "objects": "Objects",
-        "parks/outdoor": "Parks/Outdoor",
-        "parks": "Parks/Outdoor",
-        "outdoor": "Parks/Outdoor",
-        "people": "People",
-        "religion": "Religion",
-        "science": "Science",
-        "signs/symbols": "Signs/Symbols",
-        "sports/recreation": "Sports/Recreation",
-        "sports": "Sports/Recreation",
-        "technology": "Technology",
-        "transportation": "Transportation",
-        "transport": "Transportation",
-        "vintage": "Vintage",
+        "abstract": "abstract",
+        "animals/wildlife": "animals/wildlife",
+        "animals": "animals/wildlife",
+        "wildlife": "animals/wildlife",
+        "art": "art",
+        "backgrounds/textures": "backgrounds/textures",
+        "backgrounds": "backgrounds/textures",
+        "textures": "backgrounds/textures",
+        "beauty/fashion": "beauty/fashion",
+        "beauty": "beauty/fashion",
+        "fashion": "beauty/fashion",
+        "buildings/landmarks": "buildings/landmarks",
+        "buildings": "buildings/landmarks",
+        "landmarks": "buildings/landmarks",
+        "architecture": "buildings/landmarks",
+        "buildings/architecture": "buildings/landmarks",
+        "business/finance": "business/finance",
+        "business": "business/finance",
+        "finance": "business/finance",
+        "celebrities": "celebrities",
+        "editorial": "editorial",
+        "education": "education",
+        "food and drink": "food and drink",
+        "food & drink": "food and drink",
+        "food": "food and drink",
+        "healthcare/medical": "healthcare/medical",
+        "medical": "healthcare/medical",
+        "healthcare": "healthcare/medical",
+        "holidays": "holidays",
+        "industrial": "industrial",
+        "industry": "industrial",
+        "miscellaneous": "miscellaneous",
+        "nature": "nature",
+        "objects": "objects",
+        "parks/outdoor": "parks/outdoor",
+        "parks": "parks/outdoor",
+        "outdoor": "parks/outdoor",
+        "people": "people",
+        "religion": "religion",
+        "science": "science",
+        "signs/symbols": "signs/symbols",
+        "sports/recreation": "sports/recreation",
+        "sports": "sports/recreation",
+        "technology": "technology",
+        "transportation": "transportation",
+        "transport": "transportation",
+        "vintage": "vintage",
     }
 
     def sanitize_shutterstock_categories(cat_str):
         if not cat_str:
-            return "Buildings/Landmarks"
+            return "buildings/landmarks"
         parts = [p.strip() for p in cat_str.replace(";", ",").split(",") if p.strip()]
         valid_cats = []
         for p in parts:
             p_lower = p.lower()
-            # If AI hallucinated Travel, replace with Buildings/Landmarks or Parks/Outdoor
+            # If AI hallucinated Travel, replace with buildings/landmarks or parks/outdoor
             if "travel" in p_lower:
-                mapped = "Buildings/Landmarks"
+                mapped = "buildings/landmarks"
             else:
                 mapped = VALID_SHUTTERSTOCK_CATS.get(p_lower)
             if mapped and mapped not in valid_cats:
                 valid_cats.append(mapped)
         if not valid_cats:
-            valid_cats = ["Buildings/Landmarks"]
+            valid_cats = ["buildings/landmarks"]
         return ",".join(valid_cats[:2])
 
     # 2. Shutterstock
