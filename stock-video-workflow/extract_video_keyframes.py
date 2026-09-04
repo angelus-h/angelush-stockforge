@@ -12,6 +12,7 @@ import re
 import json
 import argparse
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import cv2
 import numpy as np
 from PIL import Image
@@ -48,17 +49,19 @@ def get_gps_from_file(file_path):
 KNOWN_CLUSTERS = [
     # (lat_min, lat_max, lon_min, lon_max, city, country, landmark_hint)
     (47.45, 47.55, 19.00, 19.12, "Budapest", "Hungary", "Budapest city center, Danube river"),
-    (47.48, 47.55, 19.13, 19.28, "Budapest / Pest County", "Hungary", "Eastern Budapest / Gödöllő hills"),
+    (47.48, 47.55, 19.13, 19.28, "Budapest / Pest County", "Hungary", "Eastern Budapest / Godollo hills"),
     (47.65, 47.72, 19.05, 19.12, "Szentendre", "Hungary", "Danube promenade / Szentendre"),
     (47.75, 47.85, 18.85, 19.00, "Visegrad / Esztergom", "Hungary", "Danube Bend / Castle"),
     (47.15, 47.25, 18.38, 18.48, "Szekesfehervar", "Hungary", "Bory Castle / Historic center"),
     (46.65, 46.85, 16.20, 16.60, "Orseg", "Hungary", "Orseg National Park"),
     (48.10, 48.20, 17.05, 17.20, "Bratislava", "Slovakia", "Bratislava Old Town / Danube"),
+    (48.78, 48.83, 16.78, 16.85, "Lednice", "Czech Republic", "Lednice Castle and Park UNESCO World Heritage site, South Moravia"),
     (48.70, 48.85, 16.55, 16.90, "Lednice-Valtice / Mikulov", "Czech Republic", "South Moravia / Lednice UNESCO"),
     (48.80, 48.95, 15.75, 16.10, "Znojmo / Vranov nad Dyji", "Czech Republic", "South Moravia / Vranov Castle & Reservoir"),
     (48.84, 48.87, 15.84, 15.87, "Hardegg", "Austria", "Hardegg Castle / Thayatal National Park"),
     (49.15, 49.22, 15.40, 15.50, "Telc", "Czech Republic", "Telc UNESCO historic center / Chateau / Namesti Zachariase z Hradce"),
     (49.15, 49.25, 16.55, 16.70, "Brno", "Czech Republic", "Brno city center / Spilberk Castle"),
+    (49.17, 49.21, 16.74, 16.79, "Tvarozna", "Czech Republic", "Tvarozna, Santon Hill, Battle of Austerlitz (Slavkov) historical Napoleonic battlefield reenactment, South Moravia"),
     (49.18, 49.23, 16.13, 16.18, "Namest nad Oslavou", "Czech Republic", "Namest nad Oslavou Castle & Square"),
     (49.30, 49.50, 16.60, 16.80, "Moravian Karst (Moravsky kras)", "Czech Republic", "Moravia caves and nature"),
     (49.43, 49.48, 16.30, 16.36, "Pernstejn / Nedvedice", "Czech Republic", "Pernstejn Castle / Nedvedice"),
@@ -167,17 +170,6 @@ def extract_frames_from_video(video_path, output_dir, max_thumb_dim=640):
 
         contact_sheet_path = os.path.join(output_dir, f"{base_name}_filmstrip.jpg")
         cv2.imwrite(contact_sheet_path, strip, [cv2.IMWRITE_JPEG_QUALITY, 85])
-        cv2.imwrite(contact_sheet_path, strip, [cv2.IMWRITE_JPEG_QUALITY, 85])
-
-    # Date parsing from filename if standard YYYYMMDD_HHMMSS
-    date_str = "Unknown"
-    date_match = re.search(r'(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})', base_name)
-    if date_match:
-        year, month, day, hour, minute, second = date_match.groups()
-        date_str = f"{year}-{month}-{day} {hour}:{minute}:{second}"
-
-    lat, lon = get_gps_from_file(video_path)
-    loc_info = resolve_location(lat, lon)
 
     return {
         "filename": os.path.basename(video_path),
@@ -208,14 +200,25 @@ def process_video_directory(input_dir, output_dir=None, limit=None):
     print(f"Extracting keyframes (10%, 25%, 50%, 75%, 90%) for {len(files)} videos...")
     results = []
 
-    for idx, f in enumerate(files, 1):
+    def _worker(f):
         vpath = os.path.join(input_dir, f)
         res = extract_frames_from_video(vpath, output_dir)
-        if res:
-            results.append(res)
-            print(f"[{idx}/{len(files)}] Processed: {f} ({res['resolution']}, {res['duration_seconds']}s, Loc: {res['location']['city']})")
-        else:
-            print(f"[{idx}/{len(files)}] Failed to read: {f}")
+        return f, res
+
+    processed_count = 0
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        future_to_file = {executor.submit(_worker, f): f for f in files}
+        for future in as_completed(future_to_file):
+            f, res = future.result()
+            processed_count += 1
+            if res:
+                results.append(res)
+                print(f"[{processed_count}/{len(files)}] Processed: {f} ({res['resolution']}, {res['duration_seconds']}s, Loc: {res['location']['city']})")
+            else:
+                print(f"[{processed_count}/{len(files)}] Failed to read: {f}")
+
+    # Sort results by original filename
+    results.sort(key=lambda x: x["filename"])
 
     json_path = os.path.join(output_dir, "video_metadata_summary.json")
     with open(json_path, "w", encoding="utf-8") as jf:

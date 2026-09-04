@@ -27,8 +27,11 @@ You must respond strictly in JSON format with exactly four keys: "title", "descr
 2. "description":
    - Maximum length: 500 characters.
    - Written strictly in English, grammatically correct.
-   - Strictly NO ALL-CAPS.
+   - Strictly NO ALL-CAPS (do not write city, country or month names in ALL CAPS).
    - Must explain the physical subject, mood, color palette, and general setting clearly.
+   - EDITORIAL REQUIREMENT (Official Dreamstime 5 Ws Standard):
+     If Editorial = True, the description MUST answer Who, What, Where, When, Why (and How), starting strictly with the dateline:
+     `City, Country - Month Day, Year: [Who] [What] [Where] [Why/How]` (e.g. `Tvarozna, Czech Republic - November 30, 2024: Historical reenactment soldiers in Napoleonic military uniforms march in formation during the Battle of Austerlitz commemoration event.`).
    - STRICT AI RULE: If [IS_AI_GENERATED] is True and the title does not mention it, the description MUST start with or include the phrase "AI-generated illustration of..." or "This image was generated using AI, depicting...".
    - Do not include subjective fluff like "stunning photo", "beautiful design", or "gorgeous colors". Keep it factual, descriptive, and conceptual.
 
@@ -53,21 +56,13 @@ You must respond strictly in JSON format with exactly four keys: "title", "descr
    - NO KEYWORD SPAMMING: Every single keyword must directly apply to the image. Irrelevant keywords will get the file flagged and block editing rights.
    - Strictly avoid subjective buzzwords ("beautiful", "stunning", "amazing", "high quality").
    - Strictly avoid trademarked names or brands (e.g., no "Ferrari", "Porsche", "Harley Davidson", "Coca-Cola") in the keywords for commercial licensing.
-Hogyan illeszkedik ez az OpenCode munkafolyamatodba?
-Szoftvermérnökként ezt a promptot zseniálisan be tudod csatornázni a Python kódodba. A szkripted:
-A kép típusa alapján eldönti, hogy fotó vagy AI-grafika (így a prompt [IS_AI_GENERATED] paraméterét dinamikusan tudod állítani True vagy False értékre).
-Ha a válasz True, a fenti prompt kényszeríti a Gemini-t, hogy a leírás elejére odategye az „AI-generated illustration of...” formulát, és a kategóriát automatikusan átállítsa a Dreamstime által megkövetelt „Illustrations & Clipart/Generative AI” értékre.
-Ezzel a módszerrel a Dreamstime-ra szánt CSV-k generálása 100%-ban átmegy az első QC (Quality Control) ellenőrzésen, elkerülve a kézi javításokat és az elutasításokat.
-
-### DREAMSTIME CSV FORMÁTUM (KÖTELEZŐ):
-A végső kimeneti CSV fájlnak szigorúan a következő formátumot és fejlécet kell követnie:
+### DREAMSTIME CSV FORMAT (MANDATORY):
+The final output CSV file must strictly follow this header format:
 `Filename,Video Name,Description,Category 1,Category 2,Category 3,keywords,W-EL,SR-EL,SR-Price,Editorial,MR doc Ids,Pr Docs`
 
-Példa sor:
-`telc_lookout_tower.mp4,Video címe angolul,Leírás angolul,132,59,70,"kulcsszavak, vesszővel",0.0,0.0,0.0,0.0,,`
+Example row:
+`telc_lookout_tower.mp4,Telc Lookout Tower View,Historic wooden lookout tower overlooking Telc village,132,59,70,"telc, czech republic, lookout tower, architecture, scenic",0.0,0.0,0.0,0.0,,`
 
-FONTOS SZABÁLY:
-A Dreamstime-on NEM létezik 2-es kategóriakód (az Adobe-os kód). Építészetre/látványosságra a 70 (Landmarks), 71 (Generic Architecture) vagy a 132 (Historic buildings) használandó!
-
-<Nudge> Szeretnéd, hogy írjunk egy Python mintaszkriptet, ami beolvassa a képeid mappáját, meghívja ezt a Dreamstime promptot, majd automatikusan a megfelelő Dreamstime-formátumú CSV táblázatba menti a válaszokat? ⚙️ </Nudge>
+STRICT RULE:
+Category ID 2 DOES NOT EXIST on Dreamstime (it is an Adobe Stock ID). For architecture/landmarks use 70 (Landmarks), 71 (Generic Architecture), or 132 (Historic buildings).
 

@@ -1,99 +1,101 @@
 # System Prompt & Instructions: AI Stock Video Metadata Generator
 
-Ez a dokumentum tartalmazza a videós stock metaadat-generáláshoz használt pontos AI promptot és szabályrendszert.
+This document contains the exact AI prompt, ruleset, and guidelines used for commercial and editorial stock video metadata generation.
 
 ---
 
-## 🎯 Rendszer Célja
-Elemezni a videókból kinyert 5 időpillanatú (10%, 25%, 50%, 75%, 90%) minta képkockát és beágyazott GPS/EXIF metaadatokat, majd létrehozni az **Adobe Stock**, **Shutterstock** és **Pond5** platformoknak megfelelő angol nyelvű leírásokat, címeket és kulcsszavakat.
+## 🎯 Purpose of the System
+Analyze 5 keyframes (at 10%, 25%, 50%, 75%, and 90% timestamps) and embedded GPS/EXIF metadata extracted from stock video footage, and generate optimized English titles, descriptions, categories, and keywords compliant with **Adobe Stock**, **Shutterstock**, **Pond5**, and **Dreamstime**.
 
 ---
 
-## 📜 Szabályrendszer és Feltételek
+## 📜 Rules and Specifications
 
-### 1. Képkockák elemzése (10%, 25%, 50%, 75%, 90%)
-- Az 5 képkocka időbeli változásából meg kell állapítani a videó cselekményét, mozgásait és stílusát (pl. szökőkút fényjátéka, forgalom mozgása, villamos érkezése/indulása, gyümölcsérés).
-- **Time-lapse azonosítás:** Ha a kamera fix, de a felhők, fények, autók vagy a tömeg gyorsított mozgást végez, a videó **Time-lapse**.  
-  - *Szabály:* A címben, a leírásban és a kulcsszavakban kötelező feltüntetni a `time-lapse`, `timelapse`, `fast motion` kifejezéseket.
+### 1. Keyframe Visual Analysis (10%, 25%, 50%, 75%, 90%)
+- Analyze the temporal progression of the 5 extracted keyframes to deduce subject movement, action, framing, and visual style (e.g., fountain water movement, street traffic, tram arrival/departure, changing light).
+- **Time-lapse Identification:** If the camera is static while clouds, traffic, light, or crowds move in accelerated motion, classify the clip as **Time-lapse**.
+  - *Rule:* The words `time-lapse`, `timelapse`, or `fast motion` must be included in the title, description, and keywords.
 
-### 2. Editorial vs. Commercial Döntési Logika
-- **Commercial (Kereskedelmi célú):**
-  - Nincsenek felismerhető emberek (arcok, egyedi sziluettek), vagy tisztán természet-, makró-, épület- vagy absztrakt felvétel.
-  - Nincsenek védett logók, márkanevek, rendszámok.
-  - Leírás: Angol nyelvű leíró cím a tartalomról.
-- **Editorial (Szerkesztőségi célú):**
-  - Bármilyen felismerhető gyalogos, járművezető, utas vagy védett márkanév/logó (pl. BKK, MÁV, Siemens, IKEA reklám, rendszám).
-  - **Kötelező formátum:** `CITY, COUNTRY - MONTH DAY, YEAR: Leírás angol nyelven.`  
-    *Példa:* `BUDAPEST, HUNGARY - MAY 24, 2024: Time-lapse of traffic flow on a tree-lined avenue in Budapest viewed from a pedestrian bridge.`
+### 2. Editorial vs. Commercial Decision Logic
+- **Commercial (Commercial Use):**
+  - No recognizable people (faces, distinctive silhouettes), or purely nature, landscape, macro, architecture, or abstract footage.
+  - No protected logos, trademarks, visible vehicle license plates, or brand names.
+  - Description: Standard descriptive English title describing visual content.
+- **Editorial (Editorial Use):**
+  - Any recognizable pedestrians, drivers, passengers, or protected trademarks/logos/transit (e.g., BKK, MAV, Siemens, commercial brand ads, vehicle license plates).
+  - **Mandatory Format (Default Standard):** `City, Country - Month Day, Year: Description in English.`
+    - **STRICT RULE:** NO ALL-CAPS! City, country, and month names must strictly use standard capitalization (Title Case).
+    - *Example:* `Budapest, Hungary - May 24, 2024: Time-lapse of traffic flow on a tree-lined avenue in Budapest viewed from a pedestrian bridge.`
+    - *Dreamstime Requirement:* The description must strictly answer the 5 Ws (**Who, What, Where, When, Why** - according to official Dreamstime Editorial Guidelines): `City, Country - Month Day, Year: [Who] [What] [Where] [Why/How]`.
 
-### 3. Helyszín és GPS koordináták beépítése
-- A videók MP4 fejlécéből vagy záró `moov` atomjából kiolvasott GPS koordináták alapján meg kell határozni a pontos várost, nevezetességet vagy tájegységet (pl. `Brno, Moravske namesti`, `Budapest, Blaha Lujza ter`, `Budapest, Ors vezer tere`).
-- A helyszínneveket kötelezően bele kell foglalni a címekbe, leírásokba és a kulcsszavakba.
+### 3. Location and GPS Coordinate Resolution
+- Extract embedded ISO 6709 GPS coordinates from MP4 headers or moov atoms to determine accurate cities, landmarks, or regions (e.g., `Lednice, Czech Republic`, `Tvarozna, Czech Republic`, `Budapest, Hungary`).
+- Incorporate accurate location names into titles, descriptions, and keywords.
 
-### 4. Videófájlok Kötelező Egyedi Átnevezése (File Renaming Standard)
-A stock videókat a nyers kameranevekről (pl. `20250713_115545.mp4`, `VID_20250713.mp4`) **mindig át kell nevezni** egyedi, beszédes, a témára és a kameraállásra utaló névre:
-- **Szabályok:**
-  - Kizárólag kisbetűs angol karakterek (lowercase, no accents / ASCII only).
-  - Szavak elválasztása aláhúzásjellel (`_`), szóköz és egyéb írásjel nélkül.
-  - Struktúra: `<helyszin>_<tema_vagy_alany>_<reszlet_vagy_kameraallas>.<mp4|mov>`
-- **Példák:**
+### 4. Mandatory Video File Renaming Standard
+Raw camera files (e.g., `20250713_115545.mp4`, `VID_20250713.mp4`) must **always be renamed** to descriptive, search-optimized names reflecting location, theme, and shot type:
+- **Naming Rules:**
+  - Lowercase ASCII characters only (no accents, no special characters).
+  - Words separated strictly by underscores (`_`), no spaces.
+  - Structure: `<location>_<theme_or_subject>_<detail_or_shot_type>.<mp4|mov>`
+- **Examples:**
+  - `lednice_castle_gardens_timelapse_wide.mp4`
+  - `tvarozna_austerlitz_soldiers_marching_wide.mp4`
   - `telc_main_square_fountain_wide.mp4`
-  - `telc_main_square_fountain_statue.mp4`
-  - `telc_stepnicky_pond_chateau_reflection.mp4`
-  - `telc_ulicky_pond_wooden_footbridge.mp4`
-  - `telc_lookout_tower_panorama_360.mp4`
-- **Konzisztencia és CSV integráció:**
-  - A videófájlokat a lemezen át kell nevezni az új névre.
-  - Az összesített CSV-kben (`adobe_stock_video.csv`, `shutterstock_video.csv`, `pond5_video.csv`) a `Filename` és `originalfilename` mezőkbe kötelezően ez az új név kerül.
-  - Az egyedi CSV fájlok nevei automatikusan ezt követik: `<uj_videonev>_adobe.csv`, `<uj_videonev>_shutterstock.csv`, `<uj_videonev>_pond5.csv`.
+- **CSV Consistency:**
+  - Files are renamed directly on disk.
+  - All output CSVs (`adobe_stock_video.csv`, `shutterstock_video.csv`, `pond5_video.csv`, `dreamstime_video.csv`) reference these exact new filenames.
 
-### 5. Platform Specifikus CSV Előírások
+### 5. Platform-Specific CSV Specifications
 
 #### A) Adobe Stock Video
-- **Cím (`Title`):** 5-200 karakter, lényegretörő, angol nyelvű.
-- **Kategória (`Category`):** Numerikus kategória ID:
-  - `20` = Transport / Közlekedés
-  - `21` = Travel / Utazás
-  - `14` = Plants and Flowers / Növények
-  - `2` = Buildings and Architecture / Építészet
-- **Kulcsszavak:** 25-45 releváns angol kulcsszó vesszővel elválasztva.
+- **Title:** Strictly 15–70 characters, clear, factual, search-optimized. Plain text only (no commas, no periods, no punctuation).
+- **Category:** Numeric Category ID:
+  - `2` = Buildings and Architecture
+  - `3` = People / Events / Lifestyle
+  - `11` = Nature
+  - `14` = Plants and Flowers
+  - `20` = Transport
+  - `21` = Travel
+- **Keywords:** 25–45 highly relevant lowercase keywords, separated by commas.
 
 #### B) Shutterstock Video
-- **CSV Fejléc Structure:** Pontosan megegyezik a hivatalos `shutterstock_content_upload.csv` sablonnal:  
+- **CSV Header Structure:** Matches the official `shutterstock_content_upload.csv` template:
   `Filename,Description,Keywords,Categories,Editorial,Mature content,illustration`
-- **Leírás (`Description`):** Editorial esetén `CITY, COUNTRY - DATE: ...`, commercial esetén tiszta leírás.
-- **Kategóriák (`Categories`):** Max. 2 kategória kisbetűvel, vesszővel elválasztva SZÓKÖZ NÉLKÜL (pl. `nature,transportation` vagy `buildings/landmarks,parks/outdoor`).  
-  **FIGYELEM:** A Shutterstockon **NINCS "travel" kategória!** (Helyette használandó: `buildings/landmarks`, `parks/outdoor`, `nature`, `transportation`).
-- **Editorial mező:** `yes` vagy `no`.
-- **Mature content:** `yes` vagy `no` (alapértelmezett: `no`).
-- **illustration:** `yes` vagy `no` (alapértelmezett: `no`).
-- **Kulcsszavak:** Min. 7, max. 50 kulcsszó idézőjelben, vesszővel elválasztva.
+- **Description:** If Editorial: `City, Country - Month Day, Year: <description>`. If Commercial: standard factual description. (No ALL-CAPS for city, country, date).
+- **Categories:** Maximum 2 lowercase categories separated strictly by a comma without spaces (e.g., `editorial,vintage` or `buildings/landmarks,parks/outdoor`).
+  **IMPORTANT:** Shutterstock DOES NOT have a "travel" category! Use `buildings/landmarks`, `parks/outdoor`, `nature`, or `editorial`.
+- **Editorial Field:** `yes` or `no`.
+- **Mature content:** `no` (default).
+- **illustration:** `no` (default).
+- **Keywords:** 25–45 relevant keywords.
 
 #### C) Pond5 Video
-- **CSV Fejléc Structure:** Kötelezően pontosan 5 oszlop: `originalfilename,title,description,keywords,editorial`
-- **Megjegyzés:** Tilos `category` vagy `pricetier` oszlopot hozzáadni.
-- **Title (Cím):** Szigorúan **40 és 80 karakter között** (optimálisan 55-75 karakter). Formula: `[Main subject] + [Action] + [Environment] + [Type of shot]`.
-- **Editorial:** `yes` vagy `no`.
-- **Kulcsszavak:** Comma-separated tags (10-50 releváns kulcsszó).
+- **CSV Header Structure:** Exactly 5 columns: `originalfilename,title,description,keywords,editorial`
+- **Title:** Strictly **40 to 80 characters**. Formula: `[Main subject] [Action] [Environment] [Type of shot]`.
+- **Editorial:** `yes` or `no`.
+- **Keywords:** Comma-separated tags (25–45 relevant keywords).
 
 #### D) Dreamstime Video
-- **CSV Fejléc Structure:** Kötelezően az alábbi formátum: `Filename,Video Name,Description,Category 1,Category 2,Category 3,keywords,W-EL,SR-EL,SR-Price,Editorial,MR doc Ids,Pr Docs`
-- **Filename:** A videó fájlneve (pl. `telc_lookout_tower.mp4`).
-- **Video Name:** Rövid angol nyelvű cím.
-- **Description:** Részletes angol nyelvű leírás.
-- **Category 1, 2, 3:** Numerikus kategória kódok szigorúan a Dreamstime hivatalos listájából (`Video_spreadsheet_template.xls`):
-  - `70` = Arts & Architecture -> Landmarks *(Nevezetességek, hidak, emlékművek)*
-  - `71` = Arts & Architecture -> Generic architecture *(Általános építészet)*
-  - `72` = Arts & Architecture -> Outdoor *(Kültér)*
-  - `132` = Arts & Architecture -> Historic buildings *(Történelmi épületek, várak)*
-  - `59` = Travel -> Europe *(Európai utazás)*
-  - `61` = Travel -> Destination scenics *(Turisztikai látványosságok)*
-  - `16` = Nature -> Lakes and rivers *(Tavak és folyók)*
-  - `146` = Nature -> Landscapes *(Tájak)*
-  - `98` = Industries -> Transportation *(Közlekedés)*
-  - **SZIGORÚ TILALOM:** A **`2`**-es kategória ID **TILOS**, mert az az Adobe Stock kódja, a Dreamstime-on NEM létezik és azonnali hibát (`Invalid category id(s): 2`) dob a feltöltésnél! Helyette mindig a `70`, `71` vagy `132` használandó!
-- **keywords:** Vesszővel elválasztott kulcsszavak idézőjelben (pl. `"keyword1, keyword2"`).
-- **W-EL, SR-EL, SR-Price:** Alapértelmezetten `0.0`.
-- **Editorial:** Alapértelmezetten `0.0` (vagy `1` szerkesztőségi tartalomnál).
-- **MR doc Ids, Pr Docs:** Üresen hagyható.
+- **CSV Header Structure:** Strictly the following format:
+  `Filename,Video Name,Description,Category 1,Category 2,Category 3,keywords,W-EL,SR-EL,SR-Price,Editorial,MR doc Ids,Pr Docs`
+- **Filename:** Renamed video filename (e.g., `tvarozna_austerlitz_soldiers_marching_wide.mp4`).
+- **Video Name:** Short descriptive title in English.
+- **Description:** Detailed English description. If Editorial, strictly answers the 5 Ws starting with dateline: `City, Country - Month Day, Year: [Who] [What] [Where] [Why/How]`. Strictly NO ALL-CAPS.
+- **Category 1, 2, 3:** Numeric category IDs from official Dreamstime list:
+  - `70` = Arts & Architecture -> Landmarks
+  - `71` = Arts & Architecture -> Generic architecture
+  - `72` = Arts & Architecture -> Outdoor
+  - `132` = Arts & Architecture -> Historic buildings
+  - `59` = Travel -> Europe
+  - `61` = Travel -> Destination scenics
+  - `16` = Nature -> Lakes and rivers
+  - `146` = Nature -> Landscapes
+  - `98` = Industries -> Transportation
+  - `108` = People -> Celebrations / Events
+  - **STRICT PROHIBITION:** Category ID **`2`** DOES NOT EXIST on Dreamstime (it is an Adobe Stock ID) and triggers fatal upload rejection! Always use `70`, `71`, or `132`.
+- **keywords:** Comma-separated lowercase keywords.
+- **W-EL, SR-EL, SR-Price:** Default `0.0`.
+- **Editorial:** `0.0` for Commercial, `1` for Editorial.
+- **MR doc Ids, Pr Docs:** Leave empty.
 

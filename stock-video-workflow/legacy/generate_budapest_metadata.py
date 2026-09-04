@@ -31,8 +31,8 @@ prompt_template = """
 You are an expert Commercial Stock Metadata Optimizer. Analyze the provided filmstrip (5 keyframes of a video) and generate metadata for Adobe Stock, Shutterstock, Pond5, and Dreamstime.
 
 # Context:
-- The video was taken in Budapest, Hungary. It may contain people, traffic, public transport (BKK, MÁV), cityscapes, etc.
-- If there are recognizable people, faces, license plates, or branded logos/vehicles (like BKK trams/buses, MÁV trains, store logos), it MUST be marked as "Editorial" = true. Otherwise "Editorial" = false.
+- The video was taken in Budapest, Hungary. It may contain people, traffic, public transport (BKK, MAV), cityscapes, etc.
+- If there are recognizable people, faces, license plates, or branded logos/vehicles (like BKK trams/buses, MAV trains, store logos), it MUST be marked as "Editorial" = true. Otherwise "Editorial" = false.
 - Time-lapse: If the camera is static but things are moving fast, it's a time-lapse (mention "time-lapse" in titles/descriptions/keywords).
 
 # Outputs needed per platform rules:

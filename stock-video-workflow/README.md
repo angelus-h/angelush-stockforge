@@ -1,13 +1,19 @@
-# AI Stock Video Metadata Workflow
+# AngelusH's StockForge
 
-A fully automated, AI-driven workflow for extracting, analyzing, and generating commercial stock video metadata. 
-This tool processes raw video footage (e.g., MP4, MOV), extracts representative keyframes and GPS/EXIF data, and leverages Google's Gemini AI to automatically generate highly optimized, platform-specific metadata (Titles, Descriptions, Categories, and Keywords).
+A fully automated, AI-driven pipeline for extracting, analyzing, and generating commercial & editorial stock video metadata. 
+StockForge processes raw video footage (e.g., MP4, MOV), extracts representative keyframes and embedded GPS/EXIF data, and leverages Google's **Gemini Flash** AI model orchestrated seamlessly via **OpenCode** to automatically generate highly optimized, platform-compliant metadata (Titles, Descriptions, Categories, and Keywords).
 
 It exports ready-to-upload CSV files for the major stock agencies:
 - **Adobe Stock**
 - **Shutterstock**
 - **Pond5**
 - **Dreamstime**
+
+## 🤖 AI Orchestration with OpenCode & Gemini Flash
+
+StockForge is designed to be orchestrated directly through the **OpenCode** CLI agent:
+- **OpenCode as the Pipeline Orchestrator:** Manages end-to-end execution, directory discovery across local and external SSD storage, fault tolerance, iterative prompt refinements, and batch processing quality control.
+- **Google Gemini Flash (`gemini-flash-latest`):** Acts as the multimodal vision engine. It analyzes 5-frame contact sheets ("filmstrips") in conjunction with technical EXIF/GPS telemetry to deduce shot composition, lighting, camera motion, and editorial relevance through tailored prompt templates (`prompts/`).
 
 ## 📂 Repository Structure
 
@@ -31,9 +37,10 @@ It exports ready-to-upload CSV files for the major stock agencies:
 
 1. **Intelligent Keyframe Extraction:** Automatically extracts frames at 10%, 25%, 50%, 75%, and 90% of the video duration. Generates a composite "filmstrip" image.
 2. **GPS & Date Parsing:** Reads ISO 6709 GPS coordinates embedded in MP4 headers and matches them to known geographical clusters (e.g., Budapest, Prague) for accurate location tagging.
-3. **Editorial vs. Commercial Detection:** The AI automatically decides whether footage needs an Editorial license format (e.g., recognizable people, brands, transit like BKK/MÁV) and formats the Shutterstock description exactly as `CITY, COUNTRY - DATE: Description`.
-4. **Time-lapse Detection:** Automatically detects time-lapses based on camera and subject movement.
-5. **Caching & Rate Limiting:** Progress is saved automatically to `ai_metadata_cache.json`. If the script stops, it will resume exactly where it left off without burning extra AI API quotas.
+3. **Editorial vs. Commercial Detection:** The AI automatically decides whether footage needs an Editorial license format (e.g., recognizable people, brands, transit like BKK/MAV) and formats descriptions as `City, Country - Month Day, Year: Description` (strictly NO ALL-CAPS, following official press guidelines).
+4. **Official 5 Ws Compliance (Dreamstime & Shutterstock):** Editorial descriptions answer Who, What, Where, When, and Why (and How) with clean title-cased datelines.
+5. **Time-lapse Detection:** Automatically detects time-lapses based on camera and subject movement.
+6. **Caching & Rate Limiting:** Progress is saved automatically to `ai_metadata_cache.json`. If the script stops, it will resume exactly where it left off without burning extra AI API quotas.
 
 ## 🛠 Prerequisites
 
@@ -91,10 +98,10 @@ python3 generate_ai_metadata.py -i /path/to/your/videos
 
 ## 📝 Platform Formatting Details
 
-- **Adobe Stock:** Title (5-200 chars) + 25-45 Keywords + Specific Numeric Category (e.g., 21 for Travel).
-- **Shutterstock:** Strict formatting for Editorial (`CITY, COUNTRY - MONTH DAY, YEAR: ...`) + Max 2 Categories + 25-45 Keywords.
+- **Adobe Stock:** Title (15-70 chars, plain text without punctuation) + 25-45 Keywords + Specific Numeric Category (e.g., 2=Buildings, 3=People, 21=Travel).
+- **Shutterstock:** Strict formatting for Editorial (`City, Country - Month Day, Year: ...` without ALL-CAPS) + Max 2 Categories + 25-45 Keywords.
 - **Pond5:** Strict Title length (40-80 characters, usually `[Subject] [Action] [Environment] [Shot type]`) + Keywords.
-- **Dreamstime:** Video Name + Description + 3 separate Numeric Categories + Editorial Flags. 
+- **Dreamstime:** Video Name + Editorial 5 Ws Description (`City, Country - Month Day, Year: [Who] [What] [Where] [Why]`) + 3 separate Numeric Categories + Editorial Flags. (No ALL-CAPS; never uses category ID 2). 
 
 ## 🔄 Automatic File Renaming
 The script automatically renames your original raw video files directly on disk to match stock agency best practices.

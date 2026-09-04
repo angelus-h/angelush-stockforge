@@ -7,8 +7,18 @@ import csv
 import argparse
 import time
 import re
+from datetime import datetime
 import google.generativeai as genai
 from PIL import Image
+
+def format_editorial_date(date_str):
+    if not date_str or date_str == "Unknown":
+        return "September 29, 2024"
+    try:
+        dt = datetime.strptime(date_str.split(' ')[0], "%Y-%m-%d")
+        return dt.strftime("%B %d, %Y")
+    except Exception:
+        return "September 29, 2024"
 
 def setup_gemini():
     api_key = os.environ.get("GEMINI_API_KEY")
@@ -30,39 +40,50 @@ def setup_gemini():
       generation_config=generation_config,
     )
 
-def generate_prompt(video_meta):
+def generate_prompt(video_meta, custom_context="", force_editorial=False):
     loc_city = video_meta.get("location", {}).get("city", "Unknown")
     loc_country = video_meta.get("location", {}).get("country", "Unknown")
     loc_hint = video_meta.get("location", {}).get("hint", "")
     date_rec = video_meta.get("date_recorded", "Unknown Date")
+    editorial_date = format_editorial_date(date_rec)
     
-    return f"""
-You are an expert Commercial Stock Metadata Optimizer. Analyze the provided filmstrip (5 keyframes of a video) and generate metadata for Adobe Stock, Shutterstock, Pond5, and Dreamstime.
+    editorial_rule = """# Editorial vs Commercial Rules:
+- If there are recognizable people (faces), license plates, or branded logos/vehicles, it MUST be marked as "Editorial" = true.
+- Otherwise "Editorial" = false."""
+    if force_editorial:
+        editorial_rule = f"""# Editorial Requirement (STRICT):
+- All footage in this batch MUST be marked as "Editorial" = true.
+- Descriptions MUST strictly begin with: `{loc_city}, {loc_country} - {editorial_date}: ` (do NOT use all caps) followed by a factual description answering the 5 Ws (Who, What, Where, When, Why)."""
 
-# Context (From Video Metadata):
+    context_section = f"""# Context (From Video Metadata):
 - Location: {loc_city}, {loc_country}
 - Additional Location Hint: {loc_hint}
-- Date Recorded: {date_rec}
-- Time-lapse: If the camera is static but things are moving fast (clouds, traffic), it's a time-lapse. Include "time-lapse" in titles, descriptions, and keywords.
+- Date Recorded: {date_rec}"""
+    if custom_context:
+        context_section += f"\n- Event & Specific Context: {custom_context}"
+    context_section += "\n- Time-lapse: If the camera is static but things are moving fast (clouds, traffic), it's a time-lapse. Include 'time-lapse' in titles, descriptions, and keywords."
 
-# Editorial vs Commercial Rules:
-- If there are recognizable people (faces), license plates, or branded logos/vehicles, it MUST be marked as "Editorial" = true.
-- Otherwise "Editorial" = false.
+    return f"""
+You are an expert Commercial & Editorial Stock Metadata Optimizer. Analyze the provided filmstrip (5 keyframes of a video) and generate metadata for Adobe Stock, Shutterstock, Pond5, and Dreamstime.
+
+{context_section}
+
+{editorial_rule}
 
 # Platform Specific Rules:
-1. **New Filename**: create a descriptive filename. Format: `<city_or_location>_<theme>_<shot>.mp4`. ONLY lowercase ascii, underscores.
+1. **New Filename**: create a descriptive filename. Format: `<city_or_location>_<theme>_<shot>.mp4`. ONLY lowercase ascii, underscores (e.g. `tvarozna_austerlitz_soldiers_marching_wide.mp4`).
 2. **Adobe Stock**:
-   - Title: 5-200 chars, descriptive, commercial.
-   - Category: Select best numeric ID (2=Buildings/Arch, 14=Plants, 20=Transport, 21=Travel, 11=Nature).
+   - Title: strictly 15-70 characters, clear, factual, search-optimized description. NO commas, NO periods, plain text only. NO brand names.
+   - Category: Select best numeric ID (2=Buildings/Arch, 14=Plants, 20=Transport, 21=Travel, 11=Nature, 3=People/Lifestyle).
 3. **Shutterstock**:
-   - Description: IF Editorial, strictly use this format: `{loc_city.upper()}, {loc_country.upper()} - {date_rec.split(' ')[0] if date_rec != 'Unknown' else 'JANUARY 01, 2024'}: <description>`. IF Commercial, just write the standard description.
-   - Categories: Max 2 categories separated by a comma without spaces. Strictly from official list: Abstract, Animals/Wildlife, Art, Backgrounds/Textures, Beauty/Fashion, Buildings/Landmarks, Business/Finance, Celebrities, Editorial, Education, Food and Drink, Healthcare/Medical, Holidays, Industrial, Miscellaneous, Nature, Objects, Parks/Outdoor, People, Religion, Science, Signs/Symbols, Sports/Recreation, Technology, Transportation, Vintage. (IMPORTANT: 'Travel' DOES NOT EXIST on Shutterstock! Use 'Buildings/Landmarks' or 'Parks/Outdoor' instead).
+   - Description: IF Editorial, strictly use this format: `{loc_city}, {loc_country} - {editorial_date}: <factual description>`. DO NOT use ALL CAPS for city/country/date. IF Commercial, just write the standard description.
+   - Categories: Max 2 categories separated by a comma without spaces. Strictly from official list: abstract, animals/wildlife, art, backgrounds/textures, beauty/fashion, buildings/landmarks, business/finance, celebrities, editorial, education, food and drink, healthcare/medical, holidays, industrial, miscellaneous, nature, objects, parks/outdoor, people, religion, science, signs/symbols, sports/recreation, technology, transportation, vintage. (IMPORTANT: 'travel' DOES NOT EXIST on Shutterstock! For historic/military/reenactment scenes use 'editorial,vintage' or 'editorial,people' or 'buildings/landmarks,editorial').
 4. **Pond5**:
-   - Title: strictly 40-80 chars. `[Main subject] + [Action] + [Environment] + [Type of shot]`.
-   - Description: Similar to Shutterstock but without the strict editorial prefix (though location should be mentioned).
+   - Title: strictly 40-80 characters. Formula: `[Main subject] [Action] [Environment] [Type of shot]` (e.g. `Battle of Austerlitz Reenactment Soldiers Marching Field Tvarozna`).
+   - Description: Similar to Shutterstock but without the strict editorial prefix (though event and location should be mentioned).
 5. **Dreamstime**:
    - Video Name: Short descriptive title.
-   - Description: Detailed description.
+   - Description: IF Editorial, STRICTLY follow Dreamstime official guidelines answering the 5 Ws (Who, What, Where, When, Why): `{loc_city}, {loc_country} - {editorial_date}: [Who] [What] [Where] [Why/How]`. DO NOT use ALL CAPS for city/country/date. (e.g. `{loc_city}, {loc_country} - {editorial_date}: Historical reenactment soldiers in Napoleonic military uniforms march in formation during the Battle of Austerlitz commemoration event.`). IF Commercial, just write the standard description.
    - Categories: 3 numeric codes strictly from Dreamstime official list:
      * 70: Arts & Architecture -> Landmarks
      * 71: Arts & Architecture -> Generic architecture
@@ -74,8 +95,9 @@ You are an expert Commercial Stock Metadata Optimizer. Analyze the provided film
      * 16: Nature -> Lakes and rivers
      * 146: Nature -> Landscapes
      * 98: Industries -> Transportation
+     * 108: People -> Celebrations / Events
      * (STRICT RULE: Category ID 2 DOES NOT EXIST on Dreamstime! Do NOT use 2!).
-6. **Keywords**: 25-45 highly relevant lowercase keywords, comma separated. Do not include brands if Commercial. Always include '{loc_city.lower()}, {loc_country.lower()}'.
+6. **Keywords**: 25-45 highly relevant lowercase keywords, comma separated. Always include location and event keywords: '{loc_city.lower()}, {loc_country.lower()}'. If depicting Battle of Austerlitz / Napoleonic reenactment, include 'austerlitz, battle of austerlitz, slavkov, napoleon, napoleonic, napoleonic wars, reenactment, historical reenactment, soldiers, historical uniform, period costume, military, 1805, battle, moravia'.
 
 # JSON Output Format STRICTLY:
 {{
@@ -88,7 +110,7 @@ You are an expert Commercial Stock Metadata Optimizer. Analyze the provided film
     }},
     "shutterstock": {{
         "description": "...",
-        "categories": "Transportation, Travel"
+        "categories": "editorial,vintage"
     }},
     "pond5": {{
         "title": "...",
@@ -97,28 +119,46 @@ You are an expert Commercial Stock Metadata Optimizer. Analyze the provided film
     "dreamstime": {{
         "video_name": "...",
         "description": "...",
-        "cat1": "132",
+        "cat1": "108",
         "cat2": "59",
-        "cat3": "0"
+        "cat3": "72"
     }}
 }}
 """
 
-def generate_metadata(model, filmstrip_path, video_meta):
+def generate_metadata(model, filmstrip_path, video_meta, custom_context="", force_editorial=False, max_retries=3):
     print(f"Analyzing {os.path.basename(filmstrip_path)} using Gemini...")
-    prompt = generate_prompt(video_meta)
-    try:
-        img = Image.open(filmstrip_path)
-        response = model.generate_content([prompt, img])
-        return json.loads(response.text)
-    except Exception as e:
-        print(f"Error on {filmstrip_path}: {e}")
-        return None
+    prompt = generate_prompt(video_meta, custom_context=custom_context, force_editorial=force_editorial)
+    
+    for attempt in range(max_retries):
+        try:
+            img = Image.open(filmstrip_path)
+            response = model.generate_content([prompt, img])
+            text = response.text.strip()
+            if text.startswith("```json"):
+                text = text[7:]
+            if text.startswith("```"):
+                text = text[3:]
+            if text.endswith("```"):
+                text = text[:-3]
+            text = text.strip()
+            
+            data = json.loads(text)
+            return data
+        except Exception as e:
+            wait_time = (attempt + 1) * 5
+            print(f"Attempt {attempt + 1} failed for {os.path.basename(filmstrip_path)}: {e}. Retrying in {wait_time}s...")
+            time.sleep(wait_time)
+            
+    print(f"Failed all retries for {filmstrip_path}")
+    return None
 
 def main():
     parser = argparse.ArgumentParser(description="Generate AI Stock Video Metadata using Gemini")
     parser.add_argument("--input", "-i", required=True, help="Input directory of original videos")
     parser.add_argument("--frames", "-f", default=None, help="Directory containing _temp_frames (default: <input>/_temp_frames)")
+    parser.add_argument("--force-editorial", action="store_true", help="Force all videos to Editorial category")
+    parser.add_argument("--context", "-c", default="", help="Specific event or additional context for metadata generation")
     args = parser.parse_args()
 
     base_dir = os.path.abspath(args.input)
@@ -175,12 +215,23 @@ def main():
             
         vid_meta = meta_lookup.get(orig_video, {})
         
-        metadata = generate_metadata(model, fs, vid_meta)
+        metadata = generate_metadata(model, fs, vid_meta, custom_context=args.context, force_editorial=args.force_editorial)
         if metadata:
             orig_ext = os.path.splitext(orig_video)[1]
             new_name = os.path.splitext(metadata["new_filename"])[0] + orig_ext
             new_name = re.sub(r'[^a-z0-9_.]', '', new_name.lower())
             metadata["new_filename"] = new_name
+            
+            if args.force_editorial:
+                metadata["editorial"] = True
+                loc_city = vid_meta.get("location", {}).get("city", "Unknown")
+                loc_country = vid_meta.get("location", {}).get("country", "Unknown")
+                date_rec = vid_meta.get("date_recorded", "Unknown Date")
+                ed_date = format_editorial_date(date_rec)
+                prefix = f"{loc_city.upper()}, {loc_country.upper()} - {ed_date}: "
+                shutter_desc = metadata.get("shutterstock", {}).get("description", "")
+                if not shutter_desc.startswith(f"{loc_city.upper()}, {loc_country.upper()}"):
+                    metadata.setdefault("shutterstock", {})["description"] = prefix + shutter_desc
             
             metadata["original_filename"] = orig_video
             results.append(metadata)
@@ -227,13 +278,31 @@ def main():
         print("No files required renaming.")
     
     # CSV Generation
+    def sanitize_adobe_title(title):
+        t = re.sub(r'[,.;:!?]', ' ', title or '')
+        t = re.sub(r'\s+', ' ', t).strip()
+        if len(t) > 70:
+            t = t[:70].rsplit(' ', 1)[0]
+        return t
+
+    def sanitize_pond5_title(title):
+        t = (title or '').strip()
+        if len(t) > 80:
+            t = t[:80].rsplit(' ', 1)[0]
+        if len(t) < 40:
+            t = (t + " 4k stock video footage").strip()
+            if len(t) > 80:
+                t = t[:80]
+        return t
+
     # 1. Adobe
     adobe_csv = os.path.join(out_dir, "adobe_stock_video.csv")
     with open(adobe_csv, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(["Filename", "Title", "Keywords", "Category", "Releases"])
         for r in results:
-            w.writerow([r["new_filename"], r["adobe"]["title"], r["keywords"], r["adobe"]["category"], ""])
+            clean_title = sanitize_adobe_title(r["adobe"]["title"])
+            w.writerow([r["new_filename"], clean_title, r["keywords"], r["adobe"]["category"], ""])
             
     # Helper to clean and validate Shutterstock categories
     VALID_SHUTTERSTOCK_CATS = {
@@ -304,6 +373,16 @@ def main():
             valid_cats = ["buildings/landmarks"]
         return ",".join(valid_cats[:2])
 
+    # Helper to clean and format editorial descriptions without ALL CAPS
+    def get_clean_editorial_description(desc, city, country, date_recorded):
+        ed_date = format_editorial_date(date_recorded)
+        dateline = f"{city}, {country} - {ed_date}: "
+        # Strip any existing dateline (ALL CAPS or Mixed Case)
+        clean_desc = re.sub(r'^[A-Za-z\s/,-]+-\s*[A-Za-z]+\s+\d{1,2},\s*\d{4}:\s*', '', desc or '').strip()
+        if not clean_desc:
+            clean_desc = desc or ''
+        return dateline + clean_desc
+
     # 2. Shutterstock
     shutter_csv = os.path.join(out_dir, "shutterstock_video.csv")
     with open(shutter_csv, "w", newline="", encoding="utf-8") as f:
@@ -312,8 +391,16 @@ def main():
         for r in results:
             ed = "yes" if r["editorial"] else "no"
             shutter_meta = r.get("shutterstock", {})
+            desc = shutter_meta.get("description", "")
+            if r["editorial"]:
+                orig_file = r.get("original_filename", "")
+                loc_info = meta_lookup.get(orig_file, {}).get("location", {})
+                city = loc_info.get("city", "Tvarozna")
+                country = loc_info.get("country", "Czech Republic")
+                dt_str = meta_lookup.get(orig_file, {}).get("date_recorded", "")
+                desc = get_clean_editorial_description(desc, city, country, dt_str)
             cats = sanitize_shutterstock_categories(shutter_meta.get("categories", ""))
-            w.writerow([r["new_filename"], shutter_meta.get("description", ""), r["keywords"], cats, ed, "no", "no"])
+            w.writerow([r["new_filename"], desc, r["keywords"], cats, ed, "no", "no"])
             
     # 3. Pond5
     pond5_csv = os.path.join(out_dir, "pond5_video.csv")
@@ -322,7 +409,8 @@ def main():
         w.writerow(["originalfilename", "title", "description", "keywords", "editorial"])
         for r in results:
             ed = "yes" if r["editorial"] else "no"
-            w.writerow([r["new_filename"], r["pond5"]["title"], r["pond5"]["description"], r["keywords"], ed])
+            p5_title = sanitize_pond5_title(r["pond5"]["title"])
+            w.writerow([r["new_filename"], p5_title, r["pond5"]["description"], r["keywords"], ed])
             
     # 4. Dreamstime
     dreamstime_csv = os.path.join(out_dir, "dreamstime_video.csv")
@@ -332,6 +420,23 @@ def main():
         for r in results:
             ed_val = "1" if r["editorial"] else "0.0" 
             d = r.get("dreamstime", {})
+            desc = d.get("description", "")
+            
+            # For Editorial on Dreamstime, strictly follow official 5 Ws format with dateline (not all caps)
+            if r["editorial"]:
+                orig_file = r.get("original_filename", "")
+                loc_info = meta_lookup.get(orig_file, {}).get("location", {})
+                city = loc_info.get("city", "Tvarozna")
+                country = loc_info.get("country", "Czech Republic")
+                dt_str = meta_lookup.get(orig_file, {}).get("date_recorded", "")
+                
+                # If Dreamstime description is too short, take the detailed shutterstock description base
+                base_desc = desc
+                shutter_desc = r.get("shutterstock", {}).get("description", "")
+                if len(base_desc) < 30 and len(shutter_desc) >= 30:
+                    base_desc = shutter_desc
+                desc = get_clean_editorial_description(base_desc, city, country, dt_str)
+                
             c1 = str(d.get("cat1", "132"))
             c2 = str(d.get("cat2", "59"))
             c3 = str(d.get("cat3", "0"))
@@ -341,7 +446,7 @@ def main():
             if c2 == "2": c2 = "70"
             if c3 == "2": c3 = "70"
             
-            w.writerow([r["new_filename"], d.get("video_name", ""), d.get("description", ""), c1, c2, c3, f'"{r["keywords"]}"', "0.0", "0.0", "0.0", ed_val, "", ""])
+            w.writerow([r["new_filename"], d.get("video_name", ""), desc, c1, c2, c3, r["keywords"], "0.0", "0.0", "0.0", ed_val, "", ""])
             
     print(f"CSVs generated in {out_dir}")
 
