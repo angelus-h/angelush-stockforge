@@ -1,0 +1,25 @@
+# Python dependencies
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment
+.env
+.venv
+env/
+venv/
+ENV/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# App specific
+_temp_frames/
+_metadata/
+*.mp4
+*.mov
+*.mkv
+*.jpg
+*.jpeg
+*.png
