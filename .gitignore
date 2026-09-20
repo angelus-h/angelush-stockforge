@@ -29,7 +29,12 @@ stock-video-workflow/_temp_frames/
 stock-video-workflow/_metadata/
 stock-metadata/results/
 pod-workflow/results/
+pod_workflow/results/
+dashboard/uploads/
+dashboard/temp/
 
 # Ignore generated output files in root or specific folders
 *.csv
 !*/templates/*.csv
+*.db
+

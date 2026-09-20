@@ -1,50 +1,86 @@
-# Stock & POD Automation Monorepo
+# Angelus H. StockForge Monorepo
 
-Welcome to the central repository for automated Stock Photography, Stock Video, and Print-on-Demand (POD) workflows. This repository contains various specialized tools designed to leverage AI (like Google's Gemini) and automated scripts to process raw media, generate commercial metadata, and prepare files for upload to microstock agencies and POD platforms.
-
-## 📂 Repository Structure
-
-The repository is organized into discrete workflow sub-projects:
-
-### 1. `stock-video-workflow/`
-The most advanced workflow for **Stock Video Footage**. 
-- Extracts representative keyframes (10%, 25%, 50%, 75%, 90%) from MP4/MOV files.
-- Reads embedded GPS metadata.
-- Uses AI to classify content as Editorial vs. Commercial (e.g., detecting recognizable faces or brands).
-- **Auto-renames raw video files** directly on disk to clean, descriptive names (`<location>_<subject>_<shot>.<ext>`).
-- Generates platform-specific metadata CSVs for **Adobe Stock, Shutterstock, Pond5, and Dreamstime**.
-- *[Read the detailed documentation inside the folder]*
-
-### 2. `stock-workflow/`
-Workflow dedicated to **Stock Photography**.
-- Includes scripts for thumbnail generation (`create_thumbnails.py`).
-- Generates required CSV and XLS metadata sheets (using provided templates) for major photography agencies.
-
-### 3. `pod-workflow/`
-Workflow tailored for **Print-on-Demand (POD)** platforms like Fine Art America (FAA).
-- Contains highly specialized AI prompts to generate artistic, emotive, and SEO-friendly titles and descriptions.
-- `gemini_metadata_generator.py` processes raw image datasets into rich JSON and CSV metadata formatted for POD.
-- Includes a comprehensive sales strategy guide (`POD_SALES_STRATEGY_GUIDE.md`).
-
-### 4. `stock-metadata/`
-A smaller, core utility module for basic image analysis.
-- `analyze_images.py`: A lightweight script for analyzing local image datasets before metadata generation.
-
-## ⚙️ Quick Start
-
-**Prerequisites:**
-- Python 3.8+
-- `ffmpeg` (Required for video processing)
-- `google-generativeai`, `Pillow`, `opencv-python` (See individual `requirements.txt` files)
-
-**Environment Setup:**
-Most AI scripts require a Google Gemini API key. Export it in your shell:
-```bash
-export GEMINI_API_KEY="your_api_key_here"
-```
-
-## 🛡️ Git & Ignored Files
-This repository uses a global `.gitignore` to prevent huge media files (`.mp4`, `.mov`, `.jpg`) and temporary processing directories (`_temp_frames`, `results`) from being uploaded to GitHub. You can safely run the scripts inside these folders; generated media and raw outputs will stay local to your machine.
+A specialized, high-performance monorepo for automated **Stock Photography, Stock Video, and Print-on-Demand (POD)** production. Designed for fine art landscape photographers, stock contributors, and digital creators to streamline technical quality control, metadata generation, and multi-platform distribution.
 
 ---
-*Maintained for automated, high-volume stock portfolio generation.*
+
+## 📂 Repository Architecture
+
+```text
+angelush-stockforge/
+├── dashboard/                  # StockForge Studio — Streamlit UI, local/cloud AI, QC, FTP & Clipboard Hub
+├── pod_workflow/               # Print-on-Demand pipelines (Art Heroes, Displate, Fine Art America)
+│   └── ArtHeroes/              # Art Heroes ExifTool embedding scripts and official guidelines
+├── stock-metadata/             # Technical Quality Analyzer (OpenCV dust, sharpness, exposure, dead pixels)
+├── stock-workflow/             # Microstock photo processing & metadata spreadsheet generators
+├── stock-video-workflow/       # Stock video keyframe extraction, editorial audit & multi-agency CSVs
+└── PROJECT_CONTEXT.md          # Global AI agent context and platform requirements
+```
+
+---
+
+## 🌟 Primary Workflows & Modules
+
+### 1. 🎛️ `dashboard/` — StockForge Studio
+Visual workstation built on Streamlit for end-to-end processing:
+- **Dual AI Engine:** Use local Ollama (`llama3.2`) for 100% private, free processing or Google Gemini Flash for cloud speed.
+- **Technical Quality Analyzer:** Live image quality inspection (sharpness scoring, sensor dust detection, dead pixel count, visual defect overlay).
+- **Two-Tier Context System:** Series-level folder context and per-frame landmark notes with clean prompt defaults (no forced pre-filled text).
+- **Platform Modules:**
+  - **Art Heroes:** Mood + Subject + Room formula, 3-paragraph sales letters, strictly TOP 12 keywords, one-click ExifTool embedding.
+  - **Displate:** Catchy titles (< 60 chars), strictly 450–470 character descriptions with live length counter, up to 20 search tags, CSV export.
+- **One-Click Clipboard Hub:** Native browser clipboard buttons for instant web form pasting.
+- **Remote FTP / FTPS Uploader:** Direct batch transmission to remote agency storage with progress tracking.
+
+### 2. 🎨 `pod_workflow/` — Print-on-Demand Pipelines
+- **Art Heroes / Werk aan de Muur:** Complete ExifTool batch injection scripts (`apply_art_heroes_metadata.py`) ensuring clean UTF-8 headers across EXIF, IPTC, and XMP while stripping raw camera bloat (`XMP-crs`).
+- **Fine Art America (FAA) / Pixels.com:** Emotive 3-paragraph copy generation with strict < 500 character keyword bounds.
+- **Displate:** Metal poster copy targeting modern interior and industrial decor collectors.
+
+### 3. 🔬 `stock-metadata/` — Technical Quality Analyzer
+Automated computer-vision quality gate for high-resolution photography:
+- Detects dust candidates, sensor spots, and dead/hot pixels across uniform areas (e.g. skies).
+- Modified Laplacian variance metric for resolution-independent focus analysis.
+- Generates diagnostic mask images for rapid visual review before submission.
+
+### 4. 📸 `stock-workflow/` — Photography Automation
+- Multi-agency metadata generation (Alamy, Vecteezy, etc.).
+- Batch thumbnail generation and Excel/CSV catalog creation.
+
+### 5. 🎬 `stock-video-workflow/` — Stock Video Footage
+- Automated video frame extraction (10%, 25%, 50%, 75%, 90% keyframes) via FFmpeg.
+- Embedded GPS reading and automated file renaming (`<location>_<subject>_<shot>.<ext>`).
+- Editorial vs. Commercial classification.
+- CSV export for Adobe Stock, Shutterstock, Pond5, and Dreamstime.
+
+---
+
+## ⚙️ Prerequisites & Setup
+
+### Environment Setup
+- **Python 3.10+** (Python 3.11 / 3.12 / 3.14 tested)
+- **External Tools:**
+  - [ExifTool](https://exiftool.org/) (required for JPEG/TIFF metadata embedding)
+  - [FFmpeg](https://ffmpeg.org/) (required for video workflows)
+  - [Ollama](https://ollama.ai/) (optional, for local LLM inference)
+
+### Installation
+```bash
+# Clone the repository
+git clone https://github.com/your-username/angelush-stockforge.git
+cd angelush-stockforge
+
+# Install dashboard requirements
+pip install -r dashboard/requirements.txt
+```
+
+### Quick Run
+Launch the unified dashboard:
+```bash
+streamlit run dashboard/app.py
+```
+
+---
+
+## 🛡️ Git & Safe Development
+All heavy media files (`.jpg`, `.raw`, `.mp4`, etc.), temporary processing folders (`_temp_frames`, `results`), and local SQLite database files (`*.db`) are excluded via `.gitignore`. Your local working catalogs and credentials remain safe on your local workstation.
