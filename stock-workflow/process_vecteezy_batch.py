@@ -12,6 +12,7 @@ import csv
 import json
 import shutil
 import time
+import argparse
 from PIL import Image
 from google import genai
 from google.genai import types
@@ -78,9 +79,11 @@ def sanitize_keywords(keywords_raw):
     seen = set()
     for kw in raw_list:
         k = kw.strip().lower()
-        k = re.sub(r"[^\w\s-]", "", k)
+        # Vecteezy does not permit hyphens or special characters in keywords - replace with space
+        k = k.replace("-", " ").replace("_", " ")
+        k = re.sub(r"[^\w\s]", "", k)
         k = re.sub(r"\s+", " ", k).strip()
-        if not k:
+        if not k or len(k) < 2:
             continue
         # Check against prohibited words
         is_prohibited = any(pw in k.split() for pw in PROHIBITED_WORDS)
@@ -89,19 +92,35 @@ def sanitize_keywords(keywords_raw):
         if k not in seen:
             seen.add(k)
             cleaned.append(k)
+
+    # Check for people presence taxonomy; if no person-related tag, add "no people"
+    people_terms = {"person", "people", "man", "woman", "girl", "boy", "child", "crowd", "face", "portrait", "human"}
+    has_people = any(any(pt in kw.split() for pt in people_terms) for kw in cleaned)
+    if not has_people and "no people" not in seen and len(cleaned) < 30:
+        seen.add("no people")
+        cleaned.append("no people")
     
-    # Vecteezy requires strictly between 10 and 30 keywords
+    # Vecteezy requires strictly between 10 and 30 keywords (recommends 20-30)
     if len(cleaned) > 30:
         cleaned = cleaned[:30]
     return cleaned
 
-def clean_metadata_response(meta, filename):
+def clean_metadata_response(meta, filename, default_license="pro"):
     title = meta.get("title", "").strip()
     title = clean_text_from_prohibitions(title)
     # Remove file extensions or numeric codes from title
     title = re.sub(r"\.(jpe?g|png|tiff?|eps|ai)\b", "", title, flags=re.IGNORECASE)
     title = re.sub(r"#\d+", "", title).strip()
     title = re.sub(r"\s+", " ", title).strip()
+
+    # Vecteezy requires 3 to 8 words, maximum 200 characters
+    words = title.split()
+    if len(words) > 8:
+        # Keep first 8 words
+        title = " ".join(words[:8]).rstrip(".,- ")
+    if title:
+        # Sentence casing
+        title = title[0].upper() + title[1:]
 
     desc = meta.get("description", "").strip()
     desc = clean_text_from_prohibitions(desc)
@@ -111,11 +130,15 @@ def clean_metadata_response(meta, filename):
 
     keywords = sanitize_keywords(meta.get("comma_separated_keywords") or meta.get("keywords", ""))
     
+    raw_license = str(meta.get("license") or default_license).lower().strip()
+    license_type = raw_license if raw_license in ["pro", "free", "editorial"] else default_license
+    
     return {
         "filename": filename,
         "title": title,
         "description": desc,
         "keywords": ", ".join(keywords),
+        "license": license_type,
         "keyword_count": len(keywords)
     }
 
@@ -156,11 +179,20 @@ The filename must be exactly: "{filename}"
     return json.loads(raw_text)
 
 def main():
-    target_dir = r"G:\upload_temp"
+    parser = argparse.ArgumentParser(description="Process images and generate compliant Vecteezy CSV metadata.")
+    parser.add_argument("--target-dir", default=r"G:\upload_temp", help="Target directory for image copies and CSV output")
+    parser.add_argument("--license", default="pro", choices=["pro", "free", "editorial"], help="Default Vecteezy license (pro, free, editorial)")
+    parser.add_argument("--strip-ext", action="store_true", help="Omit file extension in CSV Filename column (required for SFTP upload)")
+    parser.add_argument("--csv-only", action="store_true", help="Regenerate CSV from existing vecteezy_metadata.json without calling AI")
+    args = parser.parse_args()
+
+    target_dir = args.target_dir
     os.makedirs(target_dir, exist_ok=True)
     
     print(f"Target directory: {target_dir}", flush=True)
-    print(f"Total images to process: {len(IMAGES_CONFIG)}", flush=True)
+    print(f"Default license: {args.license}", flush=True)
+    if args.strip_ext:
+        print("[MODE] SFTP Compatibility: File extensions will be stripped in CSV Filename column.", flush=True)
     
     json_path = os.path.join(target_dir, "vecteezy_metadata.json")
     csv_path = os.path.join(target_dir, "vecteezy.csv")
@@ -180,6 +212,30 @@ def main():
             print(f"Could not load existing metadata: {e}", flush=True)
             results = {}
 
+    def write_vecteezy_csv(data_dict):
+        with open(csv_path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(["Filename", "Title", "Description", "Keywords", "License"])
+            for r in data_dict.values():
+                fn = r["filename"]
+                if args.strip_ext:
+                    fn = os.path.splitext(fn)[0]
+                lic = str(r.get("license") or args.license).lower()
+                writer.writerow([fn, r["title"], r["description"], r["keywords"], lic])
+
+    if args.csv_only:
+        print("Regenerating CSV from existing metadata...", flush=True)
+        # Re-clean existing entries to comply with Vecteezy 3-8 word title & keyword restrictions
+        for fn, r in list(results.items()):
+            cleaned = clean_metadata_response(r, fn, default_license=args.license)
+            results[fn] = cleaned
+        with open(json_path, "w", encoding="utf-8") as f:
+            json.dump(list(results.values()), f, indent=2, ensure_ascii=False)
+        write_vecteezy_csv(results)
+        print(f"[SUCCESS] Updated Vecteezy CSV: {csv_path}", flush=True)
+        return
+
+    print(f"Total images configured: {len(IMAGES_CONFIG)}", flush=True)
     system_instruction = load_system_prompt()
     client = genai.Client()
     
@@ -190,17 +246,24 @@ def main():
         print(f"\n[{idx}/{len(IMAGES_CONFIG)}] Processing: {filename}", flush=True)
         
         # 1. Copy file to target directory
-        if not os.path.exists(dest_path) or os.path.getsize(dest_path) != os.path.getsize(src_path):
-            print(f"  Copying {src_path} -> {dest_path}", flush=True)
-            shutil.copy2(src_path, dest_path)
+        if os.path.exists(src_path):
+            if not os.path.exists(dest_path) or os.path.getsize(dest_path) != os.path.getsize(src_path):
+                print(f"  Copying {src_path} -> {dest_path}", flush=True)
+                shutil.copy2(src_path, dest_path)
+            else:
+                print(f"  Already copied: {filename}", flush=True)
         else:
-            print(f"  Already copied: {filename}", flush=True)
+            print(f"  [NOTE] Source file not accessible at {src_path}", flush=True)
 
         # Skip Gemini if already processed
         if filename in results:
             print(f"  Already processed metadata for {filename}", flush=True)
             continue
             
+        if not os.path.exists(src_path):
+            print(f"  Cannot generate metadata because source image is missing.", flush=True)
+            continue
+
         # 2. Get thumbnail for Gemini
         thumb_bytes = get_thumbnail_bytes(src_path)
         
@@ -218,7 +281,7 @@ def main():
             print(f"  ERROR: Could not generate metadata for {filename}", flush=True)
             continue
             
-        cleaned = clean_metadata_response(meta, filename)
+        cleaned = clean_metadata_response(meta, filename, default_license=args.license)
         
         # Check keyword count
         if cleaned["keyword_count"] < 10:
@@ -226,7 +289,7 @@ def main():
             kws = [k.strip() for k in cleaned["keywords"].split(",") if k.strip()]
             extra = ["outdoor", "daylight", "scenic", "heritage", "tourism", "destination", "travel photography"]
             for ek in extra:
-                if len(kws) >= 15:
+                if len(kws) >= 20:
                     break
                 if ek not in kws:
                     kws.append(ek)
@@ -241,11 +304,7 @@ def main():
         with open(json_path, "w", encoding="utf-8") as f:
             json.dump(list(results.values()), f, indent=2, ensure_ascii=False)
             
-        with open(csv_path, "w", newline="", encoding="utf-8") as f:
-            writer = csv.writer(f)
-            writer.writerow(["Filename", "Title", "Description", "Keywords"])
-            for r in results.values():
-                writer.writerow([r["filename"], r["title"], r["description"], r["keywords"]])
+        write_vecteezy_csv(results)
 
     print(f"\n[SUCCESS] Generated Vecteezy CSV: {csv_path}", flush=True)
     print(f"[SUCCESS] Saved metadata JSON: {json_path}", flush=True)

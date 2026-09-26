@@ -17,6 +17,10 @@ class Anomaly:
     description: str
     confidence: float
     persistent: bool = False
+    score: float = 0.0
+    in_sky: bool = False
+    radius_px: float = 0.0
+    seen_count: int = 1
 
 @dataclass
 class DetectorResult:

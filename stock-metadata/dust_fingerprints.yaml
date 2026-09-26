@@ -1,972 +1,2623 @@
-- x: 0.9893
-  y: 0.9956
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.137998'
-- x: 0.6343
-  y: 0.9941
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.138694'
-- x: 0.6187
-  y: 0.9927
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.139367'
-- x: 0.0698
-  y: 0.7474
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.139994'
-- x: 0.002
-  y: 0.7129
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.140700'
-- x: 0.1328
-  y: 0.6593
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.141507'
-- x: 0.1758
+- id: 1
+  x: 0.1055
+  y: 0.0624
+  observations:
+  - image_path: G:\Photos\20240524_152403.jpg
+    score: 0.679
+    timestamp: '2026-09-26T11:38:24.208074'
+- id: 2
+  x: 0.375
+  y: 0.9978
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.433831'
+- id: 3
+  x: 0.033
+  y: 0.9893
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.437378'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5522.jpg"
+    score: 0.681
+    timestamp: '2026-09-26T17:18:52.749332'
+- id: 4
+  x: 0.5269
+  y: 0.9971
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.441023'
+- id: 5
+  x: 0.1265
+  y: 0.9919
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.444547'
+- id: 6
+  x: 0.7632
+  y: 0.9912
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.448053'
+- id: 7
+  x: 0.5586
+  y: 0.989
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.451486'
+- id: 8
+  x: 0.5283
+  y: 0.9824
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.455673'
+- id: 9
+  x: 0.7632
+  y: 0.9787
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.459603'
+- id: 10
+  x: 0.2417
+  y: 0.9772
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.463672'
+- id: 11
+  x: 0.6113
+  y: 0.964
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.468028'
+- id: 12
+  x: 0.5425
+  y: 0.9633
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.472707'
+- id: 13
+  x: 0.7134
+  y: 0.9552
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.477911'
+- id: 14
+  x: 0.6499
+  y: 0.9471
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.483174'
+- id: 15
+  x: 0.5703
+  y: 0.9435
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.490092'
+- id: 16
+  x: 0.1177
+  y: 0.9185
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.496331'
+- id: 17
+  x: 0.1216
+  y: 0.9134
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.502194'
+- id: 18
+  x: 0.21
+  y: 0.9119
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.508533'
+- id: 19
+  x: 0.4004
+  y: 0.9075
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.515613'
+- id: 20
+  x: 0.9321
+  y: 0.8987
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.522917'
+- id: 21
+  x: 0.9976
+  y: 0.8972
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.529380'
+- id: 22
+  x: 0.2827
+  y: 0.8943
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.535972'
+- id: 23
+  x: 0.4829
+  y: 0.8957
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.543029'
+- id: 24
+  x: 0.0542
+  y: 0.8869
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.551177'
+- id: 25
+  x: 0.5708
+  y: 0.8862
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.559251'
+- id: 26
+  x: 0.2642
+  y: 0.8678
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.569286'
+- id: 27
+  x: 0.8315
+  y: 0.8671
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.578261'
+- id: 28
+  x: 0.9556
+  y: 0.8561
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.586236'
+- id: 29
+  x: 0.9155
+  y: 0.8554
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.595640'
+- id: 30
+  x: 0.0308
+  y: 0.8561
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.604474'
+- id: 31
+  x: 0.3047
+  y: 0.8532
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.614217'
+- id: 32
+  x: 0.0107
+  y: 0.8517
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.624283'
+- id: 33
+  x: 0.437
+  y: 0.8458
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.633424'
+- id: 34
+  x: 0.3848
+  y: 0.8465
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.643826'
+- id: 35
+  x: 0.1729
+  y: 0.8429
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.653719'
+- id: 36
+  x: 0.4634
+  y: 0.837
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.664001'
+- id: 37
+  x: 0.2383
+  y: 0.8355
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.674318'
+- id: 38
+  x: 0.3726
+  y: 0.8348
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.684217'
+- id: 39
+  x: 0.1206
+  y: 0.8355
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.696578'
+- id: 40
+  x: 0.001
+  y: 0.8282
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.708286'
+- id: 41
+  x: 0.4453
+  y: 0.8275
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.720185'
+- id: 42
+  x: 0.3843
+  y: 0.8275
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.732055'
+- id: 43
+  x: 0.3936
+  y: 0.826
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.743187'
+- id: 44
+  x: 0.3994
+  y: 0.826
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.756142'
+- id: 45
+  x: 0.9033
+  y: 0.8253
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.767601'
+- id: 46
+  x: 0.0615
+  y: 0.8216
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.781732'
+- id: 47
+  x: 0.208
+  y: 0.8209
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.793775'
+- id: 48
+  x: 0.1309
+  y: 0.8186
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.808679'
+- id: 49
+  x: 0.0059
+  y: 0.8186
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.821819'
+- id: 50
+  x: 0.1094
+  y: 0.8172
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.834170'
+- id: 51
+  x: 0.98
+  y: 0.8062
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.847807'
+- id: 52
+  x: 0.3325
+  y: 0.8032
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.862642'
+- id: 53
+  x: 0.4927
+  y: 0.8032
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.876327'
+- id: 54
+  x: 0.981
+  y: 0.8018
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.891436'
+- id: 55
+  x: 0.3848
+  y: 0.7878
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.905363'
+- id: 56
+  x: 0.0356
+  y: 0.7746
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.918839'
+- id: 57
+  x: 0.9902
+  y: 0.7724
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.934103'
+- id: 58
+  x: 0.0117
+  y: 0.7709
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.949252'
+- id: 59
+  x: 0.8828
+  y: 0.7651
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.967825'
+- id: 60
+  x: 0.9785
+  y: 0.7651
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.984425'
+- id: 61
+  x: 0.9697
+  y: 0.7606
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:46.999344'
+- id: 62
+  x: 0.8838
+  y: 0.7577
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.014153'
+- id: 63
+  x: 0.4512
+  y: 0.7555
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.030733'
+- id: 64
+  x: 0.9766
+  y: 0.7533
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.048188'
+- id: 65
+  x: 0.0439
+  y: 0.7438
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.064023'
+- id: 66
+  x: 0.9524
+  y: 0.747
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.081218'
+  - image_path: "F:\\K\xE9pek\\Hrad Pernstejn\\final\\IMGP0002.jpg"
+    score: 0.733
+    timestamp: '2026-09-26T13:50:53.726718'
+- id: 67
+  x: 0.9897
+  y: 0.7357
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.097730'
+- id: 68
+  x: 0.7856
+  y: 0.7151
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.114759'
+- id: 69
+  x: 0.9385
+  y: 0.6887
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.132563'
+- id: 70
+  x: 0.9976
+  y: 0.6806
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.150882'
+- id: 71
+  x: 0.7026
+  y: 0.6703
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.168084'
+- id: 72
+  x: 0.9473
+  y: 0.6689
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.188081'
+- id: 73
+  x: 0.3574
+  y: 0.6674
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.209400'
+- id: 74
+  x: 0.9556
+  y: 0.6659
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.229692'
+- id: 75
+  x: 0.1377
   y: 0.6579
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.142405'
-- x: 0.1709
-  y: 0.6373
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.143434'
-- x: 0.0596
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.247497'
+- id: 76
+  x: 0.8955
+  y: 0.6571
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.266157'
+- id: 77
+  x: 0.2363
+  y: 0.6542
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.292014'
+- id: 78
+  x: 0.1499
+  y: 0.6498
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.315937'
+- id: 79
+  x: 0.9458
+  y: 0.638
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.335533'
+- id: 80
+  x: 0.3022
+  y: 0.638
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.356046'
+- id: 81
+  x: 0.5605
   y: 0.6329
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.144576'
-- x: 0.1475
-  y: 0.6322
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.145836'
-- x: 0.0874
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.379641'
+- id: 82
+  x: 0.8354
+  y: 0.6292
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.401513'
+- id: 83
+  x: 0.3853
+  y: 0.6314
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.422012'
+- id: 84
+  x: 0.7837
+  y: 0.6263
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.445348'
+- id: 85
+  x: 0.3672
   y: 0.6256
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.147225'
-- x: 0.0269
-  y: 0.6233
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.148734'
-- x: 0.3325
-  y: 0.6256
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.150375'
-- x: 0.0698
-  y: 0.6043
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.152156'
-- x: 0.2544
-  y: 0.6006
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.154028'
-- x: 0.2002
-  y: 0.5918
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.156053'
-- x: 0.5688
-  y: 0.5749
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.158121'
-- x: 0.5845
-  y: 0.5712
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.160291'
-- x: 0.3599
-  y: 0.5727
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.162604'
-- x: 0.4668
-  y: 0.5624
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.165022'
-- x: 0.3135
-  y: 0.5367
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.167586'
-- x: 0.7021
-  y: 0.536
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.170286'
-- x: 0.9277
-  y: 0.5352
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.173070'
-- x: 0.4585
-  y: 0.5389
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.175919'
-- x: 0.5977
-  y: 0.5286
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.178881'
-- x: 0.0254
-  y: 0.5235
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.181981'
-- x: 0.6475
-  y: 0.5213
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.185266'
-- x: 0.561
-  y: 0.5073
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.188643'
-- x: 0.2847
-  y: 0.5095
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.192079'
-- x: 0.125
-  y: 0.5022
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.195726'
-- x: 0.8125
-  y: 0.5
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.199765'
-- x: 0.625
-  y: 0.4978
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.203695'
-- x: 0.0117
-  y: 0.4897
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.207650'
-- x: 0.8672
-  y: 0.4927
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.211696'
-- x: 0.8198
-  y: 0.4816
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.215843'
-- x: 0.9751
-  y: 0.4765
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.220071'
-- x: 0.293
-  y: 0.4765
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.224456'
-- x: 0.0659
-  y: 0.4743
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.229054'
-- x: 0.1069
-  y: 0.467
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.233688'
-- x: 0.604
-  y: 0.4604
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.238533'
-- x: 0.3423
-  y: 0.4589
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.243439'
-- x: 0.2188
-  y: 0.4545
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.248440'
-- x: 0.3394
-  y: 0.4457
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.253540'
-- x: 0.3594
-  y: 0.4413
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.258780'
-- x: 0.0786
-  y: 0.4391
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.264248'
-- x: 0.4526
-  y: 0.4361
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.269894'
-- x: 0.9312
-  y: 0.4295
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.275437'
-- x: 0.3877
-  y: 0.4207
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.281130'
-- x: 0.2993
-  y: 0.4207
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.287039'
-- x: 0.3716
-  y: 0.4126
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.293061'
-- x: 0.1245
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.465710'
+- id: 86
+  x: 0.5498
+  y: 0.6226
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.487672'
+- id: 87
+  x: 0.313
+  y: 0.6189
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.510671'
+- id: 88
+  x: 0.7251
+  y: 0.6109
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.534529'
+- id: 89
+  x: 0.6826
+  y: 0.6013
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.555328'
+- id: 90
+  x: 0.5029
+  y: 0.591
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.576266'
+- id: 91
+  x: 0.9526
+  y: 0.5859
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.598827'
+- id: 92
+  x: 0.8037
+  y: 0.5815
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.623347'
+- id: 93
+  x: 0.7661
+  y: 0.5661
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.651247'
+- id: 94
+  x: 0.4634
+  y: 0.5646
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.677486'
+- id: 95
+  x: 0.7505
+  y: 0.5558
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.701855'
+- id: 96
+  x: 0.436
+  y: 0.5492
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.723888'
+- id: 97
+  x: 0.6362
+  y: 0.547
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.747409'
+- id: 98
+  x: 0.47
+  y: 0.5342
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.770364'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5522.jpg"
+    score: 0.719
+    timestamp: '2026-09-26T17:18:52.987496'
+- id: 99
+  x: 0.5737
+  y: 0.5272
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.794975'
+- id: 100
+  x: 0.5962
+  y: 0.5176
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.818161'
+- id: 101
+  x: 0.5356
+  y: 0.5169
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.842107'
+- id: 102
+  x: 0.802
+  y: 0.496
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.864977'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5584.jpg"
+    score: 0.699
+    timestamp: '2026-09-26T17:19:28.813812'
+- id: 103
+  x: 0.813
+  y: 0.4883
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.890650'
+- id: 104
+  x: 0.8398
+  y: 0.4809
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.915265'
+- id: 105
+  x: 0.2559
+  y: 0.4222
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.940778'
+- id: 106
+  x: 0.1182
   y: 0.4068
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.299194'
-- x: 0.9858
-  y: 0.4023
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.305327'
-- x: 0.0786
-  y: 0.3957
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.311735'
-- x: 0.0571
-  y: 0.3943
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.318187'
-- x: 0.1411
-  y: 0.3693
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.324920'
-- x: 0.6528
-  y: 0.3634
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.331604'
-- x: 0.9863
-  y: 0.3539
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.338503'
-- x: 0.3071
-  y: 0.3517
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.345353'
-- x: 0.0278
-  y: 0.3488
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.352276'
-- x: 0.793
-  y: 0.348
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.359355'
-- x: 0.1123
-  y: 0.3385
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.366392'
-- x: 0.8242
-  y: 0.3186
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.373547'
-- x: 0.9829
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.966191'
+- id: 107
+  x: 0.3081
+  y: 0.395
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:47.991666'
+- id: 108
+  x: 0.293
+  y: 0.3884
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.016864'
+  - image_path: "F:\\K\xE9pek\\Namest Nad Oslavou\\final\\IMGP1325.JPG"
+    score: 0.668
+    timestamp: '2026-09-26T17:51:27.241276'
+- id: 109
+  x: 0.874
+  y: 0.3921
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.041783'
+- id: 110
+  x: 0.2773
+  y: 0.3899
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.066611'
+- id: 111
+  x: 0.5684
+  y: 0.3825
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.094291'
+- id: 112
+  x: 0.5303
+  y: 0.359
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.119729'
+- id: 113
+  x: 0.3091
+  y: 0.3554
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.146810'
+- id: 114
+  x: 0.2464
+  y: 0.3333
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.174637'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5580.jpg"
+    score: 0.667
+    timestamp: '2026-09-26T17:19:25.249159'
+- id: 115
+  x: 0.2139
+  y: 0.3341
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.200982'
+- id: 116
+  x: 0.3706
+  y: 0.3319
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.235471'
+- id: 117
+  x: 0.1885
+  y: 0.3348
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.261954'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5580.jpg"
+    score: 0.684
+    timestamp: '2026-09-26T17:19:25.120758'
+- id: 118
+  x: 0.356
+  y: 0.3209
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.292644'
+- id: 119
+  x: 0.8652
+  y: 0.3194
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.319431'
+- id: 120
+  x: 0.1611
+  y: 0.3179
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.349064'
+- id: 121
+  x: 0.874
   y: 0.3113
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.381149'
-- x: 0.3247
-  y: 0.3054
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.389849'
-- x: 0.9658
-  y: 0.2988
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.397680'
-- x: 0.6709
-  y: 0.2988
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.405696'
-- x: 0.0347
-  y: 0.2974
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.413661'
-- x: 0.0601
-  y: 0.2871
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.422815'
-- x: 0.0015
-  y: 0.2283
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.431459'
-- x: 0.7666
-  y: 0.2166
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.440009'
-- x: 0.2798
-  y: 0.2078
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.448498'
-- x: 0.8447
-  y: 0.2034
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.457005'
-- x: 0.4077
-  y: 0.1836
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.465788'
-- x: 0.5625
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.377701'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5573.jpg"
+    score: 0.755
+    timestamp: '2026-09-26T17:19:13.280685'
+- id: 122
+  x: 0.5337
+  y: 0.3106
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.407730'
+- id: 123
+  x: 0.3667
+  y: 0.3064
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.438071'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5565.jpg"
+    score: 0.734
+    timestamp: '2026-09-26T17:19:06.493138'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5578.jpg"
+    score: 0.68
+    timestamp: '2026-09-26T17:19:20.812158'
+- id: 124
+  x: 0.2212
+  y: 0.3062
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.467810'
+- id: 125
+  x: 0.7244
+  y: 0.3128
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.497008'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5565.jpg"
+    score: 0.653
+    timestamp: '2026-09-26T17:19:06.182069'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5565.jpg"
+    score: 0.651
+    timestamp: '2026-09-26T17:19:06.283631'
+- id: 126
+  x: 0.3486
+  y: 0.3062
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.526684'
+- id: 127
+  x: 0.5205
+  y: 0.2996
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.556565'
+- id: 128
+  x: 0.2368
+  y: 0.2951
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.589246'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5522.jpg"
+    score: 0.713
+    timestamp: '2026-09-26T17:18:53.202190'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5522.jpg"
+    score: 0.687
+    timestamp: '2026-09-26T17:18:53.327865'
+- id: 129
+  x: 0.2734
+  y: 0.2819
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.620624'
+- id: 130
+  x: 0.2368
+  y: 0.2805
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.651397'
+- id: 131
+  x: 0.7998
+  y: 0.2812
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.680979'
+- id: 132
+  x: 0.2314
+  y: 0.2783
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.711570'
+- id: 133
+  x: 0.4126
+  y: 0.2731
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.743084'
+- id: 134
+  x: 0.8027
+  y: 0.2724
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.775454'
+- id: 135
+  x: 0.8242
+  y: 0.2717
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.808918'
+- id: 136
+  x: 0.7962
+  y: 0.2716
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.841323'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5570-2.jpg"
+    score: 0.669
+    timestamp: '2026-09-26T17:19:09.968102'
+- id: 137
+  x: 0.5137
+  y: 0.2709
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.870864'
+- id: 138
+  x: 0.2285
+  y: 0.2702
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.904112'
+- id: 139
+  x: 0.4437
+  y: 0.2638
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.935235'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.703
+    timestamp: '2026-09-26T13:13:01.089368'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.703
+    timestamp: '2026-09-26T13:13:45.215131'
+- id: 140
+  x: 0.3862
+  y: 0.2709
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.965733'
+- id: 141
+  x: 0.4297
+  y: 0.2824
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:48.997187'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.668
+    timestamp: '2026-09-26T13:13:00.861496'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.668
+    timestamp: '2026-09-26T13:13:44.890523'
+- id: 142
+  x: 0.8814
+  y: 0.2632
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:49.028383'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5580.jpg"
+    score: 0.678
+    timestamp: '2026-09-26T17:19:25.759697'
+- id: 143
+  x: 0.8459
+  y: 0.2729
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:49.062185'
+  - image_path: "F:\\K\xE9pek\\Buchlovice\\final\\IMGP0952.jpg"
+    score: 0.7
+    timestamp: '2026-09-26T16:34:29.390587'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5573.jpg"
+    score: 0.66
+    timestamp: '2026-09-26T17:19:13.877765'
+- id: 144
+  x: 0.7671
+  y: 0.271
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:49.095798'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5570-2.jpg"
+    score: 0.719
+    timestamp: '2026-09-26T17:19:09.856125'
+- id: 145
+  x: 0.8545
+  y: 0.2643
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:49.128866'
+- id: 146
+  x: 0.4224
+  y: 0.2606
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:49.161876'
+- id: 147
+  x: 0.1578
+  y: 0.2665
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:49.195481'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5506.jpg"
+    score: 0.677
+    timestamp: '2026-09-26T17:18:48.755118'
+- id: 148
+  x: 0.2822
+  y: 0.257
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:49.232365'
+- id: 149
+  x: 0.1457
+  y: 0.2503
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:49.266541'
+  - image_path: "F:\\K\xE9pek\\Namest Nad Oslavou\\final\\IMGP5509.jpg"
+    score: 0.711
+    timestamp: '2026-09-26T18:23:40.435471'
+- id: 150
+  x: 0.894
+  y: 0.2592
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:49.303037'
+- id: 151
+  x: 0.2773
+  y: 0.254
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:49.340839'
+- id: 152
+  x: 0.7124
+  y: 0.2533
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:49.379257'
+- id: 153
+  x: 0.6958
+  y: 0.2489
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:49.415744'
+- id: 154
+  x: 0.9712
+  y: 0.2496
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:49.450117'
+- id: 155
+  x: 0.3237
+  y: 0.2489
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:49.487638'
+- id: 156
+  x: 0.3999
+  y: 0.2489
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:49.523744'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5573.jpg"
+    score: 0.694
+    timestamp: '2026-09-26T17:19:14.010608'
+- id: 157
+  x: 0.9809
+  y: 0.247
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:49.560015'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5570-2.jpg"
+    score: 0.651
+    timestamp: '2026-09-26T17:19:10.102824'
+- id: 158
+  x: 0.4668
+  y: 0.2448
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:49.594698'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5538.jpg"
+    score: 0.745
+    timestamp: '2026-09-26T17:18:56.398981'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5538.jpg"
+    score: 0.77
+    timestamp: '2026-09-26T17:18:56.706766'
+- id: 159
+  x: 0.369
+  y: 0.2469
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:49.630883'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.711
+    timestamp: '2026-09-26T13:13:01.240828'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.711
+    timestamp: '2026-09-26T13:13:45.396548'
+- id: 160
+  x: 0.3383
+  y: 0.2344
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:49.668935'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.654
+    timestamp: '2026-09-26T13:13:01.318343'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.654
+    timestamp: '2026-09-26T13:13:45.484975'
+- id: 161
+  x: 0.5659
+  y: 0.2254
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:49.707097'
+- id: 162
+  x: 0.2515
+  y: 0.2239
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:49.743034'
+- id: 163
+  x: 0.4831
+  y: 0.2311
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:49.782515'
+  - image_path: "F:\\K\xE9pek\\Hrad Pernstejn\\final\\1_HDR2.jpg"
+    score: 0.674
+    timestamp: '2026-09-26T13:27:19.205818'
+  - image_path: "F:\\K\xE9pek\\Hrad Pernstejn\\final\\1_HDR2.jpg"
+    score: 0.67
+    timestamp: '2026-09-26T13:30:35.715212'
+  - image_path: "F:\\K\xE9pek\\Hrad Pernstejn\\final\\1_HDR2.jpg"
+    score: 0.67
+    timestamp: '2026-09-26T13:32:23.090371'
+  - image_path: "F:\\K\xE9pek\\Hrad Pernstejn\\final\\1_HDR2.jpg"
+    score: 0.67
+    timestamp: '2026-09-26T13:49:26.642081'
+  - image_path: "F:\\K\xE9pek\\Hrad Pernstejn\\final\\1_HDR2.jpg"
+    score: 0.67
+    timestamp: '2026-09-26T13:50:10.679516'
+- id: 164
+  x: 0.1104
+  y: 0.2085
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:49.818943'
+- id: 165
+  x: 0.4112
+  y: 0.2023
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:49.856603'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5577.jpg"
+    score: 0.655
+    timestamp: '2026-09-26T17:19:18.992902'
+- id: 166
+  x: 0.3882
+  y: 0.2151
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:49.895929'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.706
+    timestamp: '2026-09-26T13:13:01.463258'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.706
+    timestamp: '2026-09-26T13:13:45.640256'
+- id: 167
+  x: 0.3579
+  y: 0.2012
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:49.934246'
+- id: 168
+  x: 0.0708
+  y: 0.2012
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:49.972304'
+- id: 169
+  x: 0.1958
+  y: 0.1817
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:50.010862'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5538.jpg"
+    score: 0.787
+    timestamp: '2026-09-26T17:18:57.589943'
+- id: 170
+  x: 0.1018
+  y: 0.181
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:50.224387'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5565.jpg"
+    score: 0.691
+    timestamp: '2026-09-26T17:19:07.022512'
+- id: 171
+  x: 0.0503
   y: 0.1681
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.474745'
-- x: 0.501
-  y: 0.0624
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.483604'
-- x: 0.4302
-  y: 0.0624
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.492840'
-- x: 0.3506
-  y: 0.0529
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.503123'
-- x: 0.354
-  y: 0.0404
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.512327'
-- x: 0.394
-  y: 0.0228
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.521692'
-- x: 0.3042
-  y: 0.0081
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.533230'
-- x: 0.9399
-  y: 0.0044
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:03:55.544017'
-- x: 0.9893
-  y: 0.9956
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:10.599371'
-- x: 0.6343
-  y: 0.9941
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:10.699209'
-- x: 0.6187
-  y: 0.9927
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:10.790360'
-- x: 0.0698
-  y: 0.7474
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:10.874525'
-- x: 0.002
-  y: 0.7129
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:10.959356'
-- x: 0.1328
-  y: 0.6593
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:11.059377'
-- x: 0.1758
-  y: 0.6579
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:11.150350'
-- x: 0.1709
-  y: 0.6373
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:11.255825'
-- x: 0.0596
-  y: 0.6329
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:11.343776'
-- x: 0.1475
-  y: 0.6322
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:11.433291'
-- x: 0.0874
-  y: 0.6256
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:11.522139'
-- x: 0.0269
-  y: 0.6233
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:11.613443'
-- x: 0.3325
-  y: 0.6256
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:11.707040'
-- x: 0.0698
-  y: 0.6043
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:11.813167'
-- x: 0.2544
-  y: 0.6006
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:11.917236'
-- x: 0.2002
-  y: 0.5918
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:12.010212'
-- x: 0.5688
-  y: 0.5749
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:12.108944'
-- x: 0.5845
-  y: 0.5712
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:12.203775'
-- x: 0.3599
-  y: 0.5727
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:12.317963'
-- x: 0.4668
-  y: 0.5624
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:12.421075'
-- x: 0.3135
-  y: 0.5367
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:12.520928'
-- x: 0.7021
-  y: 0.536
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:12.621687'
-- x: 0.9277
-  y: 0.5352
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:12.722439'
-- x: 0.4585
-  y: 0.5389
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:12.821586'
-- x: 0.5977
-  y: 0.5286
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:12.922910'
-- x: 0.0254
-  y: 0.5235
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:13.033360'
-- x: 0.6475
-  y: 0.5213
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:13.163826'
-- x: 0.561
-  y: 0.5073
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:13.296718'
-- x: 0.2847
-  y: 0.5095
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:13.443883'
-- x: 0.125
-  y: 0.5022
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:13.555499'
-- x: 0.8125
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:50.265908'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5565.jpg"
+    score: 0.763
+    timestamp: '2026-09-26T17:19:07.348520'
+- id: 172
+  x: 0.0195
+  y: 0.1101
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:50.307535'
+- id: 173
+  x: 0.1172
+  y: 0.1087
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:50.348590'
+- id: 174
+  x: 0.1071
+  y: 0.0336
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
+    score: 0.7
+    timestamp: '2026-09-26T11:42:50.389647'
+  - image_path: "F:\\K\xE9pek\\Buchlovice\\final\\IMGP9796.jpg"
+    score: 0.717
+    timestamp: '2026-09-26T17:01:22.267623'
+  - image_path: "F:\\K\xE9pek\\Buchlovice\\final\\IMGP9796.jpg"
+    score: 0.717
+    timestamp: '2026-09-26T17:01:41.458072'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5538.jpg"
+    score: 0.682
+    timestamp: '2026-09-26T17:18:58.603333'
+- id: 175
+  x: 0.6609
+  y: 0.3271
+  observations:
+  - image_path: "F:\\K\xE9pek\\Retz\\final\\IMGP2225.jpg"
+    score: 0.671
+    timestamp: '2026-09-26T12:14:00.954133'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5565.jpg"
+    score: 0.691
+    timestamp: '2026-09-26T17:19:06.387561'
+- id: 176
+  x: 0.2339
+  y: 0.243
+  observations:
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0348.jpg"
+    score: 0.672
+    timestamp: '2026-09-26T12:53:56.729592'
+- id: 177
+  x: 0.856
+  y: 0.2298
+  observations:
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0348.jpg"
+    score: 0.705
+    timestamp: '2026-09-26T12:53:56.798065'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0348.jpg"
+    score: 0.686
+    timestamp: '2026-09-26T12:53:56.872589'
+- id: 178
+  x: 0.8096
+  y: 0.2041
+  observations:
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0348.jpg"
+    score: 0.68
+    timestamp: '2026-09-26T12:53:56.963641'
+- id: 179
+  x: 0.8276
+  y: 0.1872
+  observations:
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0348.jpg"
+    score: 0.655
+    timestamp: '2026-09-26T12:53:57.037313'
+- id: 180
+  x: 0.5371
+  y: 0.0822
+  observations:
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0348.jpg"
+    score: 0.66
+    timestamp: '2026-09-26T12:53:57.133742'
+- id: 181
+  x: 0.1348
+  y: 0.3436
+  observations:
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.668
+    timestamp: '2026-09-26T13:13:00.632690'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.668
+    timestamp: '2026-09-26T13:13:44.649738'
+- id: 182
+  x: 0.1631
+  y: 0.2944
+  observations:
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.738
+    timestamp: '2026-09-26T13:13:00.716912'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.738
+    timestamp: '2026-09-26T13:13:44.732570'
+- id: 183
+  x: 0.0262
+  y: 0.2917
+  observations:
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.665
+    timestamp: '2026-09-26T13:13:00.793662'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.665
+    timestamp: '2026-09-26T13:13:44.811711'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5580.jpg"
+    score: 0.678
+    timestamp: '2026-09-26T17:19:25.508292'
+- id: 184
+  x: 0.0894
+  y: 0.2717
+  observations:
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.721
+    timestamp: '2026-09-26T13:13:00.932683'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.721
+    timestamp: '2026-09-26T13:13:44.991950'
+- id: 185
+  x: 0.3519
+  y: 0.2594
+  observations:
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.733
+    timestamp: '2026-09-26T13:13:01.011900'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.733
+    timestamp: '2026-09-26T13:13:45.126875'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5541.jpg"
+    score: 0.677
+    timestamp: '2026-09-26T17:19:02.914006'
+- id: 186
+  x: 0.6613
+  y: 0.256
+  observations:
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.717
+    timestamp: '2026-09-26T13:13:01.163211'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.717
+    timestamp: '2026-09-26T13:13:45.309313'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5577.jpg"
+    score: 0.749
+    timestamp: '2026-09-26T17:19:18.862980'
+- id: 187
+  x: 0.6651
+  y: 0.232
+  observations:
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.674
+    timestamp: '2026-09-26T13:13:01.386365'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.674
+    timestamp: '2026-09-26T13:13:45.558742'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5540.jpg"
+    score: 0.698
+    timestamp: '2026-09-26T17:19:01.230592'
+- id: 188
+  x: 0.7885
+  y: 0.1562
+  observations:
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.692
+    timestamp: '2026-09-26T13:13:01.551428'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.752
+    timestamp: '2026-09-26T13:13:01.700872'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.692
+    timestamp: '2026-09-26T13:13:45.745374'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.752
+    timestamp: '2026-09-26T13:13:45.910333'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5538.jpg"
+    score: 0.851
+    timestamp: '2026-09-26T17:18:57.901390'
+- id: 189
+  x: 0.3818
+  y: 0.1535
+  observations:
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.699
+    timestamp: '2026-09-26T13:13:01.627194'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.699
+    timestamp: '2026-09-26T13:13:45.830032'
+- id: 190
+  x: 0.4622
+  y: 0.1283
+  observations:
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.684
+    timestamp: '2026-09-26T13:13:01.775671'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.684
+    timestamp: '2026-09-26T13:13:45.999387'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5573.jpg"
+    score: 0.728
+    timestamp: '2026-09-26T17:19:15.137898'
+- id: 191
+  x: 0.4939
+  y: 0.1061
+  observations:
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.654
+    timestamp: '2026-09-26T13:13:01.852457'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.698
+    timestamp: '2026-09-26T13:13:02.014491'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.654
+    timestamp: '2026-09-26T13:13:46.080715'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.698
+    timestamp: '2026-09-26T13:13:46.643351'
+- id: 192
+  x: 0.5837
+  y: 0.1122
+  observations:
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.764
+    timestamp: '2026-09-26T13:13:01.934389'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.764
+    timestamp: '2026-09-26T13:13:46.173194'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5565.jpg"
+    score: 0.737
+    timestamp: '2026-09-26T17:19:07.569694'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5565.jpg"
+    score: 0.709
+    timestamp: '2026-09-26T17:19:07.673027'
+- id: 193
+  x: 0.7036
+  y: 0.0639
+  observations:
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.679
+    timestamp: '2026-09-26T13:13:02.093195'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.679
+    timestamp: '2026-09-26T13:13:46.725406'
+- id: 194
+  x: 0.6704
+  y: 0.058
+  observations:
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.695
+    timestamp: '2026-09-26T13:13:02.167066'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.695
+    timestamp: '2026-09-26T13:13:46.806251'
+- id: 195
+  x: 0.7715
+  y: 0.0286
+  observations:
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.652
+    timestamp: '2026-09-26T13:13:02.248109'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.726
+    timestamp: '2026-09-26T13:13:02.325079'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.652
+    timestamp: '2026-09-26T13:13:46.891285'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.726
+    timestamp: '2026-09-26T13:13:46.967383'
+- id: 196
+  x: 0.6947
+  y: 0.0159
+  observations:
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.669
+    timestamp: '2026-09-26T13:13:02.399629'
+  - image_path: "F:\\K\xE9pek\\Hrad Veveri\\final\\IMGP0352.jpg"
+    score: 0.669
+    timestamp: '2026-09-26T13:13:47.047965'
+  - image_path: "F:\\K\xE9pek\\Buchlovice\\final\\IMGP9765.jpg"
+    score: 0.704
+    timestamp: '2026-09-26T16:47:33.891577'
+- id: 197
+  x: 0.481
+  y: 0.2697
+  observations:
+  - image_path: "F:\\K\xE9pek\\Hrad Pernstejn\\final\\1_HDR2.jpg"
+    score: 0.667
+    timestamp: '2026-09-26T13:27:19.087088'
+- id: 198
+  x: 0.2461
+  y: 0.1778
+  observations:
+  - image_path: "F:\\K\xE9pek\\Hrad Pernstejn\\final\\1_HDR2.jpg"
+    score: 0.716
+    timestamp: '2026-09-26T13:27:19.330019'
+  - image_path: "F:\\K\xE9pek\\Hrad Pernstejn\\final\\1_HDR2.jpg"
+    score: 0.712
+    timestamp: '2026-09-26T13:30:35.825594'
+  - image_path: "F:\\K\xE9pek\\Hrad Pernstejn\\final\\1_HDR2.jpg"
+    score: 0.712
+    timestamp: '2026-09-26T13:32:23.206797'
+  - image_path: "F:\\K\xE9pek\\Hrad Pernstejn\\final\\1_HDR2.jpg"
+    score: 0.712
+    timestamp: '2026-09-26T13:49:26.764720'
+  - image_path: "F:\\K\xE9pek\\Hrad Pernstejn\\final\\1_HDR2.jpg"
+    score: 0.712
+    timestamp: '2026-09-26T13:50:10.795941'
+- id: 199
+  x: 0.4956
+  y: 0.3137
+  observations:
+  - image_path: "F:\\K\xE9pek\\Hrad Pernstejn\\final\\1_HDR2.jpg"
+    score: 0.657
+    timestamp: '2026-09-26T13:30:35.602079'
+  - image_path: "F:\\K\xE9pek\\Hrad Pernstejn\\final\\1_HDR2.jpg"
+    score: 0.657
+    timestamp: '2026-09-26T13:32:22.974224'
+  - image_path: "F:\\K\xE9pek\\Hrad Pernstejn\\final\\1_HDR2.jpg"
+    score: 0.657
+    timestamp: '2026-09-26T13:49:26.516209'
+  - image_path: "F:\\K\xE9pek\\Hrad Pernstejn\\final\\1_HDR2.jpg"
+    score: 0.657
+    timestamp: '2026-09-26T13:50:10.556419'
+- id: 200
+  x: 0.6885
+  y: 0.0779
+  observations:
+  - image_path: "F:\\K\xE9pek\\Hrad Pernstejn\\final\\1_HDR2.jpg"
+    score: 0.673
+    timestamp: '2026-09-26T13:30:35.929402'
+  - image_path: "F:\\K\xE9pek\\Hrad Pernstejn\\final\\1_HDR2.jpg"
+    score: 0.673
+    timestamp: '2026-09-26T13:32:23.312614'
+  - image_path: "F:\\K\xE9pek\\Hrad Pernstejn\\final\\1_HDR2.jpg"
+    score: 0.673
+    timestamp: '2026-09-26T13:49:26.875583'
+  - image_path: "F:\\K\xE9pek\\Hrad Pernstejn\\final\\1_HDR2.jpg"
+    score: 0.673
+    timestamp: '2026-09-26T13:50:10.907456'
+- id: 201
+  x: 0.9277
+  y: 0.3825
+  observations:
+  - image_path: "F:\\K\xE9pek\\Hrad Pernstejn\\final\\IMGP0768.jpg"
+    score: 0.707
+    timestamp: '2026-09-26T13:53:02.658411'
+  - image_path: "F:\\K\xE9pek\\Hrad Pernstejn\\final\\IMGP0768.jpg"
+    score: 0.717
+    timestamp: '2026-09-26T13:54:12.355645'
+- id: 202
+  x: 0.9302
+  y: 0.9214
+  observations:
+  - image_path: "F:\\K\xE9pek\\Hrad Pernstejn\\final\\IMGP2847.jpg"
+    score: 0.736
+    timestamp: '2026-09-26T14:08:50.359923'
+  - image_path: "F:\\K\xE9pek\\Hrad Pernstejn\\final\\IMGP2847.jpg"
+    score: 0.737
+    timestamp: '2026-09-26T14:11:19.744097'
+  - image_path: "F:\\K\xE9pek\\Hrad Pernstejn\\final\\IMGP2847.jpg"
+    score: 0.737
+    timestamp: '2026-09-26T14:12:42.831771'
+  - image_path: "F:\\K\xE9pek\\Hrad Pernstejn\\final\\IMGP2847.jpg"
+    score: 0.737
+    timestamp: '2026-09-26T14:14:51.370236'
+- id: 203
+  x: 0.3311
+  y: 0.3754
+  observations:
+  - image_path: "F:\\K\xE9pek\\Buchlovice\\final\\IMGP9827.jpg"
+    score: 0.689
+    timestamp: '2026-09-26T15:07:52.078934'
+- id: 204
+  x: 0.167
+  y: 0.2458
+  observations:
+  - image_path: "F:\\K\xE9pek\\Buchlovice\\final\\IMGP9827.jpg"
+    score: 0.684
+    timestamp: '2026-09-26T15:07:52.218764'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5580.jpg"
+    score: 0.656
+    timestamp: '2026-09-26T17:19:26.248795'
+- id: 205
+  x: 0.8311
+  y: 0.0543
+  observations:
+  - image_path: "F:\\K\xE9pek\\Buchlovice\\final\\IMGP9827.jpg"
+    score: 0.658
+    timestamp: '2026-09-26T15:07:52.308675'
+- id: 206
+  x: 0.4556
+  y: 0.5059
+  observations:
+  - image_path: "F:\\K\xE9pek\\Buchlovice\\final\\IMGP2980.jpg"
+    score: 0.704
+    timestamp: '2026-09-26T15:45:30.494814'
+- id: 207
+  x: 0.5464
+  y: 0.0162
+  observations:
+  - image_path: "F:\\K\xE9pek\\Buchlovice\\final\\IMGP2972.jpg"
+    score: 0.663
+    timestamp: '2026-09-26T15:55:11.868644'
+- id: 208
+  x: 0.7104
+  y: 0.2188
+  observations:
+  - image_path: "F:\\K\xE9pek\\Buchlovice\\final\\IMGP2992.jpg"
+    score: 0.714
+    timestamp: '2026-09-26T16:21:12.823335'
+  - image_path: "F:\\K\xE9pek\\Buchlovice\\final\\IMGP2992.jpg"
+    score: 0.712
+    timestamp: '2026-09-26T16:22:53.590079'
+- id: 209
+  x: 0.4416
+  y: 0.1446
+  observations:
+  - image_path: "F:\\K\xE9pek\\Buchlovice\\final\\IMGP2992.jpg"
+    score: 0.73
+    timestamp: '2026-09-26T16:21:12.941028'
+  - image_path: "F:\\K\xE9pek\\Buchlovice\\final\\IMGP2992.jpg"
+    score: 0.701
+    timestamp: '2026-09-26T16:22:53.682143'
+- id: 210
+  x: 0.4533
+  y: 0.1091
+  observations:
+  - image_path: "F:\\K\xE9pek\\Buchlovice\\final\\IMGP2992.jpg"
+    score: 0.688
+    timestamp: '2026-09-26T16:21:13.053500'
+  - image_path: "F:\\K\xE9pek\\Buchlovice\\final\\IMGP2992.jpg"
+    score: 0.668
+    timestamp: '2026-09-26T16:21:13.166784'
+  - image_path: "F:\\K\xE9pek\\Buchlovice\\final\\IMGP2992.jpg"
+    score: 0.673
+    timestamp: '2026-09-26T16:22:53.775421'
+  - image_path: "F:\\K\xE9pek\\Buchlovice\\final\\IMGP2992.jpg"
+    score: 0.667
+    timestamp: '2026-09-26T16:22:53.870662'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5573.jpg"
+    score: 0.736
+    timestamp: '2026-09-26T17:19:15.262820'
+- id: 211
+  x: 0.144
+  y: 0.5323
+  observations:
+  - image_path: "F:\\K\xE9pek\\Buchlovice\\final\\IMGP2992.jpg"
+    score: 0.685
+    timestamp: '2026-09-26T16:22:53.491167'
+- id: 212
+  x: 0.9756
+  y: 0.5301
+  observations:
+  - image_path: "F:\\K\xE9pek\\Buchlovice\\final\\IMGP0952.jpg"
+    score: 0.698
+    timestamp: '2026-09-26T16:34:29.208880'
+- id: 213
+  x: 0.813
+  y: 0.3164
+  observations:
+  - image_path: "F:\\K\xE9pek\\Buchlovice\\final\\IMGP0952.jpg"
+    score: 0.705
+    timestamp: '2026-09-26T16:34:29.301631'
+- id: 214
+  x: 0.1219
+  y: 0.2472
+  observations:
+  - image_path: "F:\\K\xE9pek\\Buchlovice\\final\\IMGP0952.jpg"
+    score: 0.744
+    timestamp: '2026-09-26T16:34:29.477378'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5580.jpg"
+    score: 0.654
+    timestamp: '2026-09-26T17:19:26.087070'
+  - image_path: "F:\\K\xE9pek\\Namest Nad Oslavou\\final\\IMGP5509.jpg"
+    score: 0.665
+    timestamp: '2026-09-26T18:23:40.571412'
+- id: 215
+  x: 0.7559
+  y: 0.1652
+  observations:
+  - image_path: "F:\\K\xE9pek\\Buchlovice\\final\\IMGP0952.jpg"
+    score: 0.711
+    timestamp: '2026-09-26T16:34:29.572945'
+- id: 216
+  x: 0.7144
+  y: 0.0176
+  observations:
+  - image_path: "F:\\K\xE9pek\\Buchlovice\\final\\IMGP0952.jpg"
+    score: 0.705
+    timestamp: '2026-09-26T16:34:29.676366'
+- id: 217
+  x: 0.71
+  y: 0.4001
+  observations:
+  - image_path: "F:\\K\xE9pek\\Buchlovice\\final\\IMGP9765.jpg"
+    score: 0.697
+    timestamp: '2026-09-26T16:47:33.681492'
+- id: 218
+  x: 0.7661
+  y: 0.0749
+  observations:
+  - image_path: "F:\\K\xE9pek\\Buchlovice\\final\\IMGP9765.jpg"
+    score: 0.75
+    timestamp: '2026-09-26T16:47:33.797914'
+- id: 219
+  x: 0.8774
+  y: 0.0653
+  observations:
+  - image_path: "F:\\K\xE9pek\\Buchlovice\\final\\IMGP9796.jpg"
+    score: 0.66
+    timestamp: '2026-09-26T17:01:22.172602'
+  - image_path: "F:\\K\xE9pek\\Buchlovice\\final\\IMGP9796.jpg"
+    score: 0.66
+    timestamp: '2026-09-26T17:01:41.362775'
+- id: 220
+  x: 0.7769
+  y: 0.3484
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5506.jpg"
+    score: 0.661
+    timestamp: '2026-09-26T17:18:48.663268'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5584.jpg"
+    score: 0.672
+    timestamp: '2026-09-26T17:19:29.749657'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5584.jpg"
+    score: 0.682
+    timestamp: '2026-09-26T17:19:30.026020'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5584.jpg"
+    score: 0.654
+    timestamp: '2026-09-26T17:19:30.160489'
+- id: 221
+  x: 0.6152
+  y: 0.1072
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5506.jpg"
+    score: 0.657
+    timestamp: '2026-09-26T17:18:48.885663'
+- id: 222
+  x: 0.2812
+  y: 0.0795
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5506.jpg"
+    score: 0.723
+    timestamp: '2026-09-26T17:18:48.986259'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5506.jpg"
+    score: 0.769
+    timestamp: '2026-09-26T17:18:49.077492'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5573.jpg"
+    score: 0.753
+    timestamp: '2026-09-26T17:19:15.453296'
+- id: 223
+  x: 0.8599
+  y: 0.8708
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5520.jpg"
+    score: 0.654
+    timestamp: '2026-09-26T17:18:50.913977'
+- id: 224
+  x: 0.1816
+  y: 0.7922
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5520.jpg"
+    score: 0.67
+    timestamp: '2026-09-26T17:18:51.042449'
+- id: 225
+  x: 0.0259
+  y: 0.6167
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5520.jpg"
+    score: 0.656
+    timestamp: '2026-09-26T17:18:51.192689'
+- id: 226
+  x: 0.6714
+  y: 0.1356
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5520.jpg"
+    score: 0.664
+    timestamp: '2026-09-26T17:18:51.310418'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5538.jpg"
+    score: 0.798
+    timestamp: '2026-09-26T17:18:58.003181'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5577.jpg"
+    score: 0.727
+    timestamp: '2026-09-26T17:19:19.290370'
+- id: 227
+  x: 0.019
+  y: 0.975
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5522.jpg"
+    score: 0.675
+    timestamp: '2026-09-26T17:18:52.845731'
+- id: 228
+  x: 0.0161
+  y: 0.3664
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5522.jpg"
+    score: 0.673
+    timestamp: '2026-09-26T17:18:53.091659'
+- id: 229
+  x: 0.0654
+  y: 0.2643
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5522.jpg"
+    score: 0.685
+    timestamp: '2026-09-26T17:18:53.422603'
+- id: 230
+  x: 0.0495
+  y: 0.2339
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5522.jpg"
+    score: 0.693
+    timestamp: '2026-09-26T17:18:53.533145'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5584.jpg"
+    score: 0.686
+    timestamp: '2026-09-26T17:19:30.693406'
+- id: 231
+  x: 0.0278
+  y: 0.2643
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5538.jpg"
+    score: 0.669
+    timestamp: '2026-09-26T17:18:56.290602'
+- id: 232
+  x: 0.6003
+  y: 0.2412
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5538.jpg"
+    score: 0.699
+    timestamp: '2026-09-26T17:18:56.499162'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5538.jpg"
+    score: 0.688
+    timestamp: '2026-09-26T17:18:56.903417'
+- id: 233
+  x: 0.5664
+  y: 0.2489
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5538.jpg"
+    score: 0.669
+    timestamp: '2026-09-26T17:18:56.596318'
+- id: 234
+  x: 0.7629
+  y: 0.2303
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5538.jpg"
+    score: 0.759
+    timestamp: '2026-09-26T17:18:56.802609'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5538.jpg"
+    score: 0.753
+    timestamp: '2026-09-26T17:18:57.099475'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5538.jpg"
+    score: 0.759
+    timestamp: '2026-09-26T17:18:57.197528'
+- id: 235
+  x: 0.9248
+  y: 0.2305
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5538.jpg"
+    score: 0.719
+    timestamp: '2026-09-26T17:18:57.003366'
+- id: 236
+  x: 0.4424
+  y: 0.2203
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5538.jpg"
+    score: 0.687
+    timestamp: '2026-09-26T17:18:57.296364'
+- id: 237
+  x: 0.1289
+  y: 0.1968
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5538.jpg"
+    score: 0.712
+    timestamp: '2026-09-26T17:18:57.395098'
+- id: 238
+  x: 0.4932
+  y: 0.1968
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5538.jpg"
+    score: 0.718
+    timestamp: '2026-09-26T17:18:57.491016'
+- id: 239
+  x: 0.0181
+  y: 0.1689
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5538.jpg"
+    score: 0.654
+    timestamp: '2026-09-26T17:18:57.695971'
+- id: 240
+  x: 0.1519
+  y: 0.1593
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5538.jpg"
+    score: 0.717
+    timestamp: '2026-09-26T17:18:57.798794'
+- id: 241
+  x: 0.4258
+  y: 0.0999
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5538.jpg"
+    score: 0.667
+    timestamp: '2026-09-26T17:18:58.099789'
+- id: 242
+  x: 0.4344
+  y: 0.08
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5538.jpg"
+    score: 0.678
+    timestamp: '2026-09-26T17:18:58.200558'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5565.jpg"
+    score: 0.745
+    timestamp: '2026-09-26T17:19:07.783284'
+- id: 243
+  x: 0.502
+  y: 0.0734
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5538.jpg"
+    score: 0.723
+    timestamp: '2026-09-26T17:18:58.301118'
+- id: 244
+  x: 0.6138
+  y: 0.0374
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5538.jpg"
+    score: 0.652
+    timestamp: '2026-09-26T17:18:58.405515'
+- id: 245
+  x: 0.6372
+  y: 0.0352
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5538.jpg"
+    score: 0.745
+    timestamp: '2026-09-26T17:18:58.504950'
+- id: 246
+  x: 0.187
+  y: 0.0206
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5538.jpg"
+    score: 0.711
+    timestamp: '2026-09-26T17:18:58.701921'
+- id: 247
+  x: 0.9795
+  y: 0.1505
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5539.jpg"
+    score: 0.743
+    timestamp: '2026-09-26T17:18:59.895023'
+- id: 248
+  x: 0.5093
+  y: 0.1564
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5540.jpg"
+    score: 0.692
+    timestamp: '2026-09-26T17:19:01.336669'
+- id: 249
+  x: 0.0381
+  y: 0.1483
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5540.jpg"
+    score: 0.723
+    timestamp: '2026-09-26T17:19:01.439905'
+- id: 250
+  x: 0.21
+  y: 0.1454
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5540.jpg"
+    score: 0.727
+    timestamp: '2026-09-26T17:19:01.537106'
+- id: 251
+  x: 0.1646
+  y: 0.0389
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5540.jpg"
+    score: 0.672
+    timestamp: '2026-09-26T17:19:01.640651'
+- id: 252
+  x: 0.1992
+  y: 0.2739
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5542.jpg"
+    score: 0.661
+    timestamp: '2026-09-26T17:19:04.306347'
+- id: 253
+  x: 0.312
+  y: 0.2959
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5565.jpg"
+    score: 0.727
+    timestamp: '2026-09-26T17:19:06.599409'
+- id: 254
+  x: 0.6331
+  y: 0.297
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5565.jpg"
+    score: 0.707
+    timestamp: '2026-09-26T17:19:06.699147'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5570-2.jpg"
+    score: 0.695
+    timestamp: '2026-09-26T17:19:09.515425'
+- id: 255
+  x: 0.645
+  y: 0.2408
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5565.jpg"
+    score: 0.698
+    timestamp: '2026-09-26T17:19:06.807609'
+- id: 256
+  x: 0.3882
+  y: 0.1865
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5565.jpg"
+    score: 0.715
+    timestamp: '2026-09-26T17:19:06.915014'
+- id: 257
+  x: 0.7202
+  y: 0.1784
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5565.jpg"
+    score: 0.819
+    timestamp: '2026-09-26T17:19:07.130015'
+- id: 258
+  x: 0.5923
+  y: 0.1725
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5565.jpg"
+    score: 0.722
+    timestamp: '2026-09-26T17:19:07.239953'
+- id: 259
+  x: 0.5049
+  y: 0.1292
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5565.jpg"
+    score: 0.728
+    timestamp: '2026-09-26T17:19:07.464238'
+- id: 260
+  x: 0.9395
+  y: 0.2981
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5570-2.jpg"
+    score: 0.664
+    timestamp: '2026-09-26T17:19:09.404926'
+- id: 261
+  x: 0.7669
+  y: 0.3011
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5570-2.jpg"
+    score: 0.662
+    timestamp: '2026-09-26T17:19:09.626676'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5584.jpg"
+    score: 0.678
+    timestamp: '2026-09-26T17:19:30.427946'
+- id: 262
+  x: 0.5613
+  y: 0.2841
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5570-2.jpg"
+    score: 0.704
+    timestamp: '2026-09-26T17:19:09.740272'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5573.jpg"
+    score: 0.709
+    timestamp: '2026-09-26T17:19:13.630939'
+- id: 263
+  x: 0.7744
+  y: 0.2107
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5570-2.jpg"
+    score: 0.662
+    timestamp: '2026-09-26T17:19:10.223325'
+- id: 264
+  x: 0.2251
+  y: 0.1593
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5570-2.jpg"
+    score: 0.703
+    timestamp: '2026-09-26T17:19:10.397523'
+- id: 265
+  x: 0.3696
+  y: 0.0837
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5570-2.jpg"
+    score: 0.676
+    timestamp: '2026-09-26T17:19:10.523141'
+- id: 266
+  x: 0.8716
+  y: 0.6344
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5573.jpg"
+    score: 0.714
+    timestamp: '2026-09-26T17:19:12.358672'
+- id: 267
+  x: 0.7715
+  y: 0.4934
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5573.jpg"
+    score: 0.653
+    timestamp: '2026-09-26T17:19:12.484537'
+- id: 268
+  x: 0.4897
+  y: 0.4736
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5573.jpg"
+    score: 0.673
+    timestamp: '2026-09-26T17:19:12.600887'
+- id: 269
+  x: 0.5132
+  y: 0.4721
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5573.jpg"
+    score: 0.68
+    timestamp: '2026-09-26T17:19:12.711141'
+- id: 270
+  x: 0.9277
+  y: 0.4651
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5573.jpg"
+    score: 0.699
+    timestamp: '2026-09-26T17:19:12.819818'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5580.jpg"
+    score: 0.759
+    timestamp: '2026-09-26T17:19:24.279426'
+- id: 271
+  x: 0.9512
+  y: 0.4596
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5573.jpg"
+    score: 0.71
+    timestamp: '2026-09-26T17:19:12.937750'
+- id: 272
+  x: 0.7939
+  y: 0.4273
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5573.jpg"
+    score: 0.726
+    timestamp: '2026-09-26T17:19:13.049232'
+- id: 273
+  x: 0.9072
+  y: 0.3091
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5573.jpg"
+    score: 0.657
+    timestamp: '2026-09-26T17:19:13.167346'
+- id: 274
+  x: 0.9805
+  y: 0.2901
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5573.jpg"
+    score: 0.79
+    timestamp: '2026-09-26T17:19:13.391139'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5573.jpg"
+    score: 0.704
+    timestamp: '2026-09-26T17:19:13.748739'
+- id: 275
+  x: 0.8564
+  y: 0.2966
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5573.jpg"
+    score: 0.783
+    timestamp: '2026-09-26T17:19:13.509476'
+- id: 276
+  x: 0.79
+  y: 0.2452
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5573.jpg"
+    score: 0.695
+    timestamp: '2026-09-26T17:19:14.126391'
+- id: 277
+  x: 0.4111
+  y: 0.2305
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5573.jpg"
+    score: 0.683
+    timestamp: '2026-09-26T17:19:14.243016'
+- id: 278
+  x: 0.1611
+  y: 0.1799
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5573.jpg"
+    score: 0.7
+    timestamp: '2026-09-26T17:19:14.373356'
+- id: 279
+  x: 0.8789
+  y: 0.1751
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5573.jpg"
+    score: 0.688
+    timestamp: '2026-09-26T17:19:14.490828'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5573.jpg"
+    score: 0.719
+    timestamp: '2026-09-26T17:19:14.610557'
+- id: 280
+  x: 0.8989
+  y: 0.1689
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5573.jpg"
+    score: 0.751
+    timestamp: '2026-09-26T17:19:14.737691'
+- id: 281
+  x: 0.4829
+  y: 0.163
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5573.jpg"
+    score: 0.702
+    timestamp: '2026-09-26T17:19:14.867459'
+- id: 282
+  x: 0.8633
+  y: 0.1314
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5573.jpg"
+    score: 0.654
+    timestamp: '2026-09-26T17:19:15.021558'
+- id: 283
+  x: 0.2373
+  y: 0.0808
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5573.jpg"
+    score: 0.697
+    timestamp: '2026-09-26T17:19:15.574440'
+- id: 284
+  x: 0.8145
+  y: 0.4567
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5577.jpg"
+    score: 0.668
+    timestamp: '2026-09-26T17:19:18.172957'
+- id: 285
+  x: 0.4983
+  y: 0.4516
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5577.jpg"
+    score: 0.693
+    timestamp: '2026-09-26T17:19:18.294647'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5577.jpg"
+    score: 0.651
+    timestamp: '2026-09-26T17:19:18.415151'
+- id: 286
+  x: 0.5884
+  y: 0.4192
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5577.jpg"
+    score: 0.725
+    timestamp: '2026-09-26T17:19:18.543520'
+- id: 287
+  x: 0.4082
+  y: 0.3451
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5577.jpg"
+    score: 0.705
+    timestamp: '2026-09-26T17:19:18.729251'
+- id: 288
+  x: 0.7344
+  y: 0.1351
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5577.jpg"
+    score: 0.674
+    timestamp: '2026-09-26T17:19:19.149878'
+- id: 289
+  x: 0.0742
+  y: 0.1263
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5577.jpg"
+    score: 0.708
+    timestamp: '2026-09-26T17:19:19.414202'
+- id: 290
+  x: 0.8545
   y: 0.5
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:13.674275'
-- x: 0.625
-  y: 0.4978
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:13.783434'
-- x: 0.0117
-  y: 0.4897
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:13.900669'
-- x: 0.8672
-  y: 0.4927
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:14.009637'
-- x: 0.8198
-  y: 0.4816
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:14.120755'
-- x: 0.9751
-  y: 0.4765
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:14.234982'
-- x: 0.293
-  y: 0.4765
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:14.377234'
-- x: 0.0659
-  y: 0.4743
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:14.503862'
-- x: 0.1069
-  y: 0.467
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:14.624411'
-- x: 0.604
-  y: 0.4604
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:14.743659'
-- x: 0.3423
-  y: 0.4589
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:14.874762'
-- x: 0.2188
-  y: 0.4545
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:14.996551'
-- x: 0.3394
-  y: 0.4457
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:15.116205'
-- x: 0.3594
-  y: 0.4413
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:15.257435'
-- x: 0.0786
-  y: 0.4391
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:15.391561'
-- x: 0.4526
-  y: 0.4361
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:15.547332'
-- x: 0.9312
-  y: 0.4295
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:15.695214'
-- x: 0.3877
-  y: 0.4207
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:15.853469'
-- x: 0.2993
-  y: 0.4207
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:16.001106'
-- x: 0.3716
-  y: 0.4126
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:16.130261'
-- x: 0.1245
-  y: 0.4068
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:16.258775'
-- x: 0.9858
-  y: 0.4023
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:16.415136'
-- x: 0.0786
-  y: 0.3957
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:16.563061'
-- x: 0.0571
-  y: 0.3943
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:16.702830'
-- x: 0.1411
-  y: 0.3693
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:16.876540'
-- x: 0.6528
-  y: 0.3634
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:17.039791'
-- x: 0.9863
-  y: 0.3539
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:17.228541'
-- x: 0.3071
-  y: 0.3517
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:17.387810'
-- x: 0.0278
-  y: 0.3488
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:17.532817'
-- x: 0.793
-  y: 0.348
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:17.672086'
-- x: 0.1123
-  y: 0.3385
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:17.808086'
-- x: 0.8242
-  y: 0.3186
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:17.944258'
-- x: 0.9829
-  y: 0.3113
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:18.118298'
-- x: 0.3247
-  y: 0.3054
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:18.267383'
-- x: 0.9658
-  y: 0.2988
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:18.414217'
-- x: 0.6709
-  y: 0.2988
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:18.562890'
-- x: 0.0347
-  y: 0.2974
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:18.712087'
-- x: 0.0601
-  y: 0.2871
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:18.877713'
-- x: 0.0015
-  y: 0.2283
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:19.037714'
-- x: 0.7666
-  y: 0.2166
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:19.221589'
-- x: 0.2798
-  y: 0.2078
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:19.390970'
-- x: 0.8447
-  y: 0.2034
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:19.544065'
-- x: 0.4077
-  y: 0.1836
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:19.701000'
-- x: 0.5625
-  y: 0.1681
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:19.855339'
-- x: 0.501
-  y: 0.0624
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:20.014937'
-- x: 0.4302
-  y: 0.0624
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:20.199241'
-- x: 0.3506
-  y: 0.0529
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:20.378393'
-- x: 0.354
-  y: 0.0404
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:20.554298'
-- x: 0.394
-  y: 0.0228
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:20.731705'
-- x: 0.3042
-  y: 0.0081
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:20.909975'
-- x: 0.9399
-  y: 0.0044
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:21.070707'
-- x: 0.9893
-  y: 0.9956
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:37.788420'
-- x: 0.6343
-  y: 0.9941
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:37.832618'
-- x: 0.6187
-  y: 0.9927
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:37.875385'
-- x: 0.0698
-  y: 0.7474
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:37.919388'
-- x: 0.002
-  y: 0.7129
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:37.962005'
-- x: 0.1328
-  y: 0.6593
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:38.004993'
-- x: 0.1758
-  y: 0.6579
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:38.050765'
-- x: 0.1709
-  y: 0.6373
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:38.121085'
-- x: 0.0596
-  y: 0.6329
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:38.171443'
-- x: 0.1475
-  y: 0.6322
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:38.215737'
-- x: 0.0874
-  y: 0.6256
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:38.266323'
-- x: 0.0269
-  y: 0.6233
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:38.315330'
-- x: 0.3325
-  y: 0.6256
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:38.358339'
-- x: 0.0698
-  y: 0.6043
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:38.400828'
-- x: 0.2544
-  y: 0.6006
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:38.442321'
-- x: 0.2002
-  y: 0.5918
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:38.485255'
-- x: 0.5688
-  y: 0.5749
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:38.528870'
-- x: 0.5845
-  y: 0.5712
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:38.572902'
-- x: 0.3599
-  y: 0.5727
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:38.615772'
-- x: 0.4668
-  y: 0.5624
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:38.659606'
-- x: 0.3135
-  y: 0.5367
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:38.709758'
-- x: 0.7021
-  y: 0.536
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:38.754119'
-- x: 0.9277
-  y: 0.5352
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:38.802432'
-- x: 0.4585
-  y: 0.5389
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:38.856701'
-- x: 0.5977
-  y: 0.5286
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:38.916384'
-- x: 0.0254
-  y: 0.5235
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:38.964376'
-- x: 0.6475
-  y: 0.5213
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:39.011929'
-- x: 0.561
-  y: 0.5073
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:39.061032'
-- x: 0.2847
-  y: 0.5095
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:39.105784'
-- x: 0.125
-  y: 0.5022
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:39.153749'
-- x: 0.8125
-  y: 0.5
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:39.198576'
-- x: 0.625
-  y: 0.4978
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:39.251056'
-- x: 0.0117
-  y: 0.4897
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:39.323310'
-- x: 0.8672
-  y: 0.4927
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:39.386226'
-- x: 0.8198
-  y: 0.4816
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:39.442144'
-- x: 0.9751
-  y: 0.4765
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:39.490080'
-- x: 0.293
-  y: 0.4765
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:39.537093'
-- x: 0.0659
-  y: 0.4743
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:39.584783'
-- x: 0.1069
-  y: 0.467
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:39.632627'
-- x: 0.604
-  y: 0.4604
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:39.680426'
-- x: 0.3423
-  y: 0.4589
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:39.729685'
-- x: 0.2188
-  y: 0.4545
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:39.778173'
-- x: 0.3394
-  y: 0.4457
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:39.827782'
-- x: 0.3594
-  y: 0.4413
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:39.878052'
-- x: 0.0786
-  y: 0.4391
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:39.927577'
-- x: 0.4526
-  y: 0.4361
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:39.976930'
-- x: 0.9312
-  y: 0.4295
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:40.025515'
-- x: 0.3877
-  y: 0.4207
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:40.074684'
-- x: 0.2993
-  y: 0.4207
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:40.125633'
-- x: 0.3716
-  y: 0.4126
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:40.175156'
-- x: 0.1245
-  y: 0.4068
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:40.226629'
-- x: 0.9858
-  y: 0.4023
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:40.281343'
-- x: 0.0786
-  y: 0.3957
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:40.334566'
-- x: 0.0571
-  y: 0.3943
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:40.388432'
-- x: 0.1411
-  y: 0.3693
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:40.452478'
-- x: 0.6528
-  y: 0.3634
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:40.508326'
-- x: 0.9863
-  y: 0.3539
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:40.565809'
-- x: 0.3071
-  y: 0.3517
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:40.630147'
-- x: 0.0278
-  y: 0.3488
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:40.690452'
-- x: 0.793
-  y: 0.348
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:40.752650'
-- x: 0.1123
-  y: 0.3385
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:40.807039'
-- x: 0.8242
-  y: 0.3186
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:40.861004'
-- x: 0.9829
-  y: 0.3113
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:40.914086'
-- x: 0.3247
-  y: 0.3054
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:40.967285'
-- x: 0.9658
-  y: 0.2988
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:41.020529'
-- x: 0.6709
-  y: 0.2988
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:41.074774'
-- x: 0.0347
-  y: 0.2974
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:41.129626'
-- x: 0.0601
-  y: 0.2871
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:41.208966'
-- x: 0.0015
-  y: 0.2283
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:41.266479'
-- x: 0.7666
-  y: 0.2166
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:41.323114'
-- x: 0.2798
-  y: 0.2078
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:41.377320'
-- x: 0.8447
-  y: 0.2034
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:41.430253'
-- x: 0.4077
-  y: 0.1836
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:41.483536'
-- x: 0.5625
-  y: 0.1681
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:41.538860'
-- x: 0.501
-  y: 0.0624
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:41.598813'
-- x: 0.4302
-  y: 0.0624
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:41.658969'
-- x: 0.3506
-  y: 0.0529
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:41.714153'
-- x: 0.354
-  y: 0.0404
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:41.771315'
-- x: 0.394
-  y: 0.0228
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:41.831954'
-- x: 0.3042
-  y: 0.0081
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:41.885730'
-- x: 0.9399
-  y: 0.0044
-  image_path: /home/mgreczi/Pictures/IMGP1431.JPG
-  timestamp: '2026-09-03T21:24:41.940424'
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5578.jpg"
+    score: 0.661
+    timestamp: '2026-09-26T17:19:20.548054'
+- id: 291
+  x: 0.3242
+  y: 0.3172
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5578.jpg"
+    score: 0.664
+    timestamp: '2026-09-26T17:19:20.689843'
+- id: 292
+  x: 0.8438
+  y: 0.4449
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5579.jpg"
+    score: 0.704
+    timestamp: '2026-09-26T17:19:21.842518'
+- id: 293
+  x: 0.6382
+  y: 0.2107
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5579.jpg"
+    score: 0.688
+    timestamp: '2026-09-26T17:19:21.986997'
+- id: 294
+  x: 0.9639
+  y: 0.1153
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5579.jpg"
+    score: 0.683
+    timestamp: '2026-09-26T17:19:22.119904'
+- id: 295
+  x: 0.2364
+  y: 0.0462
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5579.jpg"
+    score: 0.673
+    timestamp: '2026-09-26T17:19:22.252705'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5584.jpg"
+    score: 0.678
+    timestamp: '2026-09-26T17:19:31.365339'
+- id: 296
+  x: 0.6782
+  y: 0.4446
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5580.jpg"
+    score: 0.665
+    timestamp: '2026-09-26T17:19:24.458475'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5580.jpg"
+    score: 0.709
+    timestamp: '2026-09-26T17:19:24.581560'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5584.jpg"
+    score: 0.66
+    timestamp: '2026-09-26T17:19:29.210009'
+- id: 297
+  x: 0.7783
+  y: 0.3835
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5580.jpg"
+    score: 0.707
+    timestamp: '2026-09-26T17:19:24.741494'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5584.jpg"
+    score: 0.697
+    timestamp: '2026-09-26T17:19:29.347676'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5584.jpg"
+    score: 0.665
+    timestamp: '2026-09-26T17:19:29.480212'
+- id: 298
+  x: 0.8027
+  y: 0.3796
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5580.jpg"
+    score: 0.696
+    timestamp: '2026-09-26T17:19:24.867533'
+- id: 299
+  x: 0.7568
+  y: 0.3627
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5580.jpg"
+    score: 0.698
+    timestamp: '2026-09-26T17:19:24.993646'
+- id: 300
+  x: 0.0527
+  y: 0.3032
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5580.jpg"
+    score: 0.699
+    timestamp: '2026-09-26T17:19:25.381120'
+- id: 301
+  x: 0.5757
+  y: 0.2702
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5580.jpg"
+    score: 0.668
+    timestamp: '2026-09-26T17:19:25.633406'
+- id: 302
+  x: 0.543
+  y: 0.2526
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5580.jpg"
+    score: 0.7
+    timestamp: '2026-09-26T17:19:25.919788'
+- id: 303
+  x: 0.1431
+  y: 0.1351
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5580.jpg"
+    score: 0.711
+    timestamp: '2026-09-26T17:19:26.410673'
+- id: 304
+  x: 0.3081
+  y: 0.0837
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5580.jpg"
+    score: 0.697
+    timestamp: '2026-09-26T17:19:26.545809'
+- id: 305
+  x: 0.4102
+  y: 0.0778
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5580.jpg"
+    score: 0.691
+    timestamp: '2026-09-26T17:19:26.678187'
+- id: 306
+  x: 0.959
+  y: 0.5507
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5584.jpg"
+    score: 0.665
+    timestamp: '2026-09-26T17:19:28.679629'
+- id: 307
+  x: 0.9595
+  y: 0.4919
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5584.jpg"
+    score: 0.652
+    timestamp: '2026-09-26T17:19:28.943363'
+- id: 308
+  x: 0.8618
+  y: 0.4802
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5584.jpg"
+    score: 0.685
+    timestamp: '2026-09-26T17:19:29.071834'
+- id: 309
+  x: 0.6435
+  y: 0.3664
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5584.jpg"
+    score: 0.708
+    timestamp: '2026-09-26T17:19:29.611751'
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5584.jpg"
+    score: 0.713
+    timestamp: '2026-09-26T17:19:29.881836'
+- id: 310
+  x: 0.7744
+  y: 0.326
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5584.jpg"
+    score: 0.661
+    timestamp: '2026-09-26T17:19:30.294706'
+- id: 311
+  x: 0.9517
+  y: 0.2555
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5584.jpg"
+    score: 0.734
+    timestamp: '2026-09-26T17:19:30.560408'
+- id: 312
+  x: 0.6006
+  y: 0.21
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5584.jpg"
+    score: 0.687
+    timestamp: '2026-09-26T17:19:30.826897'
+- id: 313
+  x: 0.5801
+  y: 0.1953
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5584.jpg"
+    score: 0.664
+    timestamp: '2026-09-26T17:19:30.961728'
+- id: 314
+  x: 0.665
+  y: 0.1667
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5584.jpg"
+    score: 0.728
+    timestamp: '2026-09-26T17:19:31.095967'
+- id: 315
+  x: 0.9199
+  y: 0.1072
+  observations:
+  - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5584.jpg"
+    score: 0.654
+    timestamp: '2026-09-26T17:19:31.232053'
+- id: 316
+  x: 0.2199
+  y: 0.0265
+  observations:
+  - image_path: "F:\\K\xE9pek\\Namest Nad Oslavou\\final\\IMGP1325.JPG"
+    score: 0.686
+    timestamp: '2026-09-26T17:51:27.374791'
+  - image_path: "F:\\K\xE9pek\\Namest Nad Oslavou\\final\\IMGP1325.JPG"
+    score: 0.69
+    timestamp: '2026-09-26T17:51:27.508145'
+- id: 317
+  x: 0.4644
+  y: 0.1789
+  observations:
+  - image_path: "F:\\K\xE9pek\\Namest Nad Oslavou\\final\\_IMG9903.jpg"
+    score: 0.65
+    timestamp: '2026-09-26T18:13:14.976897'
+- id: 318
+  x: 0.5527
+  y: 0.174
+  observations:
+  - image_path: "F:\\K\xE9pek\\Namest Nad Oslavou\\final\\IMGP5509.jpg"
+    score: 0.738
+    timestamp: '2026-09-26T18:23:40.714312'
+- id: 319
+  x: 0.5552
+  y: 0.0507
+  observations:
+  - image_path: "F:\\K\xE9pek\\Namest Nad Oslavou\\final\\IMGP5509.jpg"
+    score: 0.76
+    timestamp: '2026-09-26T18:23:40.865862'

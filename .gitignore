@@ -23,6 +23,17 @@ desktop.ini
 *.tif
 *.tiff
 *.raw
+*.dng
+*.orf
+*.odf
+*.cr2
+*.cr3
+*.nef
+*.arw
+*.pef
+*.raf
+*.rw2
+*.xmp
 
 # Ignore results and temporary processing folders
 stock-video-workflow/_temp_frames/
@@ -32,9 +43,11 @@ pod-workflow/results/
 pod_workflow/results/
 dashboard/uploads/
 dashboard/temp/
+dashboard/_temp_diag_*
 
 # Ignore generated output files in root or specific folders
 *.csv
 !*/templates/*.csv
 *.db
+dashboard/ftp_config.json
 

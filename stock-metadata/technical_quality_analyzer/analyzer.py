@@ -31,6 +31,20 @@ class TechnicalQualityAnalyzer:
             width, height = pil_img.size
             fmt = pil_img.format
             
+            # Detect device type from EXIF metadata (smartphone sealed lens vs interchangeable lens DSLR/Mirrorless)
+            camera_make = ""
+            camera_model = ""
+            try:
+                exif = pil_img.getexif() if hasattr(pil_img, "getexif") else None
+                if exif:
+                    camera_make = str(exif.get(271, "")).strip().lower()  # 271: Make
+                    camera_model = str(exif.get(272, "")).strip().lower()  # 272: Model
+            except Exception:
+                pass
+                
+            smartphone_brands = ["samsung", "apple", "iphone", "google", "pixel", "xiaomi", "huawei", "oneplus", "oppo", "vivo", "motorola", "honor", "realme"]
+            is_smartphone = any(b in camera_make or b in camera_model for b in smartphone_brands)
+
             cv_img = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
             
             scale = min(1.0, self.config.analysis_resolution_max_dim / max(width, height))
@@ -43,7 +57,10 @@ class TechnicalQualityAnalyzer:
                 "original_shape": cv_img.shape,
                 "analysis_shape": cv_img_analysis.shape,
                 "scale": scale,
-                "file_path": path
+                "file_path": path,
+                "camera_make": camera_make,
+                "camera_model": camera_model,
+                "is_smartphone": is_smartphone
             }
             
             results = {}

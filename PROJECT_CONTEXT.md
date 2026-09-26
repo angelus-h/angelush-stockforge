@@ -15,11 +15,11 @@
 
 | Module / Path | Purpose & Key Artifacts |
 | :--- | :--- |
-| `pod-workflow/` | **Print-on-Demand (POD) Pipelines**<br>• `ArtHeroes/`: Art Heroes / Werk aan de Muur guides, prompt, and `apply_art_heroes_metadata.py`<br>• `prompts/`: FAA master prompts (`FAA-prompt-v2-master.txt`)<br>• `pod_metadata_generator.py`: Generates FAA JSON/CSV datasets |
+| `pod_workflow/` | **Print-on-Demand (POD) Pipelines**<br>• `ArtHeroes/`: Art Heroes / Werk aan de Muur guides, prompt, and `apply_art_heroes_metadata.py`<br>• `prompts/`: FAA master prompts (`FAA-prompt-v2-master.txt`)<br>• `pod_metadata_generator.py`: Generates FAA JSON/CSV datasets |
 | `stock-workflow/` | **Microstock Photography**<br>• `create_thumbnails.py`, `generate_stock_csv.py`, `apply_alamy_metadata.py`, `process_vecteezy_batch.py` |
 | `stock-video-workflow/` | **Stock Video Processing**<br>• Keyframe extraction, editorial classification, auto-renaming, CSV generators for Pond5, Adobe Stock, Shutterstock, Dreamstime |
 | `stock-metadata/` | **Quality Analysis**<br>• `technical_quality_analyzer/`: Sensor dust, dead pixels, exposure, and sharpness detection |
-| `dashboard/` | **Unified Streamlit Management UI & SQLite Engine**<br>• `app.py`: Streamlit control panel with directory scoping & integrated Technical QC<br>• `db.py`: SQLite catalog & status tracker (`stockforge.db`)<br>• `llm_client.py`: Direct, low-cost Gemini / Ollama caller (Art Heroes & Displate targets)<br>• `ftp_uploader.py`: Direct batch FTP/FTPS agency uploader |
+| `dashboard/` | **Unified Streamlit Management UI & SQLite Engine**<br>• `app.py`: Streamlit control panel with directory scoping, histogram & integrated Technical QC<br>• `db.py`: SQLite catalog, dual grade & multi-agency upload tracker (`stockforge.db`)<br>• `raw_loader.py`: High-performance RAW/DNG preview extractor & photographic histogram engine<br>• `credentials.py`: Windows Credential Manager (`keyring`) secure secret storage<br>• `llm_client.py`: Direct, low-cost Gemini / Ollama caller (Art Heroes, Displate & Microstock targets)<br>• `ftp_uploader.py`: Direct batch SFTP/FTPS/FTP agency uploader |
 
 ---
 
@@ -42,7 +42,7 @@
 - **Description:** 3-paragraph sales letter.
 - **Keywords:** String length **must remain under 500 characters** total.
 
-### C. Alamy & Microstock Agencies
+### D. Alamy & Microstock Agencies
 - **Caption:** Concise, factual description (who, what, where, when). Editorial formatting when applicable.
 - **Keywords:** 30–50 comma-separated tags, distinct essential vs secondary tags.
 

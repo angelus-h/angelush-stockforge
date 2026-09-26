@@ -76,9 +76,13 @@ def process_directory(directory_path):
     dir_path = Path(directory_path)
     exiftool = find_exiftool()
 
-    images = sorted([f for f in dir_path.glob("*.jpg")] + [f for f in dir_path.glob("*.jpeg")])
+    images = sorted(
+        [f for f in dir_path.glob("*.jpg")] +
+        [f for f in dir_path.glob("*.jpeg")] +
+        [f for f in dir_path.glob("*.png")]
+    )
     if not images:
-        print(f"No JPEG images found in {directory_path}")
+        print(f"No JPEG or PNG images found in {directory_path}")
         return
 
     print(f"Found {len(images)} images in {dir_path.resolve()}. Applying Art Heroes metadata...")

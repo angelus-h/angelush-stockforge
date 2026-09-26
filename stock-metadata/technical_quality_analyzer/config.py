@@ -2,10 +2,12 @@ from dataclasses import dataclass
 
 @dataclass
 class QualityConfig:
-    mode: str = "paranoid"
+    mode: str = "production"  # "production" (high precision) or "paranoid" (high recall)
     
     dust_sensitivity: float = 0.8  
     dust_persistence_tolerance: float = 0.02 
+    dust_min_score_production: float = 0.65
+    dust_min_score_paranoid: float = 0.45
     
     # Sharpness parameters
     sharpness_global_threshold: float = 50.0
