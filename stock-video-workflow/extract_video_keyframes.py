@@ -10,12 +10,20 @@ import os
 import sys
 import re
 import json
+import shutil
 import argparse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import cv2
 import numpy as np
 from PIL import Image
+
+# Ensure ffmpeg/ffprobe from known locations if not in PATH
+if not shutil.which("ffmpeg"):
+    for cand in [r"C:\Program Files\Krita (x64)\bin", r"C:\ffmpeg\bin"]:
+        if os.path.exists(os.path.join(cand, "ffmpeg.exe")):
+            os.environ["PATH"] = cand + os.pathsep + os.environ.get("PATH", "")
+            break
 
 
 def get_gps_from_file(file_path):
@@ -122,14 +130,26 @@ def extract_frames_from_video(video_path, output_dir, max_thumb_dim=640, default
     if duration <= 0:
         return None
 
-    # Date parsing from filename if standard YYYYMMDD_HHMMSS
+    # Date parsing from filename if standard YYYYMMDD_HHMMSS or YYYY-MM-DD_..._HHMMSS
     date_str = "Unknown"
-    date_match = re.search(r'(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})', base_name)
+    date_match = re.search(r'(\d{4})[-_](\d{2})[-_](\d{2}).*?(\d{2})(\d{2})(\d{2})', base_name)
+    if not date_match:
+        date_match = re.search(r'(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})', base_name)
     if date_match:
         year, month, day, hour, minute, second = date_match.groups()
         date_str = f"{year}-{month}-{day} {hour}:{minute}:{second}"
 
     lat, lon = get_gps_from_file(video_path)
+    if (lat is None or lon is None) and os.path.dirname(video_path):
+        parent_dir = os.path.dirname(video_path)
+        # Try checking parent directory for original video without suffix
+        clean_base = re.sub(r'_\d{8}$', '', base_name)
+        candidate_parent = os.path.join(parent_dir, f"{clean_base}.mp4")
+        if not os.path.exists(candidate_parent):
+            candidate_parent = os.path.join(os.path.dirname(parent_dir), f"{clean_base}.mp4")
+        if os.path.exists(candidate_parent):
+            lat, lon = get_gps_from_file(candidate_parent)
+
     loc_info = resolve_location(lat, lon, default_loc=default_loc)
 
     if os.path.exists(contact_sheet_path):

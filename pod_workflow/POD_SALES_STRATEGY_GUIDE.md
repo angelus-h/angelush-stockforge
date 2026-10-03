@@ -1,74 +1,55 @@
-# Teljeskörű POD és Stock Fotó Sales Stratégia
-*(Automatizált, Skálázható Értékesítés a Gemini Flash segítségével)*
+# Comprehensive Print-on-Demand (POD) & Stock Photo Sales Strategy
+*(Automated, Scalable Sales Pipeline Powered by Gemini Flash & OpenCode)*
 
-## 1. A Platformok és a "Termék-Match" Stratégia
-Nem minden kép való mindenhova. A siker kulcsa a megfelelő képi világ párosítása a megfelelő platformmal és közönséggel.
+## 1. Platform Taxonomy & "Product-Market Match" Strategy
+Not every image belongs on every platform. Market success depends on matching specific visual aesthetics to the right buyers and delivery channels:
 
-*   **Fine Art America (FAA) / Pixels:**
-    *   *Fókusz:* Lakberendezés, irodai dekoráció, prémium fali képek (canvas, acrylic).
-    *   *Tartalom:* Tájképek, infravörös fotók, "Healing Art" (nyugtató, pasztell színek), absztrakt természet.
-    *   *Sztori/SEO:* "Jenny Rainbow" stratégia. Érzelmek, békesség, lakberendezési kulcsszavak (pl. "Bedroom decor", "Feng Shui").
-*   **Microstock (Shutterstock, Adobe Stock, Pond5):**
-    *   *Fókusz:* Kereskedelmi felhasználás, reklámügynökségek, weboldal készítők.
-    *   *Tartalom:* Hagyományos utazási videók, B-roll anyagok (pl. Plumlov, Vranov drón/kameraképek), izolált tárgyak, mindennapi szituációk.
-    *   *Sztori/SEO:* Szigorúan tényszerű, objektív kulcsszavak (helyszín, időjárás, cselekvés, objektumok).
-*   **Merch / Ajándéktárgyak (Redbubble, Teespring, Merch by Amazon):**
-    *   *Fókusz:* Pólók, bögrék, telefontokok, matricák.
-    *   *Tartalom:* Grafikus elemek, tipográfia, vicces feliratok, izolált (vektoros/átlátszó hátterű) művészeti formák. (Egy szimpla tájkép rosszul mutat egy pólón).
-    *   *Sztori/SEO:* Popkultúra, niche hobbik, humor, trendek.
+*   **Fine Art America (FAA) / Pixels & Art Heroes:**
+    *   *Focus:* High-end residential interior design, corporate art consulting, premium wall art (canvas, framed gallery prints, acrylic, metal).
+    *   *Visuals:* Scenic landscapes, infrared fine art, "Healing Art" (soothing pastels, serene nature), contemplative abstracts.
+    *   *Copy/SEO:* Visual storytelling, emotional grounding, and specific interior placement keywords (e.g., "Master Bedroom Decor", "Executive Office Art", "Biophilic Design").
+*   **Microstock (Shutterstock, Adobe Stock, Pond5, Dreamstime):**
+    *   *Focus:* Commercial licensing, advertising agencies, corporate publishers, editorial media.
+    *   *Visuals:* Authentic regional B-roll video, drone footage, botanical and agricultural macro details, authentic architectural travel scenes.
+    *   *Copy/SEO:* Strictly factual, objective keywords (exact location, weather, subjects, camera movement, technical accuracy).
+*   **Apparel & Niche Merch (Redbubble, Displate, Merch):**
+    *   *Focus:* Metal posters, graphic t-shirts, stickers, tech accessories.
+    *   *Visuals:* High-contrast visual graphics, surreal concepts, isolated botanical/fauna silhouettes, pop-culture and niche hobby themes.
+    *   *Copy/SEO:* Pop culture, specific passions, humorous or artistic trends.
 
-## 2. A "Jenny Rainbow / Matt Payne" FAA Masterclass (A Belsőépítészeti Fókusz)
-A Fine Art értékesítés pszichológiája: az emberek nem képet vesznek, hanem *érzést* és *megoldást* egy üres falra.
+## 2. Fine Art Architecture & Interior Design Psychology
+In fine art commerce, collectors and designers do not buy an image file; they purchase an *emotional atmosphere* and a *solution for an empty wall*:
 
-*   **A "Katalógus" helyett "Kollekciók":** Ne "Csehország" legyen a galéria neve. Legyen "Romantic Bohemian Gardens" vagy "Ethereal Infrared Landscapes".
-*   **A 3 Bekezdéses Szabály (A Leírás Pszichológiája):**
-    1.  *Érzelem & Téma:* Mi van a képen és milyen érzést (pl. békét, nyugalmat) áraszt.
-    2.  *Belsőépítészet (A Horog):* Melyik szobába illik (pl. "Perfect for a serene master bedroom or executive office").
-    3.  *Minőség & Bizalom:* Múzeumi minőség, 30 napos garancia (hogy bátran merjenek rendelni).
-*   **A Cím (Title) Képlete:** `[Fő téma/Érzelem] + [Fény/Hangulat] + [Helyszín] + [Wall Art/Decor megjelölés]`. (Soha ne legyen benne sorszám, pl. #1!).
+*   **Thematic "Collections" over Generic Catalogs:** Avoid geographical dumping grounds. Curate cohesive thematic series such as "Romantic Bohemian Sanctuaries" or "Ethereal Infrared Landscapes".
+*   **The Three-Paragraph Narrative Formula:**
+    1.  *Visual Storytelling & Mood:* Describes the sensory atmosphere, lighting, seasonal mood, and emotional resonance.
+    2.  *Interior Styling & Architectural Hook:* Identifies specific architectural environments (e.g., "A calming focal point for modern minimalist living rooms, boutique hotel suites, or healthcare healing spaces").
+    3.  *Museum Quality & Buyer Confidence:* Highlights archival pigment quality, durable substrate finishes, 30-day return guarantees, and artist attribution to landscape photographer Angelus H.
+*   **Formulaic Title Structure:** `[Core Subject / Emotional Mood] + [Light / Atmosphere] + [Location] + [Fine Art Wall Decor Designation]`. Never include sequence codes (e.g. `#001`).
 
-## 3. A Munkafolyamat (Workflow) Automatizálása
-Az időd a legdrágább. Mivel egyszerre kis adagokban (batch) dolgozol, a jelenlegi *OpenCode + Gemini Flash* kombó a leghatékonyabb:
+## 3. Workflow Automation Pipeline
+Batch processing maximizes creative throughput while eliminating repetitive overhead:
 
-*   **Stock Videók / Microstock (A "Tényszerű" Batch):**
-    *   *Folyamat:* Mappa bedobása OpenCode-ba -> Gemini Flash elemzi a `.mp4` / `.jpg` fájlokat -> CSV generálás a Shutterstock/Adobe/Pond5 oszlopszerkezete szerint.
-*   **Fine Art / POD (Az "Érzelmi" Batch):**
-    *   *Folyamat:* A `FAA-prompt.txt` használata OpenCode-ban (vagy a Python szkript bevonása). A Gemini Flash itt a *Jenny Rainbow stratégiát* alkalmazza: JSON-be vagy CSV-be köpi a SEO címet, a 3 bekezdést és a (szigorúan 500 karakter alatti, relevancia szerint csökkenő) tageket.
+*   **Stock Video & Microstock (The Objective Stream):**
+    *   *Pipeline:* Video directory selected in OpenCode / Streamlit -> Gemini Flash multimodal vision engine extracts telemetry and filmstrips -> Platform CSVs generated adhering strictly to agency formatting.
+*   **Fine Art / POD (The Narrative Stream):**
+    *   *Pipeline:* Multi-image staging folder processed via Gemini Flash -> Structured JSON/CSV generated with interior-design copywriting, 3-paragraph narrative, and strict tag string boundaries (<500 characters).
 
-## 4. Jövőkép: Pólóminták és Niche Termékek
-Ha belépsz a póló/ajándék piacra, az új workflowt igényel:
-*   A képeket (pl. infravörös fák) AI upscalerrel és háttéreltávolítóval (pl. Photoroom/Clipdrop) le kell választani, hogy jól mutassanak a ruhákon.
-*   A Gemini Flash promptot át kell állítani: ott a "funny", "gift for him/her", "trending" és a specifikus hobbi kulcsszavak fognak eladni, nem a belsőépítészet.
+## 4. B2B & Institutional Procurement Patterns
+A substantial share of fine art sales is driven by **commercial interior designers, corporate procurement officers, and healthcare art consultants (B2B)** purchasing large packages:
 
----
-*Mentve: 2026. Szeptember 1.*
+1.  **The Healthcare / Hospitality Group Buying Phenomenon:**
+    *   Designers rarely buy a single frame; they order 30–40 color-coordinated, emotionally harmonious artworks for an entire hospital wing, boutique resort, or corporate headquarters.
+    *   *Action:* Curate visual series with consistent tonality and lighting. Emphasize terms like **"Healing Art"**, **"Biophilic Interior Design"**, and **"Calming Therapeutic Space"**.
+2.  **Functional Wall Decor (Wellness, Dining, Science):**
+    *   Spas, wellness retreats, and upscale medical offices actively acquire serene organic textures and botanical fine art.
+    *   *Action:* Include targeted tags: "Spa Wall Decor", "Wellness Retreat Art", "Therapeutic Nature Photography" in Paragraph 2 interior guidance.
+3.  **Regional Nostalgia & Heritage Connection:**
+    *   Travelers and expatriates maintain profound emotional attachments to locations of origin or milestone journeys.
+    *   *Action:* Specific regional landmarks ("Hardegg", "Lednice Castle", "Moravia", "Danube Bend") yield exceptionally high conversion rates with collectors seeking genuine heritage connections.
 
-## 5. A B2B és Intézményi Vásárlók Pszichológiája (A Recent Sales Elemzés)
-Az eladások (különösen a Fine Art America platformon) jelentős részét nem magánszemélyek impulzusvásárlásai teszik ki, hanem **belsőépítészek, lakberendezők és intézményi beszerzők (B2B)** nagy volumenű megrendelései.
-
-A "Recent Sales" elemzéséből származó 3 aranyköpés a portfólió építéséhez:
-
-1.  **A "Szálloda/Kórház Effektus" (Tömeges Vásárlás):**
-    *   A lakberendezők (pl. az elemzésbeli kanadai vásárló) nem egy képet vesznek, hanem 30-40 darab, *színben és hangulatban harmonizáló* alkotást egy adott projekthez (kórház folyosó, boutique hotel, irodaház).
-    *   *Akció:* Amikor egy sorozatot töltesz fel (pl. infravörös cseh tájak), a képeknek vizuálisan koherensnek kell lenniük. A leírásokban emeld ki a **"Healing Art"** és **"Ethereal/Calming Space"** szavakat, hogy a kórházak/hotelek belsőépítészei rátaláljanak.
-2.  **A Funkcionális Fali Dekoráció (Étel, Wellness, Tudomány):**
-    *   Az éttermeknek spárga- és lazacfotók kellenek a falra. A kutatóintézeteknek baktérium illusztrációk. A te portfóliódból a természetfotók tökéletesek **Wellness és Spa** központok falaira.
-    *   *Akció:* Soha ne csak "tájképként" add el. Használd a "Spa Decor", "Waiting Room Art", "Therapeutic Nature Photography" kifejezéseket a leírások (P2) bekezdésében.
-3.  **A Niche Kötődés (Földrajz és Nosztalgia):**
-    *   Az emberek ragaszkodnak ahhoz a helyhez, ahonnan származnak, vagy ahol egy csodálatos nyaralást/nászutat töltöttek.
-    *   *Akció:* A "Hardegg", "Cesky Krumlov", "Moravia" kulcsszavak és geolokációk szentek. Ezek nem tömegvonzó szavak, de akik erre keresnek (mert ott nőttek fel, vagy ott volt a nászútjuk), azok *nagyon magas konverzióval* vásárolnak prémium terméket.
-
-## 6. Jövőbeli Fejlesztés: Fine Art America REST API (Automatizált Feltöltés)
-A Fine Art America / Pixels rendelkezik egy hivatalos REST API-val, ami a teljes munkafolyamat automatizálásának (feltöltés + metaadat beállítás) végső állomása.
-
-**Amire az FAA API képes:**
-1.  **Képfeltöltés (Upload):** Közvetlen, programozott képfeltöltés a szerverre (elkerülve a lassú webes felületet).
-2.  **Metaadatok Frissítése (Update):** A Gemini Flash által generált JSON adatok (Title, Description, Tags) egyetlen POST kéréssel történő beküldése.
-3.  **Kollekciók (Galleries) Kezelése:** A képek hozzárendelése a "Healing Art" vagy "Romantic Gardens" mappákhoz.
-
-**Az Automata Pipeline Tervezete (Python):**
-1.  `gemini_metadata_generator.py` beolvassa a képet, és visszaad egy JSON-t (Cím, 3 bekezdés, Tagek, Kollekció ID).
-2.  A Python script Base64/Multipart formátumban felküldi a képet az FAA REST API `upload` végpontjára.
-3.  A sikeres feltöltés után (a kapott Image ID-val) a script meghívja a `metadata_update` végpontot, és ráilleszti a Gemini által írt SEO szövegeket.
-
-*Cél:* Egyetlen parancs kiadásával (`python upload_batch.py /path/to/images`) egy teljes mappa feltöltésre kerül, SEO-zva, a megfelelő kollekciókba rendezve.
+## 5. Automated REST API Integration (Fine Art America / Pixels)
+Fine Art America offers a REST API enabling end-to-end programmatic ingestion:
+1.  **Asset Ingestion:** Automated multi-part upload directly to the server.
+2.  **Metadata Injection:** Immediate application of AI-generated titles, 3-paragraph storytelling, and taxonomy tags via API payload.
+3.  **Collection Assignment:** Automatic organization into designated themed galleries (e.g., "Healing Art", "Romantic Castles").

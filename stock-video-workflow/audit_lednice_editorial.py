@@ -13,18 +13,13 @@ import json
 import csv
 import re
 import time
+import argparse
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import google.generativeai as genai
 from PIL import Image
 
-LEDNICE_DIR = "/run/media/mgreczi/SSD/VIDEOS/Lednice"
-METADATA_DIR = os.path.join(LEDNICE_DIR, "_metadata")
-FRAMES_DIR = os.path.join(LEDNICE_DIR, "_temp_frames")
-CACHE_FILE = os.path.join(METADATA_DIR, "ai_metadata_cache.json")
-BACKUP_FILE = os.path.join(METADATA_DIR, "ai_metadata_cache.json.bak")
-AUDIT_CACHE_FILE = os.path.join(METADATA_DIR, "people_audit_cache.json")
-VMETA_FILE = os.path.join(FRAMES_DIR, "video_metadata_summary.json")
+DEFAULT_DIR = r"G:\VIDEOS\Lednice\final"
 
 def format_editorial_date(date_str):
     if not date_str or date_str == "Unknown":
@@ -99,26 +94,38 @@ Respond strictly in JSON:
     return None
 
 def main():
-    print("=== Starting Lednice Editorial & People Audit ===")
+    parser = argparse.ArgumentParser(description="Audit Lednice footage for people and update editorial status")
+    parser.add_argument("--input", "-i", default=DEFAULT_DIR, help="Directory containing original videos")
+    args = parser.parse_args()
+
+    lednice_dir = os.path.abspath(args.input)
+    metadata_dir = os.path.join(lednice_dir, "_metadata")
+    frames_dir = os.path.join(lednice_dir, "_temp_frames")
+    cache_file = os.path.join(metadata_dir, "ai_metadata_cache.json")
+    backup_file = os.path.join(metadata_dir, "ai_metadata_cache.json.bak")
+    audit_cache_file = os.path.join(metadata_dir, "people_audit_cache.json")
+    vmeta_file = os.path.join(frames_dir, "video_metadata_summary.json")
+
+    print(f"=== Starting Lednice Editorial & People Audit for: {lednice_dir} ===")
     
-    with open(CACHE_FILE, "r", encoding="utf-8") as f:
+    with open(cache_file, "r", encoding="utf-8") as f:
         cache_data = json.load(f)
     print(f"Loaded cache data: {len(cache_data)} items")
     
-    with open(VMETA_FILE, "r", encoding="utf-8") as f:
+    with open(vmeta_file, "r", encoding="utf-8") as f:
         vmeta_data = json.load(f)
     vmeta_lookup = {item["filename"]: item for item in vmeta_data}
 
     # Backup cache if not yet backed up
-    if not os.path.exists(BACKUP_FILE):
-        with open(BACKUP_FILE, "w", encoding="utf-8") as f:
+    if not os.path.exists(backup_file):
+        with open(backup_file, "w", encoding="utf-8") as f:
             json.dump(cache_data, f, indent=2, ensure_ascii=False)
-        print(f"Backup created at {BACKUP_FILE}")
+        print(f"Backup created at {backup_file}")
 
     audit_cache = {}
-    if os.path.exists(AUDIT_CACHE_FILE):
+    if os.path.exists(audit_cache_file):
         try:
-            with open(AUDIT_CACHE_FILE, "r", encoding="utf-8") as f:
+            with open(audit_cache_file, "r", encoding="utf-8") as f:
                 audit_cache = json.load(f)
         except Exception:
             audit_cache = {}
@@ -138,12 +145,12 @@ def main():
         
         # Find matching filmstrip
         filmstrip_name = f"{base_orig}_filmstrip.jpg"
-        filmstrip_path = os.path.join(FRAMES_DIR, filmstrip_name)
+        filmstrip_path = os.path.join(frames_dir, filmstrip_name)
         if not os.path.exists(filmstrip_path):
             # Try searching in frames dir
-            for fs in os.listdir(FRAMES_DIR):
+            for fs in os.listdir(frames_dir):
                 if fs.startswith(base_orig) and fs.endswith("_filmstrip.jpg"):
-                    filmstrip_path = os.path.join(FRAMES_DIR, fs)
+                    filmstrip_path = os.path.join(frames_dir, fs)
                     break
         
         items_to_check.append((idx, item, orig_fn, new_fn, filmstrip_path))
@@ -166,7 +173,7 @@ def main():
         if res:
             with audit_lock:
                 audit_cache[new_fn] = res
-                with open(AUDIT_CACHE_FILE, "w", encoding="utf-8") as f:
+                with open(audit_cache_file, "w", encoding="utf-8") as f:
                     json.dump(audit_cache, f, indent=2, ensure_ascii=False)
         return new_fn, res
 
@@ -260,12 +267,12 @@ def main():
     print(f"Total Editorial now: {already_editorial + updated_to_editorial} / {len(cache_data)}")
 
     # Save updated cache
-    with open(CACHE_FILE, "w", encoding="utf-8") as f:
+    with open(cache_file, "w", encoding="utf-8") as f:
         json.dump(cache_data, f, indent=2, ensure_ascii=False)
-    print(f"Updated cache saved to {CACHE_FILE}")
+    print(f"Updated cache saved to {cache_file}")
 
     # Regenerate all CSVs
-    regenerate_csvs(cache_data, vmeta_lookup)
+    regenerate_csvs(cache_data, vmeta_lookup, metadata_dir)
 
 def sanitize_adobe_title(title):
     t = re.sub(r'[,.;:!?]', ' ', title or '')
@@ -274,11 +281,11 @@ def sanitize_adobe_title(title):
         t = t[:70].rsplit(' ', 1)[0]
     return t
 
-def regenerate_csvs(results, meta_lookup):
+def regenerate_csvs(results, meta_lookup, metadata_dir):
     print("\nRegenerating agency CSV files...")
     
     # 1. Adobe
-    adobe_csv = os.path.join(METADATA_DIR, "adobe_stock_video.csv")
+    adobe_csv = os.path.join(metadata_dir, "adobe_stock_video.csv")
     with open(adobe_csv, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(["Filename", "Title", "Keywords", "Category", "Releases"])
@@ -287,7 +294,7 @@ def regenerate_csvs(results, meta_lookup):
             w.writerow([r["new_filename"], clean_title, r["keywords"], r["adobe"]["category"], ""])
 
     # 2. Shutterstock
-    shutter_csv = os.path.join(METADATA_DIR, "shutterstock_video.csv")
+    shutter_csv = os.path.join(metadata_dir, "shutterstock_video.csv")
     with open(shutter_csv, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(["Filename", "Description", "Keywords", "Categories", "Editorial", "Mature content", "illustration"])
@@ -299,7 +306,7 @@ def regenerate_csvs(results, meta_lookup):
             w.writerow([r["new_filename"], desc, r["keywords"], cats, ed, "no", "no"])
 
     # 3. Pond5
-    pond5_csv = os.path.join(METADATA_DIR, "pond5_video.csv")
+    pond5_csv = os.path.join(metadata_dir, "pond5_video.csv")
     with open(pond5_csv, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(["originalfilename", "title", "description", "keywords", "editorial"])
@@ -309,7 +316,7 @@ def regenerate_csvs(results, meta_lookup):
             w.writerow([r["new_filename"], p5_meta.get("title", ""), p5_meta.get("description", ""), r["keywords"], ed])
 
     # 4. Dreamstime
-    dreamstime_csv = os.path.join(METADATA_DIR, "dreamstime_video.csv")
+    dreamstime_csv = os.path.join(metadata_dir, "dreamstime_video.csv")
     with open(dreamstime_csv, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(["Filename", "Video Name", "Description", "Category 1", "Category 2", "Category 3", "keywords", "W-EL", "SR-EL", "SR-Price", "Editorial", "MR doc Ids", "Pr Docs"])
@@ -324,7 +331,7 @@ def regenerate_csvs(results, meta_lookup):
             if c3 == "2": c3 = "70"
             w.writerow([r["new_filename"], d.get("video_name", ""), d.get("description", ""), c1, c2, c3, r["keywords"], "0.0", "0.0", "0.0", ed_val, "", ""])
 
-    print(f"All 4 CSVs regenerated successfully in {METADATA_DIR}")
+    print(f"All 4 CSVs regenerated successfully in {metadata_dir}")
 
 if __name__ == "__main__":
     main()

@@ -10,6 +10,7 @@ from .detectors.dust import DustDetector
 from .detectors.sharpness import SharpnessDetector
 from .detectors.exposure import ExposureDetector
 from .detectors.dead_pixels import DeadPixelDetector
+from .detectors.noise import NoiseDetector
 from .fingerprint.dust_database import DustDatabase
 
 class TechnicalQualityAnalyzer:
@@ -20,7 +21,8 @@ class TechnicalQualityAnalyzer:
             DustDetector(config, self.db),
             SharpnessDetector(config),
             ExposureDetector(config),
-            DeadPixelDetector(config)
+            DeadPixelDetector(config),
+            NoiseDetector(config)
         ]
         
     def analyze_image(self, path: str) -> QualityReport:

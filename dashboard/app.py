@@ -21,9 +21,10 @@ import streamlit as st
 import streamlit.components.v1 as components
 import json
 import io
+from datetime import datetime
 from PIL import Image
 
-for _m in ["db", "dashboard.db", "llm_client", "dashboard.llm_client", "ftp_uploader", "dashboard.ftp_uploader", "credentials", "dashboard.credentials"]:
+for _m in ["db", "dashboard.db", "llm_client", "dashboard.llm_client", "ftp_uploader", "dashboard.ftp_uploader", "credentials", "dashboard.credentials", "video_studio", "dashboard.video_studio", "stock_metadata", "dashboard.stock_metadata"]:
     if _m in sys.modules and sys.modules[_m] is not None:
         try:
             importlib.reload(sys.modules[_m])
@@ -31,11 +32,15 @@ for _m in ["db", "dashboard.db", "llm_client", "dashboard.llm_client", "ftp_uplo
             pass
 
 try:
-    from dashboard import db, llm_client, ftp_uploader, credentials
+    from dashboard import db, llm_client, ftp_uploader, credentials, video_studio, stock_metadata
 except ImportError:
-    import db, llm_client, ftp_uploader, credentials
+    import db, llm_client, ftp_uploader, credentials, video_studio, stock_metadata
 
 from pod_workflow.ArtHeroes.apply_art_heroes_metadata import apply_metadata_to_image, find_exiftool
+try:
+    from pod_workflow.displate.displate_tool import analyze_displate_compliance, prepare_for_displate
+except ImportError:
+    analyze_displate_compliance, prepare_for_displate = None, None
 from technical_quality_analyzer.config import QualityConfig
 from technical_quality_analyzer.analyzer import TechnicalQualityAnalyzer
 from technical_quality_analyzer.reporting.diagnostic import draw_diagnostics
@@ -106,11 +111,13 @@ def load_agency_config(agency_name):
             saved_all = {}
 
     saved = saved_all.get(agency_name, {})
-    host = saved.get("host") or preset.get("host", "")
+    host = (saved.get("host") or "").strip() or preset.get("host", "")
     port = int(saved.get("port") or preset.get("port", 21 if preset.get("protocol") != "sftp" else 22))
-    protocol = saved.get("protocol") or preset.get("protocol", "ftp")
-    user = saved.get("user") or preset.get("default_user", "")
-    remote_dir = saved.get("remote_dir") or preset.get("remote_dir", "/")
+    protocol = (saved.get("protocol") or "").strip() or preset.get("protocol", "ftp")
+    user = (saved.get("user") or "").strip() or preset.get("default_user", "")
+    remote_dir = (saved.get("remote_dir") or "").strip() or preset.get("remote_dir", "/")
+    if agency_name == "Alamy" and remote_dir in ["", "/"]:
+        remote_dir = "Stock"
     
     # Retrieve password securely from Windows Credential Manager or .env
     cred_key = preset.get("cred_key", f"{agency_name.upper().replace(' ', '_')}_PASSWORD")
@@ -165,6 +172,77 @@ def load_ftp_config():
 def save_ftp_config(cfg):
     save_agency_config("Pond5", cfg)
     return True
+
+
+def upload_single_image_to_stock_agency(img_item, agency_name, override_user=None, override_pass=None):
+    """
+    Uploads a single image to the specified stock agency, ensuring IPTC/XMP metadata
+    is embedded and necessary sidecar CSV is generated.
+    Returns: dict with {"success": bool, "agency": str, "message": str}
+    """
+    cfg = load_agency_config(agency_name)
+    user = (override_user if override_user is not None else cfg.get("user", "")).strip()
+    password = override_pass if override_pass is not None else cfg.get("password", "")
+
+    if not cfg.get("host") or not user or not password:
+        return {"success": False, "agency": agency_name, "message": f"Missing host, user, or password for {agency_name}."}
+
+    img_path = Path(img_item["file_path"])
+    if not img_path.exists():
+        return {"success": False, "agency": agency_name, "message": f"Image file not found: {img_path.name}"}
+
+    # Embed IPTC/XMP into image
+    # Note: Adobe Stock uses Posters.cz Hybrid metadata when available and enabled.
+    # ALL OTHER AGENCIES (especially Alamy which reads directly from image IPTC/XMP headers)
+    # strictly receive pure Microstock metadata.
+    is_adobe = agency_name in ("Adobe Stock", "AdobeStock", "Adobe")
+    is_hybrid = bool(img_item.get("is_adobe_hybrid", 0))
+
+    if is_adobe and is_hybrid and (img_item.get("adobe_title") or img_item.get("adobe_keywords") or img_item.get("adobe_description")):
+        embed_t = (img_item.get("adobe_title") or img_item.get("stock_title") or img_item.get("title") or "").strip()
+        embed_d = (img_item.get("adobe_description") or img_item.get("stock_description") or img_item.get("description") or embed_t).strip()
+        embed_k = (img_item.get("adobe_keywords") or img_item.get("stock_keywords") or img_item.get("keywords") or "").strip()
+    else:
+        embed_t = (img_item.get("stock_title") or img_item.get("title") or "").strip()
+        embed_d = (img_item.get("stock_description") or img_item.get("description") or embed_t).strip()
+        embed_k = (img_item.get("stock_keywords") or img_item.get("keywords") or "").strip()
+
+    try:
+        exiftool_exe = stock_metadata.find_exiftool()
+        stock_metadata.apply_stock_metadata_to_image(
+            image_path=img_path,
+            title=embed_t,
+            description=embed_d,
+            keywords=embed_k,
+            exiftool_path=exiftool_exe
+        )
+    except Exception as em_err:
+        pass  # Non-fatal warning
+
+    # Sidecar CSV if required
+    files_to_send = [str(img_path)]
+    if agency_name in stock_metadata.AGENCY_CSV_FILENAMES:
+        parent_dir = img_path.parent
+        gen_csv = stock_metadata.generate_agency_csv([img_item], agency_name, parent_dir)
+        if str(gen_csv) not in files_to_send:
+            files_to_send.append(str(gen_csv))
+
+    try:
+        res = ftp_uploader.upload_files(
+            cfg["host"],
+            port=cfg["port"],
+            user=user,
+            password=password,
+            file_paths=files_to_send,
+            protocol=cfg["protocol"],
+            remote_dir=cfg["remote_dir"]
+        )
+        if res["uploaded"] > 0:
+            return {"success": True, "agency": agency_name, "message": f"Uploaded {len(files_to_send)} file(s) successfully"}
+        err = res.get("error") or (res["failed"][0][1] if res["failed"] else "Upload failed")
+        return {"success": False, "agency": agency_name, "message": err}
+    except Exception as e:
+        return {"success": False, "agency": agency_name, "message": str(e)}
 
 
 @st.cache_data(max_entries=2000)
@@ -295,6 +373,15 @@ def main():
 
     # --- SIDEBAR CONTROLS ---
     with st.sidebar:
+        st.header("🎯 Studio Workflow")
+        studio_mode = st.radio(
+            "Select Active Studio",
+            ["📸 Photo & Fine Art Studio", "🎬 Stock Video Studio"],
+            index=0,
+            key="global_studio_mode"
+        )
+        st.divider()
+
         st.header("⚙️ AI Engine Setup")
         
         engine_choice = st.selectbox(
@@ -311,167 +398,170 @@ def main():
         else:
             st.success("💻 Running offline via local Ollama models (llava + llama3.2).")
 
-        st.divider()
-        st.header("📁 Working Directory")
+        if studio_mode == "📸 Photo & Fine Art Studio":
+            st.divider()
+            st.header("📁 Working Directory")
 
-        default_folder = r"G:\upload_temp\Art-Heroes_temp"
-        if "active_folder" not in st.session_state:
-            st.session_state["active_folder"] = default_folder if Path(default_folder).exists() else str(Path.home())
+            default_folder = r"G:\upload_temp\Art-Heroes_temp"
+            if "active_folder" not in st.session_state:
+                st.session_state["active_folder"] = default_folder if Path(default_folder).exists() else str(Path.home())
 
-        current_folder = st.session_state["active_folder"]
-        img_count = count_folder_images(current_folder)
+            current_folder = st.session_state["active_folder"]
+            img_count = count_folder_images(current_folder)
 
-        st.caption("Active Location:")
-        st.code(current_folder, language="text")
-        st.caption(f"📸 **{img_count} images (JPG, PNG)** found in folder")
+            st.caption("Active Location:")
+            st.code(current_folder, language="text")
+            st.caption(f"📸 **{img_count} images (JPG, PNG)** found in folder")
 
-        # 1. Native Windows Explorer Browse & Parent Directory buttons
-        col_browse, col_up = st.columns([2.5, 1])
-        if col_browse.button("📂 Browse Folder...", use_container_width=True, help="Open native Windows Explorer folder selection dialog"):
-            picked = pick_folder_native(current_folder)
-            if picked:
-                st.session_state["active_folder"] = picked
-                st.rerun()
+            # 1. Native Windows Explorer Browse & Parent Directory buttons
+            col_browse, col_up = st.columns([2.5, 1])
+            if col_browse.button("📂 Browse Folder...", use_container_width=True, help="Open native Windows Explorer folder selection dialog"):
+                picked = pick_folder_native(current_folder)
+                if picked:
+                    st.session_state["active_folder"] = picked
+                    st.rerun()
 
-        parent_dir = Path(current_folder).parent
-        if str(parent_dir) != current_folder:
-            if col_up.button("⬆️ Up", use_container_width=True, help=f"Go up to {parent_dir.name or str(parent_dir)}"):
-                st.session_state["active_folder"] = str(parent_dir)
-                st.rerun()
+            parent_dir = Path(current_folder).parent
+            if str(parent_dir) != current_folder:
+                if col_up.button("⬆️ Up", use_container_width=True, help=f"Go up to {parent_dir.name or str(parent_dir)}"):
+                    st.session_state["active_folder"] = str(parent_dir)
+                    st.rerun()
 
-        # 2. Subfolder Navigator Dropdown
-        subdirs = get_subfolders(current_folder)
-        if subdirs:
-            chosen_sub = st.selectbox(
-                "📁 Enter Subfolder",
-                ["(Select subfolder...)"] + subdirs,
-                key=f"subnav_{current_folder}"
-            )
-            if chosen_sub != "(Select subfolder...)":
-                st.session_state["active_folder"] = str((Path(current_folder) / chosen_sub).resolve())
-                st.rerun()
-
-        # 3. Recent Folders History Dropdown
-        known_dirs = db.get_known_folders()
-        if known_dirs:
-            other_known = [d for d in known_dirs if os.path.normpath(d) != os.path.normpath(current_folder)]
-            if other_known:
-                chosen_recent = st.selectbox(
-                    "🕒 Recent Folders",
-                    ["(Select from history...)"] + other_known,
-                    key="recent_folders_history"
+            # 2. Subfolder Navigator Dropdown
+            subdirs = get_subfolders(current_folder)
+            if subdirs:
+                chosen_sub = st.selectbox(
+                    "📁 Enter Subfolder",
+                    ["(Select subfolder...)"] + subdirs,
+                    key=f"subnav_{current_folder}"
                 )
-                if chosen_recent != "(Select from history...)":
-                    st.session_state["active_folder"] = chosen_recent
+                if chosen_sub != "(Select subfolder...)":
+                    st.session_state["active_folder"] = str((Path(current_folder) / chosen_sub).resolve())
                     st.rerun()
 
-        # 4. Quick Drive Switcher
-        drives = get_available_drives()
-        current_drive = os.path.splitdrive(current_folder)[0].upper() + "\\"
-        other_drives = [d for d in drives if d.upper() != current_drive]
-        if other_drives:
-            chosen_drive = st.selectbox(
-                "💾 Switch Drive",
-                ["(Current: " + current_drive + ")"] + other_drives,
-                key="drive_switcher"
-            )
-            if not chosen_drive.startswith("(Current:"):
-                st.session_state["active_folder"] = chosen_drive
-                st.rerun()
+            # 3. Recent Folders History Dropdown
+            known_dirs = db.get_known_folders()
+            if known_dirs:
+                other_known = [d for d in known_dirs if os.path.normpath(d) != os.path.normpath(current_folder)]
+                if other_known:
+                    chosen_recent = st.selectbox(
+                        "🕒 Recent Folders",
+                        ["(Select from history...)"] + other_known,
+                        key="recent_folders_history"
+                    )
+                    if chosen_recent != "(Select from history...)":
+                        st.session_state["active_folder"] = chosen_recent
+                        st.rerun()
 
-        # 5. Optional manual override expander
-        with st.expander("✏️ Type / Paste Custom Path", expanded=False):
-            manual_input = st.text_input("Custom Path", value=current_folder, key="manual_path_override")
-            if st.button("Apply Path", use_container_width=True, key="apply_manual_btn"):
-                if manual_input and Path(manual_input).is_dir():
-                    st.session_state["active_folder"] = os.path.normpath(manual_input)
+            # 4. Quick Drive Switcher
+            drives = get_available_drives()
+            current_drive = os.path.splitdrive(current_folder)[0].upper() + "\\"
+            other_drives = [d for d in drives if d.upper() != current_drive]
+            if other_drives:
+                chosen_drive = st.selectbox(
+                    "💾 Switch Drive",
+                    ["(Current: " + current_drive + ")"] + other_drives,
+                    key="drive_switcher"
+                )
+                if not chosen_drive.startswith("(Current:"):
+                    st.session_state["active_folder"] = chosen_drive
                     st.rerun()
-                else:
-                    st.error("Directory not found!")
 
-        folder_path = st.session_state["active_folder"]
-        scope_to_folder = st.checkbox("🎯 Scope catalog & batch actions to this folder", value=True)
+            # 5. Optional manual override expander
+            with st.expander("✏️ Type / Paste Custom Path", expanded=False):
+                manual_input = st.text_input("Custom Path", value=current_folder, key="manual_path_override")
+                if st.button("Apply Path", use_container_width=True, key="apply_manual_btn"):
+                    if manual_input and Path(manual_input).is_dir():
+                        st.session_state["active_folder"] = os.path.normpath(manual_input)
+                        st.rerun()
+                    else:
+                        st.error("Directory not found!")
 
-        platform = st.selectbox("Catalog Target", ["ArtHeroes", "Displate", "ALL"], index=0)
+            folder_path = st.session_state["active_folder"]
+            scope_to_folder = st.checkbox("🎯 Scope catalog & batch actions to this folder", value=True)
 
-        scan_col1, scan_col2 = st.columns([1.6, 1.2])
-        if scan_col1.button("🔄 Scan & Import", use_container_width=True, type="primary"):
-            try:
-                stats = db.scan_and_sync_folder(folder_path, platform=platform if platform != "ALL" else "ArtHeroes")
-                st.success(f"Scanned {stats['scanned']} files (Imported: {stats['imported']}, Updated: {stats['updated']})")
+            platform = st.selectbox("Catalog Target", ["ArtHeroes", "Displate", "ALL"], index=0)
+
+            scan_col1, scan_col2 = st.columns([1.6, 1.2])
+            if scan_col1.button("🔄 Scan & Import", use_container_width=True, type="primary"):
+                try:
+                    stats = db.scan_and_sync_folder(folder_path, platform=platform if platform != "ALL" else "ArtHeroes")
+                    st.success(f"Scanned {stats['scanned']} files (Imported: {stats['imported']}, Updated: {stats['updated']})")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Scan failed: {e}")
+
+            if scan_col2.button("🔃 Reload View", use_container_width=True, help="Clear cache and reload all items"):
+                st.cache_data.clear()
                 st.rerun()
-            except Exception as e:
-                st.error(f"Scan failed: {e}")
 
-        if scan_col2.button("🔃 Reload View", use_container_width=True, help="Clear cache and reload all items"):
-            st.cache_data.clear()
-            st.rerun()
-
-        st.divider()
-        st.subheader("📷 Series Context & Location")
-        st.caption("Optional guidance about equipment, technique, or location for this folder:")
-        folder_context = st.text_area(
-            "Folder Context",
-            value="",
-            placeholder="e.g. Fine art 720nm infrared, Pentax K-r, Lednice-Valtice...",
-            height=80,
-            help="Optional. If provided, this context is automatically included when generating titles and descriptions."
-        )
-
-        st.divider()
-        st.subheader("🔍 Filters")
-        status_filter = st.selectbox("Metadata Status", ["ALL", "NEW", "GENERATED", "APPLIED"])
-        qc_filter = st.selectbox("QC Preflight Filter", ["ALL", "UNCHECKED", "PASS", "REVIEW", "HIGH_RISK"])
-        grade_filter = st.selectbox(
-            "Grade Filter",
-            ["ALL", "FINE_ART", "STOCK", "BOTH", "UNASSIGNED"],
-            format_func=lambda x: {
-                "ALL": "ALL Grades",
-                "FINE_ART": "🎨 Fine Art (incl. Dual)",
-                "STOCK": "📸 Stock (incl. Dual)",
-                "BOTH": "🎨📸 Dual Grade Only",
-                "UNASSIGNED": "⚪ Unassigned Only"
-            }[x]
-        )
-        uploaded_filter = st.selectbox(
-            "Upload Status Filter",
-            [
-                "ALL", "NOT_UPLOADED", "ANY_UPLOADED",
-                "Adobe Stock", "Vecteezy", "Shutterstock", "Alamy",
-                "Art Heroes", "Displate", "Pond5", "Dreamstime", "Fine Art America"
-            ],
-            format_func=lambda x: {
-                "ALL": "ALL Upload States",
-                "NOT_UPLOADED": "⚪ Not uploaded anywhere",
-                "ANY_UPLOADED": "🟢 Uploaded to at least one",
-                "Adobe Stock": "🟢 Uploaded: Adobe Stock",
-                "Vecteezy": "🟢 Uploaded: Vecteezy",
-                "Shutterstock": "🟢 Uploaded: Shutterstock",
-                "Alamy": "🟢 Uploaded: Alamy",
-                "Art Heroes": "🟢 Uploaded: Art Heroes",
-                "Displate": "🟢 Uploaded: Displate",
-                "Pond5": "🟢 Uploaded: Pond5",
-                "Dreamstime": "🟢 Uploaded: Dreamstime",
-                "Fine Art America": "🟢 Uploaded: Fine Art America"
-            }.get(x, x)
-        )
-        search_query = st.text_input("Search (Filename / Tag)", "")
-
-        st.divider()
-        st.subheader("📤 Export Metadata")
-        export_target = st.selectbox("Export Platform", ["ArtHeroes", "Displate"])
-        if st.button(f"📊 Export {export_target} CSV", use_container_width=True):
-            csv_out = Path(folder_path) / f"stockforge_{export_target.lower()}_export.csv"
-            saved_path = db.export_catalog_csv(
-                csv_out,
-                platform=export_target,
-                folder_path=folder_path if scope_to_folder and folder_path else None
+            st.divider()
+            st.subheader("📷 Series Context & Location")
+            st.caption("Optional guidance about equipment, technique, or location for this folder:")
+            folder_context = st.text_area(
+                "Folder Context",
+                value="",
+                placeholder="e.g. Fine art 720nm infrared, Pentax K-r, Lednice-Valtice...",
+                height=80,
+                help="Optional. If provided, this context is automatically included when generating titles and descriptions."
             )
-            st.success(f"Saved: {saved_path}")
+
+            st.divider()
+            st.subheader("🔍 Filters")
+            status_filter = st.selectbox("Metadata Status", ["ALL", "NEW", "GENERATED", "APPLIED"])
+            qc_filter = st.selectbox("QC Preflight Filter", ["ALL", "UNCHECKED", "PASS", "REVIEW", "HIGH_RISK"])
+            grade_filter = st.selectbox(
+                "Grade Filter",
+                ["ALL", "FINE_ART", "STOCK", "BOTH", "UNASSIGNED"],
+                format_func=lambda x: {
+                    "ALL": "ALL Grades",
+                    "FINE_ART": "🎨 Fine Art (incl. Dual)",
+                    "STOCK": "📸 Stock (incl. Dual)",
+                    "BOTH": "🎨📸 Dual Grade Only",
+                    "UNASSIGNED": "⚪ Unassigned Only"
+                }[x]
+            )
+            uploaded_filter = st.selectbox(
+                "Upload Status Filter",
+                [
+                    "ALL", "NOT_UPLOADED", "ANY_UPLOADED",
+                    "Adobe Stock", "Vecteezy", "Shutterstock", "Alamy",
+                    "Art Heroes", "Displate", "Pond5", "Dreamstime", "Depositphotos", "Fine Art America"
+                ],
+                format_func=lambda x: {
+                    "ALL": "ALL Upload States",
+                    "NOT_UPLOADED": "⚪ Not uploaded anywhere",
+                    "ANY_UPLOADED": "🟢 Uploaded to at least one",
+                    "Adobe Stock": "🟢 Uploaded: Adobe Stock",
+                    "Vecteezy": "🟢 Uploaded: Vecteezy",
+                    "Shutterstock": "🟢 Uploaded: Shutterstock",
+                    "Alamy": "🟢 Uploaded: Alamy",
+                    "Art Heroes": "🟢 Uploaded: Art Heroes",
+                    "Displate": "🟢 Uploaded: Displate",
+                    "Pond5": "🟢 Uploaded: Pond5",
+                    "Dreamstime": "🟢 Uploaded: Dreamstime",
+                    "Depositphotos": "🟢 Uploaded: Depositphotos",
+                    "Fine Art America": "🟢 Uploaded: Fine Art America"
+                }.get(x, x)
+            )
+            search_query = st.text_input("Search (Filename / Tag)", "")
+
+            st.divider()
+            st.subheader("📤 Export Metadata")
+            export_target = st.selectbox("Export Platform", ["Adobe Stock", "Alamy", "Depositphotos", "Vecteezy", "Pond5", "Dreamstime", "Shutterstock", "ArtHeroes", "Displate"])
+            if st.button(f"📊 Export {export_target} CSV", use_container_width=True):
+                target_slug = export_target.lower().replace(" ", "_")
+                csv_out = Path(folder_path) / f"stockforge_{target_slug}_export.csv"
+                saved_path = db.export_catalog_csv(
+                    csv_out,
+                    platform=export_target,
+                    folder_path=folder_path if scope_to_folder and folder_path else None
+                )
+                st.success(f"Saved: {saved_path}")
 
         st.divider()
         with st.expander("🚀 Agency FTP / SFTP Uploader Hub", expanded=False):
-            agency_list = ["Adobe Stock", "Vecteezy", "Shutterstock", "Pond5", "Dreamstime", "Custom FTP / SFTP"]
+            agency_list = ["Adobe Stock", "Alamy", "Depositphotos", "Vecteezy", "Shutterstock", "Pond5", "Dreamstime", "Custom FTP / SFTP"]
             chosen_agency = st.selectbox("Target Agency Profile", agency_list, index=0, key="sb_agency_profile")
             
             cfg = load_agency_config(chosen_agency)
@@ -484,23 +574,57 @@ def main():
             
             u_host = st.text_input("Server Host", value=cfg["host"], placeholder="sftp.contributor.adobestock.com", key=f"host_{chosen_agency}")
             u_user = st.text_input("Username / ID", value=cfg["user"], placeholder="208758992", key=f"user_{chosen_agency}")
+            u_remote_dir = st.text_input("Remote Path", value=cfg.get("remote_dir", "/"), placeholder="/", key=f"rdir_{chosen_agency}")
             
             pass_stored = bool(cfg["password"])
             pass_help = f"🔒 Retrieved securely from Windows Credential Manager ({cfg['cred_key']})" if pass_stored else "Enter password to save securely to Windows Credential Manager"
             u_pass = st.text_input("Password", value=cfg["password"], type="password", help=pass_help, key=f"pass_{chosen_agency}")
             
-            u_remote_dir = st.text_input("Remote Path", value=cfg["remote_dir"], placeholder="/", key=f"rdir_{chosen_agency}")
+            host_changed = (u_host.strip() != (cfg.get("host") or "").strip())
+            user_changed = (u_user.strip() != (cfg.get("user") or "").strip())
+            proto_changed = (u_proto != cfg.get("protocol"))
+            port_changed = (int(u_port) != int(cfg.get("port") or 21))
+            pass_changed = bool(u_pass and u_pass != cfg.get("password"))
+            if host_changed or user_changed or proto_changed or port_changed or pass_changed:
+                save_agency_config(chosen_agency, {
+                    "host": u_host.strip(),
+                    "port": int(u_port),
+                    "protocol": u_proto,
+                    "user": u_user.strip(),
+                    "password": u_pass if u_pass else cfg.get("password", ""),
+                    "remote_dir": (u_remote_dir or "/").strip(),
+                    "cred_key": cfg["cred_key"]
+                }, save_password_to_keyring=pass_changed)
+                cfg["host"] = u_host.strip()
+                cfg["user"] = u_user.strip()
+                cfg["protocol"] = u_proto
+                cfg["port"] = int(u_port)
+                if u_pass:
+                    cfg["password"] = u_pass
             
-            if chosen_agency == "Vecteezy":
-                auto_csv = st.checkbox("Include vecteezy.csv alongside uploads", value=True, key="vecteezy_auto_csv")
+            has_csv = chosen_agency in stock_metadata.AGENCY_CSV_FILENAMES
+            if has_csv:
+                target_csv_file = stock_metadata.AGENCY_CSV_FILENAMES[chosen_agency]
+                auto_csv = st.checkbox(f"Auto-generate & upload {target_csv_file}", value=True, key=f"auto_csv_{chosen_agency}")
             else:
                 auto_csv = False
+            auto_embed_stock = st.checkbox("Auto-embed Stock IPTC/XMP into image files", value=True, key=f"auto_embed_{chosen_agency}", help="Directly embeds Title and 30-45 Keywords into JPEG headers via ExifTool before upload (vital for Alamy and agency parsers).")
                 
             test_col, save_col = st.columns(2)
             if test_col.button("🔌 Test Connection", key=f"test_{chosen_agency}", use_container_width=True):
                 if not u_host or not u_user:
                     st.warning("Please provide host and username.")
                 else:
+                    if u_pass and u_pass != cfg["password"]:
+                        save_agency_config(chosen_agency, {
+                            "host": u_host.strip(),
+                            "port": int(u_port),
+                            "protocol": u_proto,
+                            "user": u_user.strip(),
+                            "password": u_pass,
+                            "remote_dir": u_remote_dir.strip(),
+                            "cred_key": cfg["cred_key"]
+                        }, save_password_to_keyring=True)
                     with st.spinner(f"Testing {u_proto.upper()} connection to {u_host}..."):
                         ok, msg = ftp_uploader.test_connection(
                             u_host, port=u_port, user=u_user, password=u_pass,
@@ -555,12 +679,27 @@ def main():
                     else:
                         upload_list = [i["file_path"] for i in target_imgs]
                         
-                        # If Vecteezy, add vecteezy.csv if present
+                        # 1. Embed Stock IPTC/XMP into image files before upload
+                        if auto_embed_stock:
+                            try:
+                                exif_tool_path = stock_metadata.find_exiftool()
+                                for t_img in target_imgs:
+                                    stock_metadata.apply_stock_metadata_to_image(
+                                        image_path=Path(t_img["file_path"]),
+                                        title=t_img.get("stock_title") or t_img.get("title") or "",
+                                        description=t_img.get("stock_description") or t_img.get("description") or t_img.get("stock_title") or "",
+                                        keywords=t_img.get("stock_keywords") or t_img.get("keywords") or "",
+                                        exiftool_path=exif_tool_path
+                                    )
+                            except Exception as em_err:
+                                st.warning(f"Stock IPTC embedding note: {em_err}")
+
+                        # 2. Auto-generate and attach platform CSV
                         if auto_csv and target_imgs:
                             parent_dir = Path(target_imgs[0]["file_path"]).parent
-                            v_csv = parent_dir / "vecteezy.csv"
-                            if v_csv.exists() and str(v_csv) not in upload_list:
-                                upload_list.append(str(v_csv))
+                            gen_csv = stock_metadata.generate_agency_csv(target_imgs, chosen_agency, parent_dir)
+                            if str(gen_csv) not in upload_list:
+                                upload_list.append(str(gen_csv))
 
                         progress_bar = st.progress(0)
                         status_text = st.empty()
@@ -570,15 +709,38 @@ def main():
                             status_text.text(f"[{idx}/{total}] {fname}: {status}")
 
                         with st.spinner(f"Uploading {len(upload_list)} files to {chosen_agency}..."):
-                            res = ftp_uploader.upload_files(
-                                u_host, port=u_port, user=u_user, password=u_pass,
-                                file_paths=upload_list, protocol=u_proto, remote_dir=u_remote_dir,
-                                progress_callback=upload_cb
-                            )
-                            if res["uploaded"] > 0:
-                                st.success(f"Successfully uploaded {res['uploaded']}/{res['total']} files to {chosen_agency}!")
-                            if res["failed"]:
-                                st.error(f"Failed ({len(res['failed'])}): " + ", ".join([f"{Path(f).name}: {err}" for f, err in res["failed"][:3]]))
+                            try:
+                                res = ftp_uploader.upload_files(
+                                    u_host, port=u_port, user=u_user, password=u_pass,
+                                    file_paths=upload_list, protocol=u_proto, remote_dir=u_remote_dir,
+                                    progress_callback=upload_cb
+                                )
+                                if res["uploaded"] > 0:
+                                    st.success(f"🎉 Successfully uploaded {res['uploaded']}/{res['total']} files to {chosen_agency}!")
+                                    st.toast(f"✅ {res['uploaded']} file(s) uploaded to {chosen_agency}!", icon="🚀")
+                                    # Update database for successfully uploaded images
+                                    for t_img in target_imgs:
+                                        if any(res_failed_path == t_img["file_path"] for res_failed_path, _ in res.get("failed", [])):
+                                            continue
+                                        latest_upl = [p.strip() for p in (t_img.get("uploaded_to") or "").split(",") if p.strip()]
+                                        if chosen_agency not in latest_upl:
+                                            latest_upl.append(chosen_agency)
+                                            db.update_image(t_img["id"], uploaded_to=", ".join(latest_upl))
+                                            st.session_state[f"upl_tracker_ver_{t_img['id']}"] = st.session_state.get(f"upl_tracker_ver_{t_img['id']}", 0) + 1
+                                    st.rerun()
+                                if res.get("error"):
+                                    st.error(f"❌ Connection error: {res['error']}")
+                                    st.toast(f"❌ Connection error: {chosen_agency}", icon="⚠️")
+                                if res["failed"]:
+                                    st.error(f"Failed ({len(res['failed'])}): " + ", ".join([f"{Path(f).name}: {err}" for f, err in res["failed"][:3]]))
+                                    st.toast(f"⚠️ {len(res['failed'])} file(s) failed!", icon="⚠️")
+                            except Exception as up_err:
+                                st.error(f"❌ Unexpected upload error: {up_err}")
+                                st.toast("❌ Unexpected error", icon="⚠️")
+
+    if studio_mode == "🎬 Stock Video Studio":
+        video_studio.render_video_studio(active_api_key=active_api_key)
+        return
 
     # Fetch Images with folder scope, grade, and QC filter if enabled
     images = db.get_images(
@@ -654,6 +816,12 @@ def main():
                 }[x],
                 key="batch_target_select"
             )
+            batch_hybrid = st.checkbox(
+                "🖼️ Adobe Stock / Posters.cz Hybrid Mode for Batch",
+                value=False,
+                key="batch_hybrid_check",
+                help="Applies hybrid stock + interior design copywriting to stock metadata across the batch for https://www.posters.cz/."
+            )
             if st.button(f"✨ Batch Generate ({len(eligible_items)} items)", type="primary", use_container_width=True):
                 if not eligible_items:
                     st.warning("⚠️ No images with 'Fine Art' or 'Stock' grade selected. Please assign a grade to images before running batch generation.")
@@ -665,6 +833,7 @@ def main():
                         try:
                             item_custom = item.get("custom_prompt") or ""
                             full_batch_ctx = f"{folder_context}\n{item_custom}".strip()
+                            item_hybrid = batch_hybrid or bool(item.get("is_adobe_hybrid")) or llm_client.is_hybrid_requested(full_batch_ctx)
                             meta = llm_client.generate_metadata(
                                 item["file_path"],
                                 target=batch_target,
@@ -674,9 +843,12 @@ def main():
                                 is_editorial=bool(item.get("is_editorial")),
                                 is_ai_generated=bool(item.get("is_ai_generated")),
                                 is_infrared=bool(item.get("is_infrared")),
-                                is_surreal=bool(item.get("is_surreal"))
+                                is_surreal=bool(item.get("is_surreal")),
+                                is_adobe_hybrid=item_hybrid
                             )
                             update_kwargs = {"status": "GENERATED"}
+                            if item_hybrid:
+                                update_kwargs["is_adobe_hybrid"] = 1
                             if "artheroes" in meta:
                                 ah = meta["artheroes"]
                                 update_kwargs["title"] = ah.get("title")
@@ -693,6 +865,12 @@ def main():
                                 update_kwargs["stock_description"] = stk.get("description")
                                 update_kwargs["stock_keywords"] = ", ".join(stk.get("keywords", [])) if isinstance(stk.get("keywords"), list) else stk.get("keywords", "")
                                 update_kwargs["stock_category"] = stk.get("category", "Travel")
+                            if "adobe" in meta:
+                                adb = meta["adobe"]
+                                update_kwargs["adobe_title"] = adb.get("title")
+                                update_kwargs["adobe_description"] = adb.get("description")
+                                update_kwargs["adobe_keywords"] = ", ".join(adb.get("keywords", [])) if isinstance(adb.get("keywords"), list) else adb.get("keywords", "")
+                                update_kwargs["adobe_category"] = adb.get("category", "Travel")
 
                             db.update_image(item["id"], **update_kwargs)
                         except Exception as err:
@@ -701,30 +879,54 @@ def main():
                     st.success("Batch metadata generation completed!")
                     st.rerun()
 
-        # 3. Batch Embed Art Heroes EXIF button
-        ready_for_exif = [img for img in images if img.get("title") and img["status"] != "APPLIED"]
+        # 3. Batch Embed EXIF buttons
+        ready_for_exif = [img for img in images if (img.get("title") or img.get("stock_title")) and img["status"] != "APPLIED"]
         if ready_for_exif:
-            st.caption(f"**{len(ready_for_exif)} items ready for EXIF embedding**")
-            if st.button(f"💾 Batch Embed Art Heroes EXIF ({len(ready_for_exif)})", use_container_width=True):
-                try:
-                    exiftool_exe = find_exiftool()
-                    exif_progress = st.progress(0)
-                    success_count = 0
-                    for idx, item in enumerate(ready_for_exif):
-                        tags_clean = [t.strip() for t in (item.get("keywords") or "").split(",") if t.strip()]
-                        meta_payload = {
-                            "title": item.get("title") or "",
-                            "description": item.get("description") or "",
-                            "keywords": tags_clean[:12]
-                        }
-                        apply_metadata_to_image(exiftool_exe, Path(item["file_path"]), meta_payload)
-                        db.update_image(item["id"], status="APPLIED")
-                        success_count += 1
-                        exif_progress.progress((idx + 1) / len(ready_for_exif))
-                    st.success(f"Successfully embedded metadata into {success_count} images!")
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Batch ExifTool error: {e}")
+            st.caption(f"**{len(ready_for_exif)} items ready for metadata embedding**")
+            b_emb_c1, b_emb_c2 = st.columns(2)
+            with b_emb_c1:
+                if st.button(f"💾 Stock IPTC/XMP ({len(ready_for_exif)})", help="Embed Stock title & full 30-45 tags for Alamy, Adobe Stock, and microstock parsers", type="primary", use_container_width=True):
+                    try:
+                        exiftool_exe = stock_metadata.find_exiftool()
+                        exif_progress = st.progress(0)
+                        success_count = 0
+                        for idx, item in enumerate(ready_for_exif):
+                            stock_metadata.apply_stock_metadata_to_image(
+                                image_path=Path(item["file_path"]),
+                                title=item.get("stock_title") or item.get("title") or "",
+                                description=item.get("stock_description") or item.get("description") or item.get("stock_title") or "",
+                                keywords=item.get("stock_keywords") or item.get("keywords") or "",
+                                exiftool_path=exiftool_exe
+                            )
+                            db.update_image(item["id"], status="APPLIED")
+                            success_count += 1
+                            exif_progress.progress((idx + 1) / len(ready_for_exif))
+                        st.success(f"Successfully embedded Stock IPTC/XMP into {success_count} images!")
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Batch Stock ExifTool error: {e}")
+
+            with b_emb_c2:
+                if st.button(f"💾 Art Heroes EXIF ({len(ready_for_exif)})", help="Embed Art Heroes fine art POD 3-paragraph text & top 12 tags", use_container_width=True):
+                    try:
+                        exiftool_exe = find_exiftool()
+                        exif_progress = st.progress(0)
+                        success_count = 0
+                        for idx, item in enumerate(ready_for_exif):
+                            tags_clean = [t.strip() for t in (item.get("keywords") or "").split(",") if t.strip()]
+                            meta_payload = {
+                                "title": item.get("title") or "",
+                                "description": item.get("description") or "",
+                                "keywords": tags_clean[:12]
+                            }
+                            apply_metadata_to_image(exiftool_exe, Path(item["file_path"]), meta_payload)
+                            db.update_image(item["id"], status="APPLIED")
+                            success_count += 1
+                            exif_progress.progress((idx + 1) / len(ready_for_exif))
+                        st.success(f"Successfully embedded Art Heroes metadata into {success_count} images!")
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Batch ExifTool error: {e}")
 
         st.divider()
 
@@ -775,7 +977,7 @@ def main():
                 with t_col:
                     tb = get_thumbnail_bytes(img_item["file_path"], max_dim=220)
                     if tb:
-                        st.image(tb, use_container_width=True)
+                        st.image(tb, width="stretch")
                     else:
                         st.caption("No preview")
 
@@ -835,9 +1037,12 @@ def main():
                         rep = analyzer.analyze_image(img_item["file_path"])
                         sharp = rep.technical_quality.get("sharpness")
                         dust = rep.technical_quality.get("sensor_dust")
+                        noise = rep.technical_quality.get("noise")
                         sharp_val = float(sharp.score) if sharp and sharp.score is not None else None
                         sharp_str = f"{sharp_val:.1f}" if sharp_val is not None else "-"
                         dust_cnt = len(dust.anomalies) if dust and hasattr(dust, "anomalies") else 0
+                        noise_val = float(noise.score) if noise and noise.score is not None else None
+                        noise_str = f"{noise_val:.1f}" if noise_val is not None else "-"
                         warn_list = [w for d in rep.technical_quality.values() for w in d.warnings]
                         warns_str = "; ".join(warn_list)
 
@@ -847,6 +1052,7 @@ def main():
                             qc_status=rep.overall_status.value,
                             qc_sharpness=sharp_val,
                             qc_dust_count=dust_cnt,
+                            qc_noise=noise_val,
                             qc_warnings=warns_str
                         )
 
@@ -854,6 +1060,7 @@ def main():
                             "File": img_item["file_name"],
                             "QC Status": rep.overall_status.value,
                             "Sharpness": sharp_str,
+                            "Noise": noise_str,
                             "Dust Spots": dust_cnt,
                             "Warnings": len(warn_list)
                         })
@@ -979,21 +1186,23 @@ def main():
             # Manual Platform Upload Tracker
             TRACKER_AGENCIES = [
                 "Adobe Stock", "Vecteezy", "Shutterstock", "Alamy",
-                "Art Heroes", "Displate", "Pond5", "Dreamstime", "Fine Art America"
+                "Art Heroes", "Displate", "Pond5", "Dreamstime", "Depositphotos", "Fine Art America"
             ]
             raw_upl = selected_img.get("uploaded_to") or ""
             curr_upl_list = [p.strip() for p in raw_upl.split(",") if p.strip()]
             valid_defaults = [p for p in curr_upl_list if p in TRACKER_AGENCIES]
+            tracker_ver = st.session_state.get(f"upl_tracker_ver_{selected_img['id']}", 0)
+            k_track = f"upl_tracker_{selected_img['id']}_{tracker_ver}"
 
-            def on_tracker_change(i_id=selected_img["id"], k_track=f"upl_tracker_{selected_img['id']}"):
-                new_selections = st.session_state.get(k_track, [])
+            def on_tracker_change(i_id=selected_img["id"], key_name=k_track):
+                new_selections = st.session_state.get(key_name, [])
                 db.update_image(i_id, uploaded_to=", ".join(new_selections))
 
             st.multiselect(
                 "📤 Uploaded to Agencies (Manual Tracker):",
                 options=TRACKER_AGENCIES,
                 default=valid_defaults,
-                key=f"upl_tracker_{selected_img['id']}",
+                key=k_track,
                 on_change=on_tracker_change,
                 help="Manually track which stock agencies or POD platforms this image has been published to."
             )
@@ -1014,66 +1223,220 @@ def main():
                             st.error(msg)
 
             # 1-Click Agency Upload in Inspector
-            with st.expander("🚀 1-Click Remote Agency Upload", expanded=False):
-                insp_agencies = ["Adobe Stock", "Vecteezy", "Shutterstock", "Pond5", "Dreamstime", "Custom FTP / SFTP"]
-                insp_chosen = st.selectbox("Select Target Agency", insp_agencies, index=0, key=f"insp_target_{selected_img['id']}")
-                insp_cfg = load_agency_config(insp_chosen)
+            with st.expander("🚀 1-Click Remote Agency Upload (Multi & Single Agency)", expanded=False):
+                STOCK_AGENCIES_LIST = ["Adobe Stock", "Alamy", "Depositphotos", "Vecteezy", "Shutterstock", "Pond5", "Dreamstime"]
 
-                insp_c1, insp_c2 = st.columns([2, 1])
-                insp_c1.caption(f"Host: `{insp_cfg['host']}` ({insp_cfg['protocol'].upper()}:{insp_cfg['port']})")
-                insp_c2.caption(f"User: `{insp_cfg['user']}`")
-
-                insp_pass = insp_cfg.get("password") or ""
-                if not insp_pass:
-                    st.info(f"🔑 **{insp_chosen} password missing.** For Adobe Stock, generate a dedicated SFTP password on the Contributor portal (Upload → SFTP).")
-                    pass_c1, pass_c2 = st.columns([2.5, 1])
-                    entered_pass = pass_c1.text_input(
-                        f"Enter {insp_chosen} Password",
-                        type="password",
-                        key=f"insp_pass_{selected_img['id']}_{insp_chosen}",
-                        help=f"Enter {insp_chosen} SFTP/FTP password"
-                    )
-                    if pass_c2.button("🔒 Save Password", key=f"save_p_{selected_img['id']}_{insp_chosen}", use_container_width=True):
-                        if entered_pass:
-                            save_agency_config(insp_chosen, {**insp_cfg, "password": entered_pass}, save_password_to_keyring=True)
-                            st.success("Credentials saved to Windows Credential Manager!")
-                            st.rerun()
-                        else:
-                            st.warning("Please type a password before saving.")
-                    if entered_pass:
-                        insp_pass = entered_pass
-                else:
-                    st.caption("🔒 Password loaded: Windows Credential Manager")
-
-                if st.button(f"⬆️ Upload {selected_img['file_name']} to {insp_chosen}", type="primary", use_container_width=True, key=f"insp_up_{selected_img['id']}"):
-                    if not insp_cfg["host"] or not insp_cfg["user"] or not insp_pass:
-                        st.error(f"Missing host, user, or password for {insp_chosen}. Please enter your password above.")
+                # Display last broadcast or last single upload notification if present
+                last_broad_key = f"last_broadcast_{selected_img['id']}"
+                if last_broad_key in st.session_state:
+                    b_items = st.session_state[last_broad_key]
+                    s_count = sum(1 for item in b_items if item.get("success"))
+                    total_cnt = len(b_items)
+                    if s_count == total_cnt and total_cnt > 0:
+                        st.success(f"🎉 **Broadcast Complete:** `{selected_img['file_name']}` uploaded to all {total_cnt} selected agencies!")
                     else:
-                        files_to_send = [selected_img["file_path"]]
-                        if insp_chosen == "Vecteezy":
-                            v_csv = Path(selected_img["file_path"]).parent / "vecteezy.csv"
-                            if v_csv.exists() and str(v_csv) not in files_to_send:
-                                files_to_send.append(str(v_csv))
+                        st.info(f"📊 **Last Broadcast Results:** {s_count}/{total_cnt} successful.")
+                    for item in b_items:
+                        if item.get("success"):
+                            st.caption(f"✅ **{item['agency']}**: {item['message']}")
+                        else:
+                            st.caption(f"❌ **{item['agency']}**: {item['message']}")
 
-                        with st.spinner(f"Uploading to {insp_chosen}..."):
-                            res = ftp_uploader.upload_files(
-                                insp_cfg["host"],
-                                port=insp_cfg["port"],
-                                user=insp_cfg["user"],
-                                password=insp_pass,
-                                file_paths=files_to_send,
-                                protocol=insp_cfg["protocol"],
-                                remote_dir=insp_cfg["remote_dir"]
-                            )
-                            if res["uploaded"] > 0:
-                                st.success(f"✅ Successfully uploaded {selected_img['file_name']} to {insp_chosen}!")
-                                latest_upl = [p.strip() for p in (selected_img.get("uploaded_to") or "").split(",") if p.strip()]
-                                if insp_chosen not in latest_upl:
-                                    latest_upl.append(insp_chosen)
-                                    db.update_image(selected_img["id"], uploaded_to=", ".join(latest_upl))
-                                    st.session_state[f"upl_tracker_{selected_img['id']}"] = latest_upl
-                            if res["failed"]:
-                                st.error(f"❌ Upload failed: {res['failed'][0][1]}")
+                last_up_key = f"last_up_{selected_img['id']}"
+                if last_up_key in st.session_state:
+                    l_res = st.session_state[last_up_key]
+                    if l_res.get("status") == "SUCCESS":
+                        st.success(f"🎉 **Last Upload Success:** `{selected_img['file_name']}` uploaded to **{l_res.get('agency')}** at {l_res.get('time')}.")
+                    elif l_res.get("status") == "ERROR":
+                        st.error(f"❌ **Last Upload Failed:** {l_res.get('message')}")
+
+                tab_multi, tab_single = st.tabs(["🌐 Broadcast to ALL Stock Agencies", "🎯 Single Agency Upload"])
+
+                with tab_multi:
+                    curr_upl = [p.strip() for p in (selected_img.get("uploaded_to") or "").split(",") if p.strip()]
+
+                    # Compute readiness and default targets
+                    agency_status = {}
+                    ready_agencies = []
+                    for ag in STOCK_AGENCIES_LIST:
+                        c = load_agency_config(ag)
+                        has_creds = bool(c.get("host") and c.get("user") and c.get("password"))
+                        is_upl = (ag in curr_upl)
+                        agency_status[ag] = {
+                            "ready": has_creds,
+                            "uploaded": is_upl,
+                            "user": c.get("user", ""),
+                            "host": c.get("host", "")
+                        }
+                        if has_creds and not is_upl:
+                            ready_agencies.append(ag)
+
+                    # Default to ready non-uploaded agencies, or all ready if none pending
+                    default_bcast = ready_agencies if ready_agencies else [ag for ag in STOCK_AGENCIES_LIST if agency_status[ag]["ready"]]
+
+                    # Status summary row
+                    st.caption("Agency Credential & Upload Status:")
+                    st_cols = st.columns(len(STOCK_AGENCIES_LIST))
+                    for col_idx, ag in enumerate(STOCK_AGENCIES_LIST):
+                        astat = agency_status[ag]
+                        with st_cols[col_idx]:
+                            if astat["uploaded"]:
+                                st.markdown(f"**{ag}**<br><span style='color:green'>🟢 Uploaded</span>", unsafe_allow_html=True)
+                            elif astat["ready"]:
+                                st.markdown(f"**{ag}**<br><span style='color:blue'>🔒 Ready</span>", unsafe_allow_html=True)
+                            else:
+                                st.markdown(f"**{ag}**<br><span style='color:orange'>🔑 No Pass</span>", unsafe_allow_html=True)
+
+                    st.write("")
+                    chosen_broadcast = st.multiselect(
+                        "Agencies to Broadcast to:",
+                        options=STOCK_AGENCIES_LIST,
+                        default=default_bcast,
+                        key=f"bcast_select_{selected_img['id']}",
+                        help="Select stock agencies to receive this image. IPTC/XMP metadata and agency-specific CSV sidecars will be processed automatically."
+                    )
+
+                    btn_bcast_label = f"🚀 1-Click Broadcast `{selected_img['file_name']}` to {len(chosen_broadcast)} Agencies"
+                    if st.button(btn_bcast_label, type="primary", disabled=(len(chosen_broadcast) == 0), use_container_width=True, key=f"btn_bcast_run_{selected_img['id']}"):
+                        broadcast_res = []
+                        b_progress = st.progress(0.0)
+
+                        # Step 1: Embed IPTC/XMP once
+                        with st.spinner("Embedding IPTC/XMP metadata into JPEG header..."):
+                            try:
+                                exiftool_exe = stock_metadata.find_exiftool()
+                                stock_metadata.apply_stock_metadata_to_image(
+                                    image_path=Path(selected_img["file_path"]),
+                                    title=selected_img.get("stock_title") or selected_img.get("title") or "",
+                                    description=selected_img.get("stock_description") or selected_img.get("description") or selected_img.get("stock_title") or "",
+                                    keywords=selected_img.get("stock_keywords") or selected_img.get("keywords") or "",
+                                    exiftool_path=exiftool_exe
+                                )
+                            except Exception as em_err:
+                                st.warning(f"Stock IPTC embed warning: {em_err}")
+
+                        # Step 2: Upload to each selected agency
+                        for idx, ag_target in enumerate(chosen_broadcast):
+                            with st.spinner(f"Uploading to {ag_target}..."):
+                                r = upload_single_image_to_stock_agency(selected_img, ag_target)
+                                broadcast_res.append(r)
+                                if r["success"]:
+                                    fresh_img = db.get_image_by_id(selected_img["id"])
+                                    latest_upl = [p.strip() for p in (fresh_img.get("uploaded_to") or "").split(",") if p.strip()]
+                                    if ag_target not in latest_upl:
+                                        latest_upl.append(ag_target)
+                                        db.update_image(selected_img["id"], uploaded_to=", ".join(latest_upl))
+                            b_progress.progress((idx + 1) / len(chosen_broadcast))
+
+                        st.session_state[f"upl_tracker_ver_{selected_img['id']}"] = tracker_ver + 1
+                        st.session_state[last_broad_key] = broadcast_res
+                        st.toast(f"🚀 Broadcast finished for {len(chosen_broadcast)} agencies!", icon="🎉")
+                        st.rerun()
+
+                with tab_single:
+                    insp_agencies = ["Adobe Stock", "Alamy", "Depositphotos", "Vecteezy", "Shutterstock", "Pond5", "Dreamstime", "Custom FTP / SFTP"]
+                    insp_chosen = st.selectbox("Select Target Agency", insp_agencies, index=0, key=f"insp_target_{selected_img['id']}")
+                    insp_cfg = load_agency_config(insp_chosen)
+
+                    # Check if this image has already been uploaded to this agency
+                    curr_upl_single = [p.strip() for p in (selected_img.get("uploaded_to") or "").split(",") if p.strip()]
+                    if insp_chosen in curr_upl_single:
+                        st.info(f"🟢 **Already Uploaded:** This asset is recorded as uploaded to **{insp_chosen}**.")
+
+                    insp_host_c1, insp_host_c2 = st.columns([2.5, 1])
+                    insp_host_c1.caption(f"Host: `{insp_cfg['host']}` ({insp_cfg['protocol'].upper()})")
+                    insp_host_c2.caption(f"Port: `{insp_cfg['port']}`")
+
+                    insp_u_col, insp_p_col = st.columns([1, 1.2])
+                    with insp_u_col:
+                        insp_user = st.text_input(
+                            f"Username / ID",
+                            value=insp_cfg.get("user") or "",
+                            key=f"agency_shared_user_{insp_chosen}",
+                            help=f"Username or Contributor Account ID for {insp_chosen}."
+                        )
+                    with insp_p_col:
+                        insp_pass = insp_cfg.get("password") or ""
+                        pass_label = f"Password" + (" (🔒 Loaded)" if insp_pass else " (🔑 Missing)")
+                        entered_pass = st.text_input(
+                            pass_label,
+                            value=insp_pass,
+                            type="password",
+                            key=f"agency_shared_pass_{insp_chosen}",
+                            help=f"Password for {insp_chosen}. Automatically remembered and stored securely."
+                        )
+
+                    insp_user_changed = (insp_user.strip() != (insp_cfg.get("user") or "").strip())
+                    insp_pass_changed = bool(entered_pass and entered_pass != insp_pass)
+                    if insp_user_changed or insp_pass_changed:
+                        save_agency_config(insp_chosen, {
+                            **insp_cfg,
+                            "user": insp_user.strip(),
+                            "password": entered_pass if entered_pass else insp_pass
+                        }, save_password_to_keyring=insp_pass_changed)
+                        insp_cfg["user"] = insp_user.strip()
+                        if entered_pass:
+                            insp_cfg["password"] = entered_pass
+
+                    if not insp_pass and "Adobe" in insp_chosen:
+                        st.caption("ℹ️ **Adobe Stock SFTP:** Dedicated SFTP password generated on Contributor Portal (Upload → SFTP tab) is required (NOT your personal Adobe password).")
+
+                    btn_col1, btn_col2 = st.columns([1, 1.8])
+                    active_user = insp_user.strip() or insp_cfg.get("user", "")
+                    active_pass = entered_pass or insp_pass
+
+                    if btn_col1.button("🔌 Test Connection", key=f"insp_test_{selected_img['id']}_{insp_chosen}", use_container_width=True):
+                        if not insp_cfg["host"] or not active_user:
+                            st.warning("Host and username are required.")
+                        else:
+                            with st.spinner(f"Testing connection to {insp_chosen}..."):
+                                ok, test_msg = ftp_uploader.test_connection(
+                                    insp_cfg["host"],
+                                    port=insp_cfg["port"],
+                                    user=active_user,
+                                    password=active_pass,
+                                    protocol=insp_cfg["protocol"],
+                                    remote_dir=insp_cfg["remote_dir"]
+                                )
+                                if ok:
+                                    st.success(test_msg)
+                                else:
+                                    st.error(test_msg)
+
+                    if btn_col2.button(f"⬆️ Upload to {insp_chosen}", type="primary", use_container_width=True, key=f"insp_up_{selected_img['id']}"):
+                        if not insp_cfg["host"] or not active_user or not active_pass:
+                            st.error(f"Missing host, user, or password for {insp_chosen}. Please enter your credentials above.")
+                        else:
+                            with st.spinner(f"Uploading {selected_img['file_name']} to {insp_chosen}..."):
+                                res = upload_single_image_to_stock_agency(
+                                    selected_img,
+                                    insp_chosen,
+                                    override_user=active_user,
+                                    override_pass=active_pass
+                                )
+                                if res["success"]:
+                                    st.toast(f"✅ {selected_img['file_name']} uploaded to {insp_chosen}!", icon="🚀")
+                                    latest_upl = [p.strip() for p in (selected_img.get("uploaded_to") or "").split(",") if p.strip()]
+                                    if insp_chosen not in latest_upl:
+                                        latest_upl.append(insp_chosen)
+                                        db.update_image(selected_img["id"], uploaded_to=", ".join(latest_upl))
+                                        st.session_state[f"upl_tracker_ver_{selected_img['id']}"] = tracker_ver + 1
+                                    st.session_state[last_up_key] = {
+                                        "status": "SUCCESS",
+                                        "agency": insp_chosen,
+                                        "time": datetime.now().strftime("%H:%M:%S")
+                                    }
+                                    st.rerun()
+                                else:
+                                    err_detail = res["message"]
+                                    st.error(f"❌ Upload error ({insp_chosen}): {err_detail}")
+                                    st.toast(f"❌ Upload error ({insp_chosen})", icon="⚠️")
+                                    st.session_state[last_up_key] = {
+                                        "status": "ERROR",
+                                        "agency": insp_chosen,
+                                        "message": err_detail,
+                                        "time": datetime.now().strftime("%H:%M:%S")
+                                    }
 
             # Image thumbnail preview
             img_path = Path(selected_img["file_path"])
@@ -1088,7 +1451,7 @@ def main():
 
                 tb = get_thumbnail_bytes(selected_img["file_path"], max_dim=2048)
                 if tb:
-                    st.image(tb, use_container_width=True)
+                    st.image(tb, width="stretch")
                 else:
                     st.warning("Could not render image thumbnail.")
 
@@ -1103,7 +1466,7 @@ def main():
                             hist_bytes, h_stats, h_df = raw_loader.generate_histogram(selected_img["file_path"])
 
                         if hist_bytes:
-                            st.image(hist_bytes, caption="Photographic RGB + Luminance Histogram", use_container_width=True)
+                            st.image(hist_bytes, caption="Photographic RGB + Luminance Histogram", width="stretch")
                             hc1, hc2, hc3, hc4 = st.columns(4)
                             s_clip = h_stats.get("shadow_clip_pct", 0.0)
                             h_clip = h_stats.get("highlight_clip_pct", 0.0)
@@ -1137,14 +1500,17 @@ def main():
                             # Persist to database
                             sharp = report.technical_quality.get("sharpness")
                             dust = report.technical_quality.get("sensor_dust")
+                            noise = report.technical_quality.get("noise")
                             sharp_val = float(sharp.score) if sharp and sharp.score is not None else None
                             dust_cnt = len(dust.anomalies) if dust and hasattr(dust, "anomalies") else 0
+                            noise_val = float(noise.score) if noise and noise.score is not None else None
                             warn_list = [w for d in report.technical_quality.values() for w in d.warnings]
                             db.update_image(
                                 selected_img["id"],
                                 qc_status=report.overall_status.value,
                                 qc_sharpness=sharp_val,
                                 qc_dust_count=dust_cnt,
+                                qc_noise=noise_val,
                                 qc_warnings="; ".join(warn_list)
                             )
                             st.rerun()
@@ -1163,8 +1529,9 @@ def main():
                     st.caption(f"Resolution: **{rep.width} x {rep.height}** | Format: **{rep.format}** | Time: {rep.processing_time_seconds:.2f}s")
 
                     # Metrics
-                    mcol1, mcol2, mcol3, mcol4 = st.columns(4)
+                    mcol1, mcol2, mcol3, mcol4, mcol5 = st.columns(5)
                     sharp_res = rep.technical_quality.get("sharpness")
+                    noise_res = rep.technical_quality.get("noise")
                     dust_res = rep.technical_quality.get("sensor_dust")
                     exp_res = rep.technical_quality.get("exposure")
                     dead_res = rep.technical_quality.get("dead_pixels")
@@ -1172,6 +1539,10 @@ def main():
                     if sharp_res:
                         score_str = f"{sharp_res.score:.1f}" if sharp_res.score is not None else "N/A"
                         mcol1.metric("Sharpness", score_str, delta="OK" if sharp_res.status == Status.PASS else "Low")
+                    if noise_res:
+                        noise_score_str = f"{noise_res.score:.1f}" if noise_res.score is not None else "N/A"
+                        delta_noise = "Clean" if noise_res.status == Status.PASS else ("Review" if noise_res.status == Status.REVIEW else "High Risk")
+                        mcol2.metric("Noise (Grain)", noise_score_str, delta=delta_noise)
                     if dust_res:
                         cand_count = len(dust_res.anomalies) if hasattr(dust_res, "anomalies") else dust_res.metrics.get("candidates", 0)
                         sky_cnt = dust_res.metrics.get("sky_candidates", 0)
@@ -1181,11 +1552,11 @@ def main():
                             delta_str = f"⚠️ {pers_cnt} Persistent!"
                         elif cand_count > 0:
                             delta_str = f"{cand_count} spots ({sky_cnt} sky)"
-                        mcol2.metric("Dust Spots", cand_count, delta=delta_str)
+                        mcol3.metric("Dust Spots", cand_count, delta=delta_str)
                     if exp_res:
-                        mcol3.metric("Exposure", exp_res.status.value)
+                        mcol4.metric("Exposure", exp_res.status.value)
                     if dead_res:
-                        mcol4.metric("Dead Pixels", dead_res.status.value)
+                        mcol5.metric("Dead Pixels", dead_res.status.value)
 
                     # Warnings
                     all_warns = []
@@ -1204,17 +1575,75 @@ def main():
                             import dataclasses
                             draw_diagnostics(selected_img["file_path"], dataclasses.asdict(rep), str(diag_path))
                             if diag_path.exists():
-                                st.image(diag_path.read_bytes(), caption="Diagnostic Map (Red = Dust / Defect Candidate, Orange = Sky, Yellow = Persistent)", use_container_width=True)
+                                st.image(diag_path.read_bytes(), caption="Diagnostic Map (Red = Dust / Defect Candidate, Orange = Sky, Yellow = Persistent)", width="stretch")
                             else:
                                 st.warning("Could not generate diagnostic overlay map.")
                 elif selected_img.get("qc_status") and selected_img.get("qc_status") != "UNCHECKED":
                     st.write(f"### Saved Result: **{qc_header_badge}**")
-                    m1, m2 = st.columns(2)
+                    m1, m2, m3 = st.columns(3)
                     sharp_val = selected_img.get("qc_sharpness")
+                    noise_val = selected_img.get("qc_noise")
                     m1.metric("Sharpness Score", f"{sharp_val:.1f}" if sharp_val is not None else "N/A")
-                    m2.metric("Dust Candidates", selected_img.get("qc_dust_count") or 0)
+                    m2.metric("Noise Level", f"{noise_val:.1f}" if noise_val is not None else "N/A")
+                    m3.metric("Dust Candidates", selected_img.get("qc_dust_count") or 0)
                     if selected_img.get("qc_warnings"):
                         st.info(f"Warnings: {selected_img['qc_warnings']}")
+
+            # Displate Preflight & Auto-Format Expander
+            with st.expander("🏆 Displate Technical Compliance & Preflight", expanded=False):
+                if analyze_displate_compliance is None:
+                    st.warning("Displate tool module not loaded.")
+                else:
+                    disp_c1, disp_c2 = st.columns([1, 1])
+                    check_disp = disp_c1.button("🔍 Check Displate Specs", key=f"disp_check_{selected_img['id']}", use_container_width=True)
+                    prep_disp = disp_c2.button("🛠️ Auto-Format (1.4:1 / 300 DPI / Grain)", key=f"disp_prep_{selected_img['id']}", use_container_width=True)
+
+                    disp_rep_key = f"disp_rep_{selected_img['id']}"
+                    if check_disp:
+                        with st.spinner("Auditing Displate requirements (1.4:1, 300 DPI, Safe Zone, margins)..."):
+                            try:
+                                disp_analysis = analyze_displate_compliance(Path(selected_img["file_path"]))
+                                st.session_state[disp_rep_key] = disp_analysis
+                            except Exception as e:
+                                st.error(f"Displate analysis failed: {e}")
+
+                    if prep_disp:
+                        with st.spinner("Preparing image for Displate (Cropping 1.4:1, 300 DPI, sRGB, micrograin)..."):
+                            try:
+                                orig_p = Path(selected_img["file_path"])
+                                out_dir = orig_p.parent / "displate_ready"
+                                out_p = out_dir / f"{orig_p.stem}_displate.jpg"
+                                prepare_for_displate(orig_p, out_p, add_grain=0.01)
+                                st.success(f"Displate ready file created: `{out_p.name}` in `{out_dir.name}/`")
+                                disp_analysis = analyze_displate_compliance(out_p)
+                                st.session_state[disp_rep_key] = disp_analysis
+                            except Exception as e:
+                                st.error(f"Displate preparation failed: {e}")
+
+                    if disp_rep_key in st.session_state:
+                        da = st.session_state[disp_rep_key]
+                        status_badge = "🟢 PASS" if da["status"] == "PASS" else ("🟡 WARN" if da["status"] == "WARN" else "🔴 FAIL")
+                        st.write(f"### Displate Status: **{status_badge}** (`{da['filename']}`)")
+
+                        dm1, dm2, dm3, dm4 = st.columns(4)
+                        ar = da["checks"].get("aspect_ratio", 0)
+                        dm1.metric("Aspect Ratio", f"{ar}:1", delta="OK (1.40:1)" if abs(ar - 1.4) <= 0.015 else "Invalid")
+                        ss = da["checks"].get("short_side", 0)
+                        dm2.metric("Short Side", f"{ss} px", delta="OK (>= 2900)" if ss >= 2900 else "Too small")
+                        dpi_val = da["checks"].get("dpi")
+                        dpi_str = f"{dpi_val[0]}x{dpi_val[1]}" if dpi_val else "Missing"
+                        dm3.metric("DPI", dpi_str, delta="OK (>= 300)" if dpi_val and dpi_val[0] >= 300 else "Invalid")
+                        fs_mb = da["checks"].get("file_size_mb", 0)
+                        dm4.metric("File Size", f"{fs_mb} MB", delta="OK (<= 30MB)" if fs_mb <= 30 else "Too large")
+
+                        if da["errors"]:
+                            for err in da["errors"]:
+                                st.error(f"❌ {err}")
+                        if da["warnings"]:
+                            for warn in da["warnings"]:
+                                st.warning(f"⚠️ {warn}")
+                        if not da["errors"] and not da["warnings"]:
+                            st.success("✅ Perfect! This artwork fully meets Displate's technical upload requirements.")
 
             # Form for editing with Platform Tabs
             form_rev = st.session_state.get(f"rev_{selected_img['id']}", 0)
@@ -1224,10 +1653,19 @@ def main():
                 st.session_state[f"rev_{selected_img['id']}"] = form_rev + 1
                 st.rerun()
 
+            cat_options = ["Buildings and Architecture", "Travel", "Landscapes", "The Environment", "Transport", "Technology", "People", "Culture and Religion", "Industry", "Nature", "Lifestyle", "Graphic Resources"]
+            is_hybrid_img = bool(selected_img.get("is_adobe_hybrid")) or bool(st.session_state.get(f"hybrid_mode_{selected_img['id']}")) or llm_client.is_hybrid_requested(selected_img.get("custom_prompt") or "")
+
             with st.form(key=f"edit_form_{selected_img['id']}_{form_rev}"):
-                tab_artheroes, tab_displate, tab_stock = st.tabs([
-                    "🎨 Art Heroes", "🏆 Displate", "📸 Microstock (Vecteezy / Adobe / Alamy)"
-                ])
+                if is_hybrid_img:
+                    tab_artheroes, tab_displate, tab_adobe, tab_stock = st.tabs([
+                        "🎨 Art Heroes", "🏆 Displate", "🖼️ Adobe Stock (Hybrid)", "📸 Microstock (Alamy, Vecteezy, etc.)"
+                    ])
+                else:
+                    tab_artheroes, tab_displate, tab_stock = st.tabs([
+                        "🎨 Art Heroes", "🏆 Displate", "📸 Microstock (Stock)"
+                    ])
+                    tab_adobe = None
 
                 with tab_artheroes:
                     new_title = st.text_input("Title (Art Heroes)", value=selected_img["title"] or "", key=f"ah_t_{selected_img['id']}_{form_rev}")
@@ -1261,46 +1699,97 @@ def main():
                     disp_tags_list = [k.strip() for k in new_disp_tags.split(",") if k.strip()]
                     st.caption(f"Tags: **{len(disp_tags_list)} / 20** {'⚠️ Exceeds 20!' if len(disp_tags_list) > 20 else '✅ Optimal'}")
 
-                with tab_stock:
-                    new_stock_title = st.text_input("Title (Microstock - Target: 3-8 words)", value=selected_img.get("stock_title") or "", key=f"stk_t_{selected_img['id']}_{form_rev}")
-                    stock_words = len(new_stock_title.split())
-                    if 3 <= stock_words <= 8:
-                        st.caption(f"Title Words: **{stock_words} / 8 words** ✅ (Optimal for Vecteezy & Adobe)")
-                    elif stock_words > 8:
-                        st.caption(f"Title Words: **{stock_words} words** ⚠️ (Vecteezy limit: max 8 words)")
-                    elif stock_words > 0:
-                        st.caption(f"Title Words: **{stock_words} words** ℹ️ (Vecteezy recommends at least 3 words)")
+                if tab_adobe is not None:
+                    with tab_adobe:
+                        new_adobe_title = st.text_input(
+                            "Title (Adobe Stock & Posters.cz Hybrid - Target: 6-14 words, max 200 chars)",
+                            value=selected_img.get("adobe_title") or selected_img.get("stock_title") or "",
+                            key=f"adb_t_{selected_img['id']}_{form_rev}"
+                        )
+                        adb_words = len(new_adobe_title.split())
+                        adb_len = len(new_adobe_title)
+                        if adb_len <= 150 and adb_words >= 5:
+                            st.caption(f"Hybrid Title: **{adb_words} words ({adb_len} chars)** ✅ Optimal for Adobe Stock & Posters.cz (Limit: 200 chars)")
+                        elif adb_len > 200:
+                            st.caption(f"Hybrid Title: **{adb_len} / 200 chars** ⚠️ Exceeds Adobe limit!")
+                        else:
+                            st.caption(f"Hybrid Title: **{adb_words} words ({adb_len} chars)** ℹ️ Good for Adobe & Posters.cz")
 
-                    stock_caption_label = "Description / Caption" + (" [EDITORIAL]" if curr_editorial else " [COMMERCIAL]")
-                    new_stock_desc = st.text_area(stock_caption_label, value=selected_img.get("stock_description") or "", height=140, key=f"stk_d_{selected_img['id']}_{form_rev}")
+                        new_adobe_desc = st.text_area(
+                            "Description / Caption [ADOBE HYBRID / POSTERS.CZ]",
+                            value=selected_img.get("adobe_description") or selected_img.get("stock_description") or "",
+                            height=140,
+                            key=f"adb_d_{selected_img['id']}_{form_rev}"
+                        )
+                        st.caption(f"Description Length: **{len(new_adobe_desc)} chars** (Combines landmark details with posters.cz room styling advice)")
+
+                        new_adobe_kws = st.text_area(
+                            "Keywords (Comma-separated, 35-45 tags for Adobe & Posters.cz)",
+                            value=selected_img.get("adobe_keywords") or selected_img.get("stock_keywords") or "",
+                            height=70,
+                            key=f"adb_k_{selected_img['id']}_{form_rev}"
+                        )
+                        adb_tags_list = [k.strip() for k in new_adobe_kws.split(",") if k.strip()]
+                        st.caption(f"Tags: **{len(adb_tags_list)} tags** {'✅ Optimal for Adobe & Posters.cz' if 30 <= len(adb_tags_list) <= 49 else '⚠️ Exceeds Adobe 49 tag limit!' if len(adb_tags_list) > 49 else 'ℹ️ Optimal: 35-45 tags for Adobe Hybrid'}")
+
+                        curr_adb_cat = selected_img.get("adobe_category") or selected_img.get("stock_category") or "Travel"
+                        cat_adb_idx = cat_options.index(curr_adb_cat) if curr_adb_cat in cat_options else 1
+                        new_adobe_cat = st.selectbox("Adobe Stock Category", cat_options, index=cat_adb_idx, key=f"adb_cat_{selected_img['id']}_{form_rev}")
+                else:
+                    new_adobe_title = None
+                    new_adobe_desc = None
+                    new_adobe_kws = None
+                    new_adobe_cat = None
+
+                with tab_stock:
+                    stock_title_label = "Title (Microstock - Target: 3-8 words, e.g. for Vecteezy, Alamy, Shutterstock)"
+                    new_stock_title = st.text_input(stock_title_label, value=selected_img.get("stock_title") or "", key=f"stk_t_{selected_img['id']}_{form_rev}")
+                    stock_words = len(new_stock_title.split())
+                    title_len = len(new_stock_title)
+
+                    if 3 <= stock_words <= 8:
+                        st.caption(f"Title Words: **{stock_words} / 8 words** ✅ (Optimal for Vecteezy, Alamy, Shutterstock)")
+                    elif stock_words > 8:
+                        st.caption(f"Title Words: **{stock_words} words** ℹ️ Max 8 words recommended for microstock")
+                    elif stock_words > 0:
+                        st.caption(f"Title Words: **{stock_words} words** ℹ️ At least 3 words recommended")
+
+                    stock_caption_label = "Description / Caption [FACTUAL MICROSTOCK]" + (" [EDITORIAL]" if curr_editorial else " [COMMERCIAL]")
+                    new_stock_desc = st.text_area(stock_caption_label, value=selected_img.get("stock_description") or "", height=140, key=f"stk_d_{selected_img['id']}_{form_rev}", help="Pure factual description without posters.cz/wall art copywriting")
                     st.caption(f"Description Length: **{len(new_stock_desc)} chars** (Max 500 chars)")
 
-                    new_stock_kws = st.text_area("Keywords (Comma-separated, 20-35 tags)", value=selected_img.get("stock_keywords") or "", height=70, key=f"stk_k_{selected_img['id']}_{form_rev}")
+                    kws_label = "Keywords (Comma-separated, 20-35 tags for Microstock)"
+                    new_stock_kws = st.text_area(kws_label, value=selected_img.get("stock_keywords") or "", height=70, key=f"stk_k_{selected_img['id']}_{form_rev}")
                     stk_tags_list = [k.strip() for k in new_stock_kws.split(",") if k.strip()]
-                    st.caption(f"Tags: **{len(stk_tags_list)} tags** {'✅ Optimal' if 20 <= len(stk_tags_list) <= 35 else 'ℹ️ Optimal: 20-30 for Vecteezy, 30-50 for Adobe/Alamy'}")
+                    st.caption(f"Tags: **{len(stk_tags_list)} tags** {'✅ Optimal' if 20 <= len(stk_tags_list) <= 35 else 'ℹ️ Optimal: 20-30 for Vecteezy, 30-50 for Alamy'}")
 
-                    cat_options = ["Buildings and Architecture", "Travel", "Landscapes", "The Environment", "Transport", "Technology", "People", "Culture and Religion", "Industry", "Nature"]
                     curr_cat = selected_img.get("stock_category") or "Travel"
                     cat_idx = cat_options.index(curr_cat) if curr_cat in cat_options else 1
-                    new_stock_cat = st.selectbox("Stock Category", cat_options, index=cat_idx, key=f"stk_cat_{selected_img['id']}_{form_rev}")
+                    new_stock_cat = st.selectbox("Microstock Category", cat_options, index=cat_idx, key=f"stk_cat_{selected_img['id']}_{form_rev}")
 
                 save_btn = st.form_submit_button("💾 Save All Changes to Database", type="secondary")
 
                 if save_btn:
-                    db.update_image(
-                        selected_img["id"],
-                        title=new_title,
-                        description=new_desc,
-                        keywords=new_kws,
-                        displate_title=new_disp_title,
-                        displate_description=new_disp_desc,
-                        displate_tags=new_disp_tags,
-                        stock_title=new_stock_title,
-                        stock_description=new_stock_desc,
-                        stock_keywords=new_stock_kws,
-                        stock_category=new_stock_cat,
-                        status="GENERATED" if selected_img["status"] == "NEW" else selected_img["status"]
-                    )
+                    save_payload = {
+                        "title": new_title,
+                        "description": new_desc,
+                        "keywords": new_kws,
+                        "displate_title": new_disp_title,
+                        "displate_description": new_disp_desc,
+                        "displate_tags": new_disp_tags,
+                        "stock_title": new_stock_title,
+                        "stock_description": new_stock_desc,
+                        "stock_keywords": new_stock_kws,
+                        "stock_category": new_stock_cat,
+                        "status": "GENERATED" if selected_img["status"] == "NEW" else selected_img["status"]
+                    }
+                    if is_hybrid_img and new_adobe_title is not None:
+                        save_payload["adobe_title"] = new_adobe_title
+                        save_payload["adobe_description"] = new_adobe_desc
+                        save_payload["adobe_keywords"] = new_adobe_kws
+                        save_payload["adobe_category"] = new_adobe_cat
+
+                    db.update_image(selected_img["id"], **save_payload)
                     st.success("Metadata saved successfully across all platforms!")
                     st.rerun()
 
@@ -1309,7 +1798,11 @@ def main():
             st.subheader("📋 One-Click Clipboard Copy")
             st.caption("Copy individual fields or the full bundle directly into your clipboard:")
 
-            clip_ah, clip_disp, clip_stk = st.tabs(["🎨 Art Heroes", "🏆 Displate", "📸 Microstock"])
+            if is_hybrid_img:
+                clip_ah, clip_disp, clip_adb, clip_stk = st.tabs(["🎨 Art Heroes", "🏆 Displate", "🖼️ Adobe Stock (Hybrid)", "📸 Microstock"])
+            else:
+                clip_ah, clip_disp, clip_stk = st.tabs(["🎨 Art Heroes", "🏆 Displate", "📸 Microstock"])
+                clip_adb = None
 
             with clip_ah:
                 ah_t = selected_img.get("title") or ""
@@ -1336,6 +1829,20 @@ def main():
                     "Copy Tags (20)": disp_tg,
                     "Copy All": disp_bundle
                 }, key_prefix="disp")
+
+            if clip_adb is not None:
+                with clip_adb:
+                    adb_t = selected_img.get("adobe_title") or selected_img.get("stock_title") or ""
+                    adb_d = selected_img.get("adobe_description") or selected_img.get("stock_description") or ""
+                    adb_k = selected_img.get("adobe_keywords") or selected_img.get("stock_keywords") or ""
+                    adb_bundle = f"{adb_t}\n\n{adb_d}\n\n{adb_k}".strip()
+
+                    render_clipboard_buttons({
+                        "Copy Adobe Hybrid Title": adb_t,
+                        "Copy Hybrid Description": adb_d,
+                        "Copy Keywords (35-45)": adb_k,
+                        "Copy All": adb_bundle
+                    }, key_prefix="adb")
 
             with clip_stk:
                 stk_t = selected_img.get("stock_title") or ""
@@ -1367,6 +1874,23 @@ def main():
             full_img_context = f"{folder_context}\n{img_custom_ctx}".strip()
             with st.expander("👁️ View Full Combined Context sent to AI", expanded=False):
                 st.code(full_img_context or "(No context provided)")
+
+            # Adobe Stock / Posters.cz Hybrid Mode
+            hybrid_db_val = bool(selected_img.get("is_adobe_hybrid", 0))
+            context_suggests_hybrid = llm_client.is_hybrid_requested(full_img_context)
+            initial_hybrid_state = hybrid_db_val or context_suggests_hybrid
+
+            adobe_hybrid_enabled = st.checkbox(
+                "🖼️ Adobe Stock / Posters.cz Hybrid Mode (Stock + Interior Design Wall Art)",
+                value=initial_hybrid_state,
+                key=f"hybrid_mode_{selected_img['id']}",
+                help="Generates high-converting hybrid stock metadata optimized for https://www.posters.cz/! Fuses factual stock landmark details with interior design wall art copywriting."
+            )
+            if adobe_hybrid_enabled != hybrid_db_val:
+                db.update_image(selected_img["id"], is_adobe_hybrid=1 if adobe_hybrid_enabled else 0)
+
+            if adobe_hybrid_enabled:
+                st.info("💡 **Adobe / Posters.cz Hybrid Active:** Stock metadata combines factual landmark/subject details with interior design copywriting (wall art, room styling, posters.cz keywords) for optimal poster sales.")
 
             gen_col1, gen_col2, gen_col3, gen_col4 = st.columns(4)
             
@@ -1439,11 +1963,12 @@ def main():
                             st.error(f"Generation error: {e}")
 
             # Stock Only
-            if gen_col3.button("📸 Stock", use_container_width=True):
+            stock_btn_label = "📸 Stock (Hybrid)" if adobe_hybrid_enabled else "📸 Stock"
+            if gen_col3.button(stock_btn_label, use_container_width=True):
                 if "Gemini" in engine_choice and not active_api_key:
                     st.error("Please supply Gemini API Key in the sidebar.")
                 else:
-                    with st.spinner("Generating Microstock metadata..."):
+                    with st.spinner("Generating Stock metadata..." if not adobe_hybrid_enabled else "Generating Adobe / Posters.cz Hybrid metadata..."):
                         try:
                             meta = llm_client.generate_metadata(
                                 selected_img["file_path"],
@@ -1454,29 +1979,41 @@ def main():
                                 is_editorial=new_editorial,
                                 is_ai_generated=new_ai,
                                 is_infrared=new_ir,
-                                is_surreal=new_surreal
+                                is_surreal=new_surreal,
+                                is_adobe_hybrid=adobe_hybrid_enabled
                             )
                             stk = meta.get("stock", {})
+                            adb = meta.get("adobe", {})
                             stk_kws = ", ".join(stk.get("keywords", [])) if isinstance(stk.get("keywords"), list) else stk.get("keywords", "")
+                            adb_kws = ", ".join(adb.get("keywords", [])) if isinstance(adb.get("keywords"), list) else adb.get("keywords", "")
                             curr_g = selected_img.get("grade")
                             new_g = curr_g if curr_g in ("STOCK", "BOTH") else ("BOTH" if curr_g == "FINE_ART" else "STOCK")
-                            db.update_image(
-                                selected_img["id"],
-                                stock_title=stk.get("title"),
-                                stock_description=stk.get("description"),
-                                stock_keywords=stk_kws,
-                                stock_category=stk.get("category", "Travel"),
-                                grade=new_g,
-                                status="GENERATED"
-                            )
+
+                            update_stock_data = {
+                                "stock_title": stk.get("title"),
+                                "stock_description": stk.get("description"),
+                                "stock_keywords": stk_kws,
+                                "stock_category": stk.get("category", "Travel"),
+                                "is_adobe_hybrid": 1 if adobe_hybrid_enabled else 0,
+                                "grade": new_g,
+                                "status": "GENERATED"
+                            }
+                            if adb:
+                                update_stock_data["adobe_title"] = adb.get("title")
+                                update_stock_data["adobe_description"] = adb.get("description")
+                                update_stock_data["adobe_keywords"] = adb_kws
+                                update_stock_data["adobe_category"] = adb.get("category", "Travel")
+
+                            db.update_image(selected_img["id"], **update_stock_data)
                             st.session_state[f"rev_{selected_img['id']}"] = form_rev + 1
-                            st.success("Stock metadata updated!")
+                            st.success("Stock metadata updated!" if not adobe_hybrid_enabled else "Adobe Hybrid & Pure Stock metadata updated!")
                             st.rerun()
                         except Exception as e:
                             st.error(f"Generation error: {e}")
 
             # All Platforms
-            if gen_col4.button("✨ Gen All", use_container_width=True):
+            all_btn_label = "✨ Gen All (Hybrid)" if adobe_hybrid_enabled else "✨ Gen All"
+            if gen_col4.button(all_btn_label, use_container_width=True):
                 if "Gemini" in engine_choice and not active_api_key:
                     st.error("Please supply Gemini API Key in the sidebar.")
                 else:
@@ -1491,54 +2028,83 @@ def main():
                                 is_editorial=new_editorial,
                                 is_ai_generated=new_ai,
                                 is_infrared=new_ir,
-                                is_surreal=new_surreal
+                                is_surreal=new_surreal,
+                                is_adobe_hybrid=adobe_hybrid_enabled
                             )
                             ah = meta.get("artheroes", {})
                             disp = meta.get("displate", {})
                             stk = meta.get("stock", {})
+                            adb = meta.get("adobe", {})
 
                             ah_kws = ", ".join(ah.get("keywords", [])) if isinstance(ah.get("keywords"), list) else ah.get("keywords", "")
                             disp_tags = ", ".join(disp.get("tags", [])) if isinstance(disp.get("tags"), list) else disp.get("tags", "")
                             stk_kws = ", ".join(stk.get("keywords", [])) if isinstance(stk.get("keywords"), list) else stk.get("keywords", "")
+                            adb_kws = ", ".join(adb.get("keywords", [])) if isinstance(adb.get("keywords"), list) else adb.get("keywords", "")
 
-                            db.update_image(
-                                selected_img["id"],
-                                title=ah.get("title"),
-                                description=ah.get("description"),
-                                keywords=ah_kws,
-                                displate_title=disp.get("title"),
-                                displate_description=disp.get("description"),
-                                displate_tags=disp_tags,
-                                stock_title=stk.get("title"),
-                                stock_description=stk.get("description"),
-                                stock_keywords=stk_kws,
-                                stock_category=stk.get("category", "Travel"),
-                                grade="BOTH",
-                                status="GENERATED"
-                            )
+                            update_all_data = {
+                                "title": ah.get("title"),
+                                "description": ah.get("description"),
+                                "keywords": ah_kws,
+                                "displate_title": disp.get("title"),
+                                "displate_description": disp.get("description"),
+                                "displate_tags": disp_tags,
+                                "stock_title": stk.get("title"),
+                                "stock_description": stk.get("description"),
+                                "stock_keywords": stk_kws,
+                                "stock_category": stk.get("category", "Travel"),
+                                "is_adobe_hybrid": 1 if adobe_hybrid_enabled else 0,
+                                "grade": "BOTH",
+                                "status": "GENERATED"
+                            }
+                            if adb:
+                                update_all_data["adobe_title"] = adb.get("title")
+                                update_all_data["adobe_description"] = adb.get("description")
+                                update_all_data["adobe_keywords"] = adb_kws
+                                update_all_data["adobe_category"] = adb.get("category", "Travel")
+
+                            db.update_image(selected_img["id"], **update_all_data)
                             st.session_state[f"rev_{selected_img['id']}"] = form_rev + 1
-                            st.success("All platforms metadata generated and grade set to Dual (BOTH)!")
+                            st.success("All platforms metadata generated (including Adobe Hybrid & Pure Stock) and grade set to Dual (BOTH)!")
                             st.rerun()
                         except Exception as e:
                             st.error(f"Generation error: {e}")
 
             st.write("")
-            # Write EXIF to file now (Art Heroes format)
-            if st.button("💾 Embed Art Heroes EXIF with ExifTool", type="primary", use_container_width=True):
-                try:
-                    exiftool_exe = find_exiftool()
-                    tags_clean = [t.strip() for t in (selected_img["keywords"] or "").split(",") if t.strip()]
-                    meta_payload = {
-                        "title": selected_img["title"] or "",
-                        "description": selected_img["description"] or "",
-                        "keywords": tags_clean[:12]
-                    }
-                    apply_metadata_to_image(exiftool_exe, Path(selected_img["file_path"]), meta_payload)
-                    db.update_image(selected_img["id"], status="APPLIED")
-                    st.success("Embedded Art Heroes metadata into JPEG header successfully!")
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"ExifTool write failed: {e}")
+            # Write EXIF / IPTC / XMP to file
+            ex_c1, ex_c2 = st.columns(2)
+            with ex_c1:
+                if st.button("💾 Embed Stock IPTC/XMP (Alamy / Adobe)", type="primary", use_container_width=True, help="Embeds Stock Title, Description, and full 30-45 keywords directly into JPEG headers via ExifTool."):
+                    try:
+                        exiftool_exe = stock_metadata.find_exiftool()
+                        stock_metadata.apply_stock_metadata_to_image(
+                            image_path=Path(selected_img["file_path"]),
+                            title=selected_img.get("stock_title") or selected_img.get("title") or "",
+                            description=selected_img.get("stock_description") or selected_img.get("description") or selected_img.get("stock_title") or "",
+                            keywords=selected_img.get("stock_keywords") or selected_img.get("keywords") or "",
+                            exiftool_path=exiftool_exe
+                        )
+                        db.update_image(selected_img["id"], status="APPLIED")
+                        st.success("Embedded Stock IPTC/XMP metadata into JPEG header successfully!")
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Stock ExifTool write failed: {e}")
+
+            with ex_c2:
+                if st.button("💾 Embed Art Heroes EXIF", use_container_width=True, help="Embeds Art Heroes POD 3-paragraph text and top 12 keywords."):
+                    try:
+                        exiftool_exe = find_exiftool()
+                        tags_clean = [t.strip() for t in (selected_img["keywords"] or "").split(",") if t.strip()]
+                        meta_payload = {
+                            "title": selected_img["title"] or "",
+                            "description": selected_img["description"] or "",
+                            "keywords": tags_clean[:12]
+                        }
+                        apply_metadata_to_image(exiftool_exe, Path(selected_img["file_path"]), meta_payload)
+                        db.update_image(selected_img["id"], status="APPLIED")
+                        st.success("Embedded Art Heroes metadata into JPEG header successfully!")
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"ExifTool write failed: {e}")
 
 
 if __name__ == "__main__":

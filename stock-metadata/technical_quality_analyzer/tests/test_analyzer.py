@@ -12,10 +12,9 @@ class TestAnalyzer(unittest.TestCase):
         self.analyzer = TechnicalQualityAnalyzer(self.config, db_path=":memory:")
         
         self.test_img_path = "test_img.jpg"
-        img = np.zeros((1000, 1000, 3), dtype=np.uint8)
-        img += 128
-        noise = np.random.normal(0, 10, img.shape).astype(np.uint8)
-        img = cv2.add(img, noise)
+        img = np.full((1000, 1000, 3), 128, dtype=np.float32)
+        noise = np.random.normal(0, 2, img.shape)
+        img = np.clip(img + noise, 0, 255).astype(np.uint8)
         cv2.imwrite(self.test_img_path, img)
         
     def tearDown(self):

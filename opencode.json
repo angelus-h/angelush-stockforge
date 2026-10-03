@@ -1,0 +1,11 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    "AGENTS.md",
+    "PROJECT_CONTEXT.md"
+  ],
+  "compaction": {
+    "auto": true,
+    "tail_turns": 12
+  }
+}

@@ -8,6 +8,7 @@ Supports:
 """
 
 import os
+import ssl
 from pathlib import Path
 from ftplib import FTP, FTP_TLS, error_perm
 
@@ -17,14 +18,17 @@ except ImportError:
     paramiko = None
 
 
-def get_ftp_connection(host, port=21, user="", password="", use_tls=False, timeout=20):
-    """Establishes and returns an FTP or FTPS connection."""
+def get_ftp_connection(host, port=21, user="", password="", use_tls=False, timeout=25, passive_mode=True):
+    """Establishes and returns an FTP or FTPS connection with robust SSL context and passive mode."""
     if use_tls:
-        ftp = FTP_TLS(timeout=timeout)
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        ftp = FTP_TLS(context=ctx, timeout=timeout)
     else:
         ftp = FTP(timeout=timeout)
 
-    ftp.connect(host=host, port=int(port))
+    ftp.connect(host=host, port=int(port or 21))
     if user:
         ftp.login(user=user, passwd=password)
     else:
@@ -33,20 +37,49 @@ def get_ftp_connection(host, port=21, user="", password="", use_tls=False, timeo
     if use_tls:
         ftp.prot_p()  # Secure data connection
 
-    ftp.set_pasv(True)
+    ftp.set_pasv(passive_mode)
     return ftp
 
 
-def get_sftp_connection(host, port=22, user="", password="", timeout=20):
-    """Establishes and returns a paramiko SFTP client and transport."""
+def get_sftp_connection(host, port=22, user="", password="", timeout=25):
+    """Establishes and returns a paramiko SFTP client and the underlying SSHClient."""
     if not paramiko:
-        raise RuntimeError("paramiko library is required for SFTP. Install via 'pip install paramiko'.")
+        raise RuntimeError("The 'paramiko' package is not installed in the active Python environment. Install via: pip install paramiko")
 
-    transport = paramiko.Transport((host, int(port)))
-    transport.banner_timeout = timeout
-    transport.connect(username=user, password=password)
-    sftp = paramiko.SFTPClient.from_transport(transport)
-    return sftp, transport
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(
+        hostname=host,
+        port=int(port or 22),
+        username=user,
+        password=password,
+        timeout=timeout,
+        look_for_keys=False,
+        allow_agent=False
+    )
+    sftp = client.open_sftp()
+    return sftp, client
+
+
+def format_connection_error(host, exc):
+    """Format exceptions into human-friendly error messages with agency-specific hints."""
+    msg = str(exc)
+    err_type = type(exc).__name__
+    h_low = str(host).lower()
+    
+    if "Authentication failed" in msg or "AuthenticationException" in err_type:
+        if "adobestock" in h_low:
+            return "Authentication failed: Invalid Adobe Stock username or password. Note: Adobe Stock SFTP requires the dedicated SFTP password generated on the Contributor Portal (Upload → SFTP tab), NOT your personal Adobe account password."
+        if "pond5" in h_low:
+            return f"Pond5 Authentication failed: Invalid username ('AngelusH') or password for ftp.pond5.com."
+        if "dreamstime" in h_low:
+            return f"Dreamstime Authentication failed: Invalid Contributor ID ('61235210') or password for upload.dreamstime.com."
+        return f"Authentication failed: Please check username and password for {host}."
+    
+    if "timeout" in msg.lower() or "timed out" in msg.lower():
+        return f"Connection timed out connecting to {host}. Please verify internet connection and firewall settings."
+    
+    return f"{err_type}: {msg}"
 
 
 def ensure_ftp_remote_dir(ftp, remote_dir):
@@ -91,33 +124,51 @@ def test_connection(host, port=21, user="", password="", protocol="ftp", remote_
     protocol = protocol.lower().strip()
     if protocol == "sftp":
         if not paramiko:
-            return False, "paramiko is not installed for SFTP support."
+            return False, "The 'paramiko' package is not installed in the active Python environment."
+        client = None
+        sftp = None
         try:
-            sftp, transport = get_sftp_connection(host, port=port or 22, user=user, password=password, timeout=12)
+            sftp, client = get_sftp_connection(host, port=port or 22, user=user, password=password, timeout=12)
             try:
-                if remote_dir:
+                if remote_dir and remote_dir not in [".", "/"]:
                     ensure_sftp_remote_dir(sftp, remote_dir)
                 listing = sftp.listdir(".")[:3]
-                sftp.close()
-                transport.close()
-                return True, f"SFTP Connected successfully! Remote files in root: {len(listing)} item(s)."
-            except Exception as e:
-                sftp.close()
-                transport.close()
-                return True, f"SFTP Authenticated successfully! (Directory note: {e})"
+                return True, f"✅ SFTP Connected successfully to {host}:{port or 22} ({user})! Root accessible ({len(listing)} item(s))."
+            except Exception as dir_err:
+                return True, f"✅ SFTP Authentication successful ({user} @ {host})! (Directory note: {dir_err})"
         except Exception as e:
-            return False, f"SFTP Connection failed: {e}"
+            return False, format_connection_error(host, e)
+        finally:
+            if sftp:
+                try:
+                    sftp.close()
+                except Exception:
+                    pass
+            if client:
+                try:
+                    client.close()
+                except Exception:
+                    pass
     else:
         use_tls = (protocol == "ftps")
+        ftp = None
         try:
             ftp = get_ftp_connection(host, port=port or 21, user=user, password=password, use_tls=use_tls, timeout=12)
             welcome = ftp.getwelcome()
-            if remote_dir:
+            if remote_dir and remote_dir not in [".", "/"]:
                 ensure_ftp_remote_dir(ftp, remote_dir)
-            ftp.quit()
-            return True, f"Connected successfully! Server response: {welcome[:120]}"
+            return True, f"✅ {protocol.upper()} Connected successfully! Server message: {welcome[:100]}"
         except Exception as e:
-            return False, f"Connection failed: {e}"
+            return False, format_connection_error(host, e)
+        finally:
+            if ftp:
+                try:
+                    ftp.quit()
+                except Exception:
+                    try:
+                        ftp.close()
+                    except Exception:
+                        pass
 
 
 def upload_files(host, port, user, password, file_paths, protocol="ftp", remote_dir="", progress_callback=None):
@@ -132,27 +183,42 @@ def upload_files(host, port, user, password, file_paths, protocol="ftp", remote_
         progress_callback: callable(index, total, filename, status_msg)
 
     Returns:
-        dict: {"total": int, "uploaded": int, "failed": list of (path, error)}
+        dict: {"total": int, "uploaded": int, "failed": list of (path, error), "error": str or None}
     """
     protocol = protocol.lower().strip()
-    results = {"total": len(file_paths), "uploaded": 0, "failed": []}
+    results = {"total": len(file_paths), "uploaded": 0, "failed": [], "error": None}
     if not file_paths:
+        results["error"] = "No files provided for upload."
         return results
 
     total = len(file_paths)
 
     if protocol == "sftp":
-        # SFTP Upload via Paramiko
-        sftp, transport = None, None
+        if not paramiko:
+            err_msg = "The 'paramiko' library is missing from the environment (install via: pip install paramiko)."
+            results["error"] = err_msg
+            results["failed"] = [(str(p), err_msg) for p in file_paths]
+            return results
+
+        sftp, client = None, None
         try:
-            sftp, transport = get_sftp_connection(host, port=port or 22, user=user, password=password)
-            if remote_dir:
+            sftp, client = get_sftp_connection(host, port=port or 22, user=user, password=password)
+        except Exception as conn_err:
+            err_msg = format_connection_error(host, conn_err)
+            results["error"] = err_msg
+            results["failed"] = [(str(p), err_msg) for p in file_paths]
+            if progress_callback:
+                progress_callback(0, total, "Connection", f"Error: {err_msg}")
+            return results
+
+        try:
+            if remote_dir and remote_dir not in [".", "/"]:
                 ensure_sftp_remote_dir(sftp, remote_dir)
 
             for idx, fpath in enumerate(file_paths):
                 path_obj = Path(fpath)
                 if not path_obj.exists():
-                    results["failed"].append((str(path_obj), "File not found"))
+                    results["failed"].append((str(path_obj), "File not found on disk"))
                     if progress_callback:
                         progress_callback(idx + 1, total, path_obj.name, "Not found")
                     continue
@@ -172,32 +238,40 @@ def upload_files(host, port, user, password, file_paths, protocol="ftp", remote_
                     sftp.close()
                 except Exception:
                     pass
-            if transport:
+            if client:
                 try:
-                    transport.close()
+                    client.close()
                 except Exception:
                     pass
 
     else:
-        # FTP / FTPS Upload via ftplib
         use_tls = (protocol == "ftps")
         ftp = None
         try:
             ftp = get_ftp_connection(host, port=port or 21, user=user, password=password, use_tls=use_tls)
-            if remote_dir:
+        except Exception as conn_err:
+            err_msg = format_connection_error(host, conn_err)
+            results["error"] = err_msg
+            results["failed"] = [(str(p), err_msg) for p in file_paths]
+            if progress_callback:
+                progress_callback(0, total, "Connection", f"Error: {err_msg}")
+            return results
+
+        try:
+            if remote_dir and remote_dir not in [".", "/"]:
                 ensure_ftp_remote_dir(ftp, remote_dir)
 
             for idx, fpath in enumerate(file_paths):
                 path_obj = Path(fpath)
                 if not path_obj.exists():
-                    results["failed"].append((str(path_obj), "File not found"))
+                    results["failed"].append((str(path_obj), "File not found on disk"))
                     if progress_callback:
                         progress_callback(idx + 1, total, path_obj.name, "Not found")
                     continue
 
                 try:
                     with open(path_obj, "rb") as fp:
-                        ftp.storbinary(f"STOR {path_obj.name}", fp)
+                        ftp.storbinary(f"STOR {path_obj.name}", fp, blocksize=262144)
                     results["uploaded"] += 1
                     if progress_callback:
                         progress_callback(idx + 1, total, path_obj.name, f"Uploaded ({protocol.upper()})")
@@ -210,7 +284,10 @@ def upload_files(host, port, user, password, file_paths, protocol="ftp", remote_
                 try:
                     ftp.quit()
                 except Exception:
-                    ftp.close()
+                    try:
+                        ftp.close()
+                    except Exception:
+                        pass
 
     return results
 

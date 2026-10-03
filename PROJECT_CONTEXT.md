@@ -35,6 +35,17 @@
 - **Title:** Catchy, evocative fine art metal poster title, **strictly under 60 characters**.
 - **Description:** Strictly **around 450–470 characters** (including spaces). High-impact fine art copy highlighting luminous contrast on steel metal finish (matte/gloss) and modern wall decor appeal. Concludes with "Original fine art photography by Angelus H."
 - **Tags:** **Up to 20 search tags** (1-2 words each, high-volume search terms).
+- **Technical Image Specs & Real-World Approval Criteria:**
+  - **Aspect Ratio:** Official standard: **1.4:1** (or 7:5). In practice, native camera **3:2 (1.5:1)** is accepted automatically with minor outer-edge crop.
+  - **Resolution:** Shortest side **min. 2900 px** (Standard: **4060 × 2900 px** or larger, e.g. 6090 × 4350 px).
+  - **DPI:** Strictly **300 DPI** embedded in header.
+  - **Critical Rejection Triggers:** 
+    - **Borders / Frames STRICTLY PROHIBITED:** The metal plate itself serves as the frame; artificial borders lead to immediate rejection.
+    - **Safe Zone (<200 px):** No text, logos, or critical details touching the outer edge.
+    - **AI Waxy Smoothing vs. Authentic Micro-Detail:** Genuine photography passes review easily due to natural optical micro-detail and sensor grain. For AI art, add subtle analog film grain (0.8-1%) to counteract AI upscaler smoothing.
+  - **Color Profile & Size:** Embedded **sRGB** or **AdobeRGB**, max file size **30 MB** (JPG/PNG).
+- **Tooling:** `pod_workflow/displate/displate_tool.py` (verification, Safe Zone check, 1.4:1 auto-crop & 300 DPI injection, integrated into `dashboard/app.py`).
+- **Documentation:** `pod_workflow/displate/DISPLATE_TECHNICAL_GUIDE.md` & `pod_workflow/displate/displate_prompt_guide.md`.
 - **Export:** Displate CSV export format.
 
 ### C. Fine Art America (FAA) / Pixels.com
@@ -45,6 +56,13 @@
 ### D. Alamy & Microstock Agencies
 - **Caption:** Concise, factual description (who, what, where, when). Editorial formatting when applicable.
 - **Keywords:** 30–50 comma-separated tags, distinct essential vs secondary tags.
+
+### E. Depositphotos
+- **FTP Ingestion:** `ftp.depositphotos.com:21` (credentials stored under `DEPOSITPHOTOS_PASSWORD`).
+- **Image Specs:** Min 3.8 MP (2400 × 1600), RGB, max 50 MB. Strictly NO AI-generated submissions. Auto-imports embedded IPTC/XMP.
+- **Video Specs:** MOV/MP4 (H.264/ProRes), duration strictly 3–60 seconds, broadcast FPS (24/25/30/50/60), max 4096 MB.
+- **Editorial Syntax:** `CITY, COUNTRY – MONTH DAY, YEAR: [Factual sentence answering Who, Where, What]`.
+- **Documentation:** `DEPOSITPHOTOS_CONTRIBUTOR_GUIDE.md`.
 
 ---
 

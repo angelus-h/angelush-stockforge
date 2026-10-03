@@ -52,6 +52,69 @@ Output exclusively valid JSON:
   "tags": ["fine art", "metal print", "wall decor", "landscape", "modern art"]
 }}"""
 
+def is_hybrid_requested(user_context="", flag_value=False):
+    """Detect whether Adobe Stock / Posters.cz Hybrid metadata is requested via flag or context text."""
+    if flag_value:
+        return True
+    if not user_context or not isinstance(user_context, str):
+        return False
+    ctx_low = user_context.lower()
+    hybrid_triggers = [
+        "hybrid", "hibrid", "posters.cz", "posters", "europosters",
+        "lakberendez", "belsőépít", "interior design", "wall decor",
+        "wall art hybrid", "adobe hybrid", "poster print"
+    ]
+    return any(trig in ctx_low for trig in hybrid_triggers)
+
+
+ADOBE_HYBRID_STOCK_PROMPT_TEMPLATE = """You are an elite stock photography & multi-agency metadata specialist.
+The photographer sells images across two distinct channels:
+1. ADOBE STOCK (automatically synced to European art print marketplace https://www.posters.cz/):
+   Requires a HYBRID metadata set combining factual landmark/subject accuracy WITH refined interior design / wall decor copywriting.
+2. GENERAL MICROSTOCK AGENCIES (Alamy, Vecteezy, Shutterstock, Depositphotos, Dreamstime, Pond5):
+   Requires PURE, FACTUAL, DRY microstock metadata with NO interior design / wall decor keywords or marketing fluff.
+
+Visual Scene Description: {description}
+Editorial Mode: {editorial_instruction}
+
+Generate TWO distinct metadata sets:
+
+PART 1: 'adobe' (For Adobe Stock & Posters.cz Wall Art):
+1. 'title': Sophisticated hybrid title strictly 6 to 14 words (under 150 chars).
+   MANDATORY HYBRID FORMULA: [Specific Landmark / Subject + Concrete Location] - [Aesthetic Mood] [Interior Wall Art / Poster / Wall Decor]
+   Examples:
+   - 'Historic Retz Calvary Hill Statues in Austria - Rustic Fine Art Wall Decor'
+   - 'Keleti Railway Station Facade in Budapest - Architectural Wall Art Poster'
+   - 'Luminous Alpine Forest at Sunrise - Serene Nature Print for Modern Living Room'
+   - 'Fairytale Bory Castle with Blue Sky - Elegant Architectural Poster Wall Art'
+2. 'description': Refined hybrid caption under 450 characters (1 single cohesive paragraph). Identifies subject and location, concluding with interior styling advice for posters.cz customers (e.g. 'Ideal as an evocative wall art print or framed poster for contemporary living rooms, bedrooms, or modern office spaces.'). {editorial_desc_rule}
+3. 'keywords': Array of strictly 35 to 45 lowercase tags. MANDATORY DUAL-LAYER KEYWORDS: fusing microstock location tags (first 15-20 tags: city, country, landmark, lighting) AND Interior Design, Wall Art & Posters.cz Search Terms (15-20 tags: 'wall art', 'interior design', 'home decor', 'wall decor', 'poster', 'fine art print', 'canvas art', 'living room decor', 'bedroom wall art', 'modern interior', 'room styling', 'framed art').
+4. 'category': Best matching category name (e.g. 'Buildings and Architecture', 'Travel', 'Landscapes', 'Nature').
+
+PART 2: 'stock' (For ALL other Microstock Agencies: Alamy, Vecteezy, Shutterstock, Depositphotos, Dreamstime, Pond5):
+1. 'title': Pure factual microstock title strictly 3 to 8 words (sentence case, max 200 chars).
+   MANDATORY: Must include specific subject/landmark AND concrete geographic location (city/town, country). E.g. 'Calvary hill statues in Retz Austria'.
+   NEVER include wall decor words ('wall art', 'poster', 'decor').
+2. 'description': Strictly factual, clear microstock description under 500 characters. Factual details of subject, architecture, location. NO wall decor or room styling recommendations! {editorial_desc_rule}
+3. 'keywords': Array of strictly 25 to 35 lowercase search tags. Pure microstock tags (concrete location, subject, lighting, orientation). NO wall art, interior design, or poster keywords!
+4. 'category': Best matching category name (e.g. 'Buildings and Architecture', 'Travel', 'Landscapes', 'Nature').
+
+Output EXCLUSIVELY valid JSON:
+{{
+  "adobe": {{
+    "title": "...",
+    "description": "...",
+    "keywords": ["tag1", "tag2", "tag3", "tag4", "tag5", "..."],
+    "category": "Travel"
+  }},
+  "stock": {{
+    "title": "...",
+    "description": "...",
+    "keywords": ["tag1", "tag2", "tag3", "tag4", "tag5", "..."],
+    "category": "Travel"
+  }}
+}}"""
+
 STOCK_PROMPT_TEMPLATE = """You are an expert Microstock Photography metadata optimizer specifically trained for major agencies (Adobe Stock, Vecteezy, Alamy, Shutterstock).
 Visual Scene Description: {description}
 Editorial Mode: {editorial_instruction}
@@ -113,6 +176,64 @@ Output EXCLUSIVELY valid JSON matching this exact structure:
     "title": "...",
     "description": "Engaging description strictly 450-470 characters long.",
     "tags": ["fine art", "metal print", "wall decor", "landscape", "modern art"]
+  }},
+  "stock": {{
+    "title": "...",
+    "description": "...",
+    "keywords": ["tag1", "tag2", "tag3", "tag4", "tag5", "..."],
+    "category": "Travel"
+  }}
+}}"""
+
+ALL_PLATFORMS_HYBRID_PROMPT_TEMPLATE = """You are an elite multi-agency copywriter specializing in Fine Art Print-on-Demand (Art Heroes & Displate), Adobe Stock (synced to Posters.cz), AND General Microstock (Alamy, Vecteezy, Shutterstock, Depositphotos, Dreamstime, Pond5).
+Visual Scene Description: {description}
+Editorial Mode: {editorial_instruction}
+
+Produce high-converting metadata adhering strictly to all platform specifications:
+
+1. ART HEROES RULES:
+- 'title': [Emotional Mood] + [Core Subject] + [Explicit Room/Styling Suggestion]
+- 'description': Strictly 3 cohesive paragraphs separated by double newlines:
+  * Para 1: Atmospheric visual storytelling, lighting, mood, season.
+  * Para 2: Specific interior room recommendations and matching decor styles.
+  * Para 3: Available finishes (canvas, acrylic, framed). {attribution_instruction}
+- 'keywords': Array of strictly 12 high-relevance search tags.
+
+2. DISPLATE RULES:
+- 'displate_title': Punchy, evocative metal poster title strictly under 60 characters.
+- 'displate_description': Strictly between 450 and 470 characters in total length (including spaces). Highlight steel finish contrast and modern wall decor appeal. {attribution_instruction}
+- 'displate_tags': Array of up to 20 highly searchable tags (1-2 words each).
+
+3. ADOBE STOCK & POSTERS.CZ HYBRID RULES ('adobe'):
+- These assets are synced directly to https://www.posters.cz/ as wall art posters.
+- 'title': Sophisticated hybrid title strictly 6 to 14 words (under 150 chars). MANDATORY FORMULA: [Specific Subject / Landmark + Concrete Location] - [Aesthetic Mood] [Interior Wall Art / Poster / Wall Decor]. E.g. 'Historic Retz Calvary Hill Statues in Austria - Rustic Fine Art Wall Decor'.
+- 'description': Single cohesive paragraph under 450 characters combining factual subject/location description with an interior styling recommendation for posters.cz customers (e.g. 'Evocative fine art wall decor suitable for living rooms, bedrooms, or modern offices.'). {editorial_desc_rule}
+- 'keywords': Array of strictly 35 to 45 lowercase tags fusing microstock location tags (city, country, landmark, lighting) AND interior design/poster search tags ('wall art', 'interior design', 'home decor', 'wall decor', 'poster', 'fine art print', 'living room decor', 'modern interior', 'room styling', 'framed print', 'aesthetic decor').
+- 'category': Agency category name (e.g. 'Buildings and Architecture', 'Travel', 'Landscapes', 'Nature', 'Lifestyle', 'Graphic Resources').
+
+4. GENERAL MICROSTOCK RULES ('stock') - For Alamy, Vecteezy, Shutterstock, Depositphotos, Dreamstime, Pond5:
+- 'title': Pure factual microstock title strictly 3 to 8 words (sentence case, max 200 chars). Specific Subject + Location only. NO wall decor terms!
+- 'description': Factual caption under 500 characters. Factual scene details only. NO wall decor marketing or room styling! {editorial_desc_rule}
+- 'keywords': Array of strictly 25 to 35 lowercase search tags. Pure microstock tags (concrete location, subject, lighting, orientation). NO wall art, interior design, or poster keywords!
+- 'category': Agency category name (e.g. 'Buildings and Architecture', 'Travel', 'Landscapes', 'Nature').
+
+Output EXCLUSIVELY valid JSON matching this exact structure:
+{{
+  "artheroes": {{
+    "title": "...",
+    "description": "Paragraph 1\\n\\nParagraph 2\\n\\nParagraph 3",
+    "keywords": ["tag1", "tag2", "tag3", "tag4", "tag5", "tag6", "tag7", "tag8", "tag9", "tag10", "tag11", "tag12"]
+  }},
+  "displate": {{
+    "title": "...",
+    "description": "Engaging description strictly 450-470 characters long.",
+    "tags": ["fine art", "metal print", "wall decor", "landscape", "modern art"]
+  }},
+  "adobe": {{
+    "title": "...",
+    "description": "...",
+    "keywords": ["tag1", "tag2", "tag3", "tag4", "tag5", "..."],
+    "category": "Travel"
   }},
   "stock": {{
     "title": "...",
@@ -273,6 +394,25 @@ def parse_response_json(raw_text, target="Both", is_ai_generated=False):
         }
 
     if target in ("Stock", "Microstock"):
+        result = {}
+        # Parse Adobe Stock Hybrid if present
+        if "adobe" in data and isinstance(data.get("adobe"), dict):
+            adb = data["adobe"]
+            adb_kws = adb.get("keywords", [])
+            if isinstance(adb_kws, str):
+                adb_kws = [k.strip() for k in adb_kws.split(",") if k.strip()]
+            adb_desc = adb.get("description") or adb.get("stock_description") or ""
+            if is_ai_generated:
+                adb_desc = strip_ai_photo_attributions(adb_desc)
+                adb_kws = filter_ai_keywords(adb_kws)
+            result["adobe"] = {
+                "title": adb.get("title") or adb.get("adobe_title"),
+                "description": adb_desc,
+                "keywords": adb_kws,
+                "category": adb.get("category") or "Travel"
+            }
+
+        # Parse General Microstock
         stock_data = data.get("stock") if isinstance(data.get("stock"), dict) else data
         kws = stock_data.get("keywords", [])
         if isinstance(kws, str):
@@ -281,19 +421,19 @@ def parse_response_json(raw_text, target="Both", is_ai_generated=False):
         if is_ai_generated:
             desc = strip_ai_photo_attributions(desc)
             kws = filter_ai_keywords(kws)
-        return {
-            "stock": {
-                "title": stock_data.get("title") or stock_data.get("stock_title"),
-                "description": desc,
-                "keywords": kws,
-                "category": stock_data.get("category") or stock_data.get("stock_category", "Travel")
-            }
+        result["stock"] = {
+            "title": stock_data.get("title") or stock_data.get("stock_title"),
+            "description": desc,
+            "keywords": kws,
+            "category": stock_data.get("category") or stock_data.get("stock_category", "Travel")
         }
+        return result
 
     if target in ("All", "ALL"):
         ah = data.get("artheroes", {})
         disp = data.get("displate", {})
         stk = data.get("stock", {})
+        adb = data.get("adobe", {})
 
         if isinstance(ah.get("keywords"), str):
             ah["keywords"] = [k.strip() for k in ah["keywords"].split(",") if k.strip()]
@@ -301,6 +441,8 @@ def parse_response_json(raw_text, target="Both", is_ai_generated=False):
             disp["tags"] = [k.strip() for k in disp["tags"].split(",") if k.strip()]
         if isinstance(stk.get("keywords"), str):
             stk["keywords"] = [k.strip() for k in stk["keywords"].split(",") if k.strip()]
+        if isinstance(adb.get("keywords"), str):
+            adb["keywords"] = [k.strip() for k in adb["keywords"].split(",") if k.strip()]
 
         if is_ai_generated:
             if "description" in ah:
@@ -309,18 +451,25 @@ def parse_response_json(raw_text, target="Both", is_ai_generated=False):
                 disp["description"] = strip_ai_photo_attributions(disp["description"])
             if "description" in stk:
                 stk["description"] = strip_ai_photo_attributions(stk["description"])
+            if "description" in adb:
+                adb["description"] = strip_ai_photo_attributions(adb["description"])
             if "keywords" in ah:
                 ah["keywords"] = filter_ai_keywords(ah["keywords"])
             if "tags" in disp:
                 disp["tags"] = filter_ai_keywords(disp["tags"])
             if "keywords" in stk:
                 stk["keywords"] = filter_ai_keywords(stk["keywords"])
+            if "keywords" in adb:
+                adb["keywords"] = filter_ai_keywords(adb["keywords"])
 
-        return {
+        res_all = {
             "artheroes": ah,
             "displate": disp,
             "stock": stk
         }
+        if adb:
+            res_all["adobe"] = adb
+        return res_all
 
     # Target is "Both" (ArtHeroes + Displate)
     artheroes = data.get("artheroes", {})
@@ -360,7 +509,9 @@ def parse_response_json(raw_text, target="Both", is_ai_generated=False):
     }
 
 
-def get_prompt_for_target(target, description, user_context="", is_editorial=False, is_ai_generated=False, is_infrared=False, is_surreal=False, **kwargs):
+def get_prompt_for_target(target, description, user_context="", is_editorial=False, is_ai_generated=False, is_infrared=False, is_surreal=False, is_adobe_hybrid=False, **kwargs):
+    hybrid_active = is_hybrid_requested(user_context=user_context, flag_value=is_adobe_hybrid or kwargs.get("is_adobe_hybrid", False))
+
     if is_ai_generated:
         attribution_instruction = "Do NOT append any creator or artist attribution tagline (such as 'Original photography by...', 'Digital artwork by...', or 'Created by...'). Simply conclude the narrative naturally with the visual or interior styling advice."
         ai_instruction_rule = """
@@ -388,18 +539,33 @@ CRITICAL MEDIUM CONSTRAINT (AI GENERATED CONTENT):
     elif target == "Displate":
         base = DISPLATE_PROMPT_TEMPLATE.format(description=description, attribution_instruction=attribution_instruction)
     elif target in ("Stock", "Microstock"):
-        base = STOCK_PROMPT_TEMPLATE.format(
-            description=description,
-            editorial_instruction=editorial_instruction,
-            editorial_desc_rule=editorial_desc_rule
-        )
+        if hybrid_active:
+            base = ADOBE_HYBRID_STOCK_PROMPT_TEMPLATE.format(
+                description=description,
+                editorial_instruction=editorial_instruction,
+                editorial_desc_rule=editorial_desc_rule
+            )
+        else:
+            base = STOCK_PROMPT_TEMPLATE.format(
+                description=description,
+                editorial_instruction=editorial_instruction,
+                editorial_desc_rule=editorial_desc_rule
+            )
     elif target in ("All", "ALL"):
-        base = ALL_PLATFORMS_PROMPT_TEMPLATE.format(
-            description=description,
-            editorial_instruction=editorial_instruction,
-            editorial_desc_rule=editorial_desc_rule,
-            attribution_instruction=attribution_instruction
-        )
+        if hybrid_active:
+            base = ALL_PLATFORMS_HYBRID_PROMPT_TEMPLATE.format(
+                description=description,
+                editorial_instruction=editorial_instruction,
+                editorial_desc_rule=editorial_desc_rule,
+                attribution_instruction=attribution_instruction
+            )
+        else:
+            base = ALL_PLATFORMS_PROMPT_TEMPLATE.format(
+                description=description,
+                editorial_instruction=editorial_instruction,
+                editorial_desc_rule=editorial_desc_rule,
+                attribution_instruction=attribution_instruction
+            )
     else:
         base = COMBINED_PROMPT_TEMPLATE.format(description=description, attribution_instruction=attribution_instruction)
 
@@ -440,13 +606,14 @@ MANDATORY INSTRUCTIONS REGARDING CONTEXT:
     return base
 
 
-def generate_with_ollama(image_path, target="Both", vision_model="llava:7b", copy_model="llama3.2:latest", user_context="", is_editorial=False, is_ai_generated=False, is_infrared=False, is_surreal=False, **kwargs):
+def generate_with_ollama(image_path, target="Both", vision_model="llava:7b", copy_model="llama3.2:latest", user_context="", is_editorial=False, is_ai_generated=False, is_infrared=False, is_surreal=False, is_adobe_hybrid=False, **kwargs):
     """Two-stage local pipeline: Vision describe -> Copywrite structured JSON."""
     visual_desc = get_local_vision_description(image_path, vision_model=vision_model, user_context=user_context)
     prompt = get_prompt_for_target(
         target, visual_desc, user_context=user_context,
         is_editorial=is_editorial, is_ai_generated=is_ai_generated,
-        is_infrared=is_infrared, is_surreal=is_surreal
+        is_infrared=is_infrared, is_surreal=is_surreal,
+        is_adobe_hybrid=is_adobe_hybrid, **kwargs
     )
     
     payload = {
@@ -463,7 +630,7 @@ def generate_with_ollama(image_path, target="Both", vision_model="llava:7b", cop
     return parse_response_json(raw, target=target, is_ai_generated=is_ai_generated)
 
 
-def generate_with_gemini(image_path, target="Both", api_key=None, user_context="", is_editorial=False, is_ai_generated=False, is_infrared=False, is_surreal=False, **kwargs):
+def generate_with_gemini(image_path, target="Both", api_key=None, user_context="", is_editorial=False, is_ai_generated=False, is_infrared=False, is_surreal=False, is_adobe_hybrid=False, **kwargs):
     """Call Google Gemini Flash cloud API."""
     key = api_key or os.environ.get("GEMINI_API_KEY")
     if not key:
@@ -473,7 +640,8 @@ def generate_with_gemini(image_path, target="Both", api_key=None, user_context="
     system_prompt = get_prompt_for_target(
         target, art_label, user_context=user_context,
         is_editorial=is_editorial, is_ai_generated=is_ai_generated,
-        is_infrared=is_infrared, is_surreal=is_surreal
+        is_infrared=is_infrared, is_surreal=is_surreal,
+        is_adobe_hybrid=is_adobe_hybrid, **kwargs
     )
     image_b64 = encode_thumbnail_base64(image_path, max_dim=768)
 
@@ -514,17 +682,19 @@ def generate_with_gemini(image_path, target="Both", api_key=None, user_context="
     return parse_response_json(raw_text, target=target, is_ai_generated=is_ai_generated)
 
 
-def generate_metadata(image_path, target="Both", engine="Google Gemini Cloud (~$0.002/img)", api_key=None, user_context="", is_editorial=False, is_ai_generated=False, is_infrared=False, is_surreal=False, **kwargs):
+def generate_metadata(image_path, target="Both", engine="Google Gemini Cloud (~$0.002/img)", api_key=None, user_context="", is_editorial=False, is_ai_generated=False, is_infrared=False, is_surreal=False, is_adobe_hybrid=False, **kwargs):
     """Router for local vs cloud generation."""
     if "Ollama" in engine:
         return generate_with_ollama(
             image_path, target=target, user_context=user_context,
             is_editorial=is_editorial, is_ai_generated=is_ai_generated,
-            is_infrared=is_infrared, is_surreal=is_surreal, **kwargs
+            is_infrared=is_infrared, is_surreal=is_surreal,
+            is_adobe_hybrid=is_adobe_hybrid, **kwargs
         )
     else:
         return generate_with_gemini(
             image_path, target=target, api_key=api_key, user_context=user_context,
             is_editorial=is_editorial, is_ai_generated=is_ai_generated,
-            is_infrared=is_infrared, is_surreal=is_surreal, **kwargs
+            is_infrared=is_infrared, is_surreal=is_surreal,
+            is_adobe_hybrid=is_adobe_hybrid, **kwargs
         )

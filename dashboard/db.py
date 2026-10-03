@@ -60,16 +60,22 @@ def init_db(db_path=None, force=False):
                 qc_status TEXT DEFAULT 'UNCHECKED',
                 qc_sharpness REAL,
                 qc_dust_count INTEGER DEFAULT 0,
+                qc_noise REAL,
                 qc_warnings TEXT,
                 custom_prompt TEXT,
                 is_editorial INTEGER DEFAULT 0,
                 is_ai_generated INTEGER DEFAULT 0,
                 is_infrared INTEGER DEFAULT 0,
                 is_surreal INTEGER DEFAULT 0,
+                is_adobe_hybrid INTEGER DEFAULT 0,
                 stock_title TEXT,
                 stock_description TEXT,
                 stock_keywords TEXT,
                 stock_category TEXT,
+                adobe_title TEXT,
+                adobe_description TEXT,
+                adobe_keywords TEXT,
+                adobe_category TEXT,
                 uploaded_to TEXT DEFAULT '',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -80,13 +86,15 @@ def init_db(db_path=None, force=False):
             "displate_title TEXT", "displate_description TEXT", "displate_tags TEXT",
             "grade TEXT DEFAULT 'NONE'",
             "qc_status TEXT DEFAULT 'UNCHECKED'", "qc_sharpness REAL",
-            "qc_dust_count INTEGER DEFAULT 0", "qc_warnings TEXT",
+            "qc_dust_count INTEGER DEFAULT 0", "qc_noise REAL", "qc_warnings TEXT",
             "custom_prompt TEXT",
             "is_editorial INTEGER DEFAULT 0",
             "is_ai_generated INTEGER DEFAULT 0",
             "is_infrared INTEGER DEFAULT 0",
             "is_surreal INTEGER DEFAULT 0",
+            "is_adobe_hybrid INTEGER DEFAULT 0",
             "stock_title TEXT", "stock_description TEXT", "stock_keywords TEXT", "stock_category TEXT",
+            "adobe_title TEXT", "adobe_description TEXT", "adobe_keywords TEXT", "adobe_category TEXT",
             "uploaded_to TEXT DEFAULT ''"
         ]:
             try:
@@ -186,7 +194,7 @@ def scan_and_sync_folder(folder_path, platform="ArtHeroes", db_path=None):
                     file_path, file_name, directory, platform, initial_status,
                     title, description, keywords_str,
                     disp_title, disp_desc, disp_tags_str,
-                    grade, datetime.now()
+                    grade, datetime.now().isoformat()
                 ))
                 imported_count += 1
             else:
@@ -202,12 +210,32 @@ def scan_and_sync_folder(folder_path, platform="ArtHeroes", db_path=None):
                             displate_tags = COALESCE(displate_tags, ?),
                             updated_at = ?
                         WHERE id = ?
-                    """, (title, description, keywords_str, disp_title, disp_desc, disp_tags_str, datetime.now(), row["id"]))
+                    """, (title, description, keywords_str, disp_title, disp_desc, disp_tags_str, datetime.now().isoformat(), row["id"]))
                     updated_count += 1
 
         conn.commit()
 
     return {"scanned": len(image_files), "imported": imported_count, "updated": updated_count}
+
+
+def insert_image(file_path, file_name=None, directory=None, platform="ArtHeroes", status="NEW", db_path=None, **kwargs):
+    """Insert a single image record into database, returning its new row id."""
+    init_db(db_path)
+    p = Path(file_path)
+    fn = file_name or p.name
+    d = directory or str(p.parent)
+    now = datetime.now().isoformat()
+    with get_connection(db_path) as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO images (file_path, file_name, directory, platform, status, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (str(p.resolve()), fn, d, platform, status, now))
+        conn.commit()
+        new_id = cursor.lastrowid
+    if kwargs:
+        update_image(new_id, db_path=db_path, **kwargs)
+    return new_id
 
 
 def get_images(platform=None, status=None, search_query=None, folder_path=None, qc_status=None, grade=None, uploaded_filter=None, db_path=None, **kwargs):
@@ -297,10 +325,13 @@ def get_image_by_id(image_id, db_path=None):
 def update_image(image_id, title=None, description=None, keywords=None, 
                  displate_title=None, displate_description=None, displate_tags=None,
                  status=None, platform=None, qc_status=None, qc_sharpness=None,
-                 qc_dust_count=None, qc_warnings=None, custom_prompt=None, grade=None,
-                 is_editorial=None, is_ai_generated=None, is_infrared=None, is_surreal=None,
+                 qc_dust_count=None, qc_noise=None, qc_warnings=None, custom_prompt=None, grade=None,
+                 is_editorial=None, is_ai_generated=None, is_infrared=None, is_surreal=None, is_adobe_hybrid=None,
                  stock_title=None, stock_description=None,
-                 stock_keywords=None, stock_category=None, uploaded_to=None, db_path=None, **kwargs):
+                 stock_keywords=None, stock_category=None,
+                 adobe_title=None, adobe_description=None,
+                 adobe_keywords=None, adobe_category=None,
+                 uploaded_to=None, db_path=None, **kwargs):
     """Update fields of an image record."""
     fields = []
     params = []
@@ -335,6 +366,9 @@ def update_image(image_id, title=None, description=None, keywords=None,
     if is_surreal is not None:
         fields.append("is_surreal = ?")
         params.append(1 if is_surreal else 0)
+    if is_adobe_hybrid is not None:
+        fields.append("is_adobe_hybrid = ?")
+        params.append(1 if is_adobe_hybrid else 0)
     if stock_title is not None:
         fields.append("stock_title = ?")
         params.append(stock_title)
@@ -347,6 +381,18 @@ def update_image(image_id, title=None, description=None, keywords=None,
     if stock_category is not None:
         fields.append("stock_category = ?")
         params.append(stock_category)
+    if adobe_title is not None:
+        fields.append("adobe_title = ?")
+        params.append(adobe_title)
+    if adobe_description is not None:
+        fields.append("adobe_description = ?")
+        params.append(adobe_description)
+    if adobe_keywords is not None:
+        fields.append("adobe_keywords = ?")
+        params.append(adobe_keywords)
+    if adobe_category is not None:
+        fields.append("adobe_category = ?")
+        params.append(adobe_category)
     if uploaded_to is not None:
         fields.append("uploaded_to = ?")
         params.append(uploaded_to)
@@ -368,6 +414,9 @@ def update_image(image_id, title=None, description=None, keywords=None,
     if qc_dust_count is not None:
         fields.append("qc_dust_count = ?")
         params.append(qc_dust_count)
+    if qc_noise is not None:
+        fields.append("qc_noise = ?")
+        params.append(qc_noise)
     if qc_warnings is not None:
         fields.append("qc_warnings = ?")
         params.append(qc_warnings)
@@ -377,10 +426,11 @@ def update_image(image_id, title=None, description=None, keywords=None,
 
     # Extra kwargs safety for hot-reloads
     for k, v in kwargs.items():
-        if k in ("is_ai_generated", "is_infrared", "is_surreal", "is_editorial") and v is not None and f"{k} = ?" not in fields:
+        if k in ("is_ai_generated", "is_infrared", "is_surreal", "is_editorial", "is_adobe_hybrid") and v is not None and f"{k} = ?" not in fields:
             fields.append(f"{k} = ?")
             params.append(1 if v else 0)
-        elif k in ("stock_title", "stock_description", "stock_keywords", "stock_category") and v is not None and f"{k} = ?" not in fields:
+        elif k in ("stock_title", "stock_description", "stock_keywords", "stock_category",
+                  "adobe_title", "adobe_description", "adobe_keywords", "adobe_category") and v is not None and f"{k} = ?" not in fields:
             fields.append(f"{k} = ?")
             params.append(v)
 
@@ -388,7 +438,7 @@ def update_image(image_id, title=None, description=None, keywords=None,
         return
 
     fields.append("updated_at = ?")
-    params.append(datetime.now())
+    params.append(datetime.now().isoformat())
     params.append(image_id)
 
     with get_connection(db_path) as conn:
@@ -459,6 +509,93 @@ def export_catalog_csv(output_csv_path, platform="ArtHeroes", folder_path=None, 
                     img["displate_tags"] or "",
                     img.get("grade") or "NONE",
                     img["status"] or ""
+                ])
+        elif platform in ("Adobe Stock", "AdobeStock", "Adobe", "Stock"):
+            writer.writerow(["Filename", "Title", "Keywords", "Category", "Releases"])
+            for img in images:
+                is_hybrid = bool(img.get("is_adobe_hybrid"))
+                if is_hybrid and (img.get("adobe_title") or img.get("adobe_keywords")):
+                    adb_t = img.get("adobe_title") or img.get("stock_title") or img.get("title") or ""
+                    adb_k = img.get("adobe_keywords") or img.get("stock_keywords") or img.get("keywords") or ""
+                    adb_c = img.get("adobe_category") or img.get("stock_category") or "2"
+                else:
+                    adb_t = img.get("stock_title") or img.get("title") or ""
+                    adb_k = img.get("stock_keywords") or img.get("keywords") or ""
+                    adb_c = img.get("stock_category") or "2"
+                writer.writerow([
+                    img["file_name"],
+                    adb_t,
+                    adb_k,
+                    adb_c,
+                    ""
+                ])
+        elif platform == "Vecteezy":
+            writer.writerow(["Filename", "Title", "Description", "Keywords", "License"])
+            for img in images:
+                writer.writerow([
+                    img["file_name"],
+                    img.get("stock_title") or img.get("title") or "",
+                    img.get("stock_description") or img.get("description") or img.get("stock_title") or "",
+                    img.get("stock_keywords") or img.get("keywords") or "",
+                    "Commercial"
+                ])
+        elif platform == "Pond5":
+            writer.writerow(["originalfilename", "title", "description", "keywords", "editorial"])
+            for img in images:
+                writer.writerow([
+                    img["file_name"],
+                    img.get("stock_title") or img.get("title") or "",
+                    img.get("stock_description") or img.get("description") or img.get("stock_title") or "",
+                    img.get("stock_keywords") or img.get("keywords") or "",
+                    "yes" if img.get("is_editorial") else "no"
+                ])
+        elif platform == "Dreamstime":
+            writer.writerow(["Filename", "Image Name", "Description", "Category 1", "Category 2", "Category 3", "keywords", "Editorial"])
+            for img in images:
+                writer.writerow([
+                    img["file_name"],
+                    img.get("stock_title") or img.get("title") or "",
+                    img.get("stock_description") or img.get("description") or img.get("stock_title") or "",
+                    img.get("stock_category") or "70",
+                    "59",
+                    "72",
+                    img.get("stock_keywords") or img.get("keywords") or "",
+                    "1" if img.get("is_editorial") else "0"
+                ])
+        elif platform == "Depositphotos":
+            writer.writerow(["Filename", "Title", "Description", "Keywords", "Categories", "Model Releases", "Property Releases", "Editorial"])
+            for img in images:
+                writer.writerow([
+                    img["file_name"],
+                    img.get("stock_title") or img.get("title") or "",
+                    img.get("stock_description") or img.get("description") or img.get("stock_title") or "",
+                    img.get("stock_keywords") or img.get("keywords") or "",
+                    img.get("stock_category") or "Travel",
+                    "",
+                    "",
+                    "yes" if img.get("is_editorial") else "no"
+                ])
+        elif platform == "Alamy":
+            writer.writerow(["Filename", "Title", "Description", "Keywords", "Editorial"])
+            for img in images:
+                writer.writerow([
+                    img["file_name"],
+                    img.get("stock_title") or img.get("title") or "",
+                    img.get("stock_description") or img.get("description") or img.get("stock_title") or "",
+                    img.get("stock_keywords") or img.get("keywords") or "",
+                    "yes" if img.get("is_editorial") else "no"
+                ])
+        elif platform == "Shutterstock":
+            writer.writerow(["Filename", "Description", "Keywords", "Categories", "Editorial", "Mature content", "illustration"])
+            for img in images:
+                writer.writerow([
+                    img["file_name"],
+                    img.get("stock_title") or img.get("description") or "",
+                    img.get("stock_keywords") or img.get("keywords") or "",
+                    img.get("stock_category") or "buildings/landmarks",
+                    "yes" if img.get("is_editorial") else "no",
+                    "no",
+                    "no"
                 ])
         else:
             writer.writerow(["Filename", "Title", "Description", "Keywords", "Grade", "Status"])

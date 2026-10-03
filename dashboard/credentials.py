@@ -35,6 +35,37 @@ def _read_env_file():
     return env_vars
 
 
+def _write_env_file(updates: dict):
+    """Update or insert key=value pairs in .env file cleanly."""
+    lines = []
+    existing_keys = set()
+    if ENV_PATH.exists():
+        try:
+            with open(ENV_PATH, "r", encoding="utf-8") as f:
+                for line in f:
+                    stripped = line.strip()
+                    if "=" in stripped and not stripped.startswith("#"):
+                        k, _ = stripped.split("=", 1)
+                        k = k.strip()
+                        if k in updates:
+                            lines.append(f"{k}={updates[k]}\n")
+                            existing_keys.add(k)
+                            continue
+                    lines.append(line)
+        except Exception:
+            pass
+
+    for k, v in updates.items():
+        if k not in existing_keys:
+            lines.append(f"{k}={v}\n")
+
+    try:
+        with open(ENV_PATH, "w", encoding="utf-8") as f:
+            f.writelines(lines)
+    except Exception as e:
+        print(f"[Credentials] Error writing .env: {e}")
+
+
 def get_secret(key: str, default: str = "") -> str:
     """
     Retrieve a password/secret using secure hierarchy:
@@ -64,26 +95,46 @@ def get_secret(key: str, default: str = "") -> str:
 
 
 def set_secret(key: str, secret: str) -> bool:
-    """Store a secret securely in Windows Credential Manager."""
-    if not keyring:
-        return False
-    try:
-        keyring.set_password(SERVICE_NAME, key, secret)
-        return True
-    except Exception as e:
-        print(f"[Credentials] Error setting password in keyring: {e}")
-        return False
+    """Store a secret securely across Windows Credential Manager and local .env file."""
+    # 1. Set in active process environment immediately
+    os.environ[key] = secret
+
+    # 2. Write to local .env fallback
+    _write_env_file({key: secret})
+
+    # 3. Store in Windows Credential Manager
+    if keyring:
+        try:
+            keyring.set_password(SERVICE_NAME, key, secret)
+            return True
+        except Exception as e:
+            print(f"[Credentials] Keyring write notice: {e}")
+            return True  # Saved to .env and os.environ
+
+    return True
 
 
 def delete_secret(key: str) -> bool:
-    """Remove a secret from Windows Credential Manager."""
-    if not keyring:
-        return False
-    try:
-        keyring.delete_password(SERVICE_NAME, key)
-        return True
-    except Exception:
-        return False
+    """Remove a secret from Windows Credential Manager, os.environ, and .env."""
+    os.environ.pop(key, None)
+    if ENV_PATH.exists():
+        try:
+            env_vars = _read_env_file()
+            if key in env_vars:
+                del env_vars[key]
+                lines = [f"{k}={v}\n" for k, v in env_vars.items()]
+                with open(ENV_PATH, "w", encoding="utf-8") as f:
+                    f.writelines(lines)
+        except Exception:
+            pass
+
+    if keyring:
+        try:
+            keyring.delete_password(SERVICE_NAME, key)
+            return True
+        except Exception:
+            pass
+    return True
 
 
 # Standard Agency Presets with default parameters
@@ -134,5 +185,23 @@ AGENCY_PRESETS = {
         "cred_key": "DREAMSTIME_PASSWORD",
         "passive": True,
         "notes": "FTP / FTPS (passive mode)"
+    },
+    "Depositphotos": {
+        "protocol": "ftp",
+        "host": "ftp.depositphotos.com",
+        "port": 21,
+        "default_user": "AngelusH",
+        "remote_dir": "/",
+        "cred_key": "DEPOSITPHOTOS_PASSWORD",
+        "notes": "Standard FTP (ftp.depositphotos.com, port 21, passive mode)"
+    },
+    "Alamy": {
+        "protocol": "ftp",
+        "host": "upload.alamy.com",
+        "port": 21,
+        "default_user": "AngelusH",
+        "remote_dir": "Stock",
+        "cred_key": "ALAMY_PASSWORD",
+        "notes": "Standard FTP (upload.alamy.com:21). Upload images to 'Stock' directory. Alamy auto-ingests IPTC/XMP from JPEG."
     }
 }

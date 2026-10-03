@@ -8,8 +8,10 @@ into JPEG images for Art Heroes / Werk aan de Muur marketplace compliance.
 import os
 import sys
 import json
+import time
 import shutil
 import argparse
+import tempfile
 import subprocess
 from pathlib import Path
 
@@ -30,24 +32,23 @@ def apply_metadata_to_image(exiftool_path, image_path, meta):
     title = meta["title"]
     description = meta["description"]
     keywords = meta["keywords"][:12]
-    keywords_semicolon = ";".join(keywords)
 
     cmd = [
-        exiftool_path,
         "-m",
-        "-overwrite_original",
+        "-overwrite_original_in_place",
         "-charset", "utf8",
         "-charset", "iptc=utf8",
         "-charset", "exif=utf8",
         "-IPTC:CodedCharacterSet=UTF8",
+        "-IFD0:XPComment=",
+        "-IFD0:XPTitle=",
+        "-IFD0:XPKeywords=",
         f"-IPTC:ObjectName={title[:64]}",
         f"-IPTC:Headline={title}",
         f"-IPTC:Caption-Abstract={description}",
         f"-XMP-dc:Title={title}",
         f"-XMP-dc:Description={description}",
         f"-IFD0:ImageDescription={description}",
-        f"-IFD0:XPTitle={title}",
-        f"-IFD0:XPComment={description}",
         f"-ExifIFD:UserComment={description}",
         "-Artist=Angelus H",
         "-By-line=Angelus H",
@@ -63,12 +64,25 @@ def apply_metadata_to_image(exiftool_path, image_path, meta):
         cmd.append(f"-IPTC:Keywords={kw}")
         cmd.append(f"-XMP-dc:Subject={kw}")
 
-    cmd.append(f"-IFD0:XPKeywords={keywords_semicolon}")
     cmd.append(str(image_path))
 
-    res = subprocess.run(cmd, capture_output=True, text=True)
-    if res.returncode != 0:
-        raise RuntimeError(f"ExifTool error on {image_path.name}: {res.stderr}")
+    with tempfile.NamedTemporaryFile("w", encoding="utf-8", delete=False) as argfile:
+        for a in cmd:
+            argfile.write(f"{a}\n")
+        argfile_path = argfile.name
+
+    try:
+        for _ in range(3):
+            res = subprocess.run([exiftool_path, "-@", argfile_path], capture_output=True, text=True, encoding="utf-8", errors="replace")
+            if res.returncode == 0 and "Error" not in res.stderr:
+                return
+            time.sleep(0.3)
+        raise RuntimeError(f"ExifTool error on {Path(image_path).name}: {res.stderr or res.stdout}")
+    finally:
+        try:
+            os.remove(argfile_path)
+        except OSError:
+            pass
 
 
 def process_directory(directory_path):

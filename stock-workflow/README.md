@@ -1,83 +1,86 @@
-# AI Stock Fotó Metaadat & CSV Munkafolyamat (Stock Photo Workflow)
+# AI Stock Photography Metadata & CSV Workflow
 
-Ez a könyvtár tartalmazza az automatizált stock fotó előkészítő, méretcsökkentő és metaadat-generáló munkafolyamatot **Adobe Stock** és **Shutterstock** platformokhoz.
-
----
-
-## 🚀 A Munkafolyamat Lépései (Hogyan dolgoztunk)
-
-### 1. Lépés: Előnézetek létrehozása (Token- és sávszélesség-takarékosság)
-A nagyméretű (RAW / 24-50+ Megapixeles) képek közvetlen feltöltése és elemzése LLM modellekkel rendkívül sok tokent és adatforgalmat igényelne.
-- A `create_thumbnails.py` szkript a célkönyvtáron belül létrehoz egy `_temp/` almappát.
-- Minden képről generál egy lecsökkentett, web-optimalizált (max. 1024px széles/magas, minőségi Lanczos resampling) másolatot.
-- Ezzel párhuzamosan kinyeri az eredeti fájlok **EXIF**, **XMP** és **GPS** koordináta adatait, és elmenti a `metadata_extracted.json` fájlba.
-
-### 2. Lépés: AI Képelemzés és Osztályozás (Commercial vs. Editorial)
-A modellek (vagy felhasználó) átnézik a `_temp` előnézeti képeket és az alábbi szabályok szerint osztályoznak:
-- **Commercial (Kereskedelmi célú):**
-  - Nem szerepelnek a képen felismerhető személyek (vagy van róluk Model Release).
-  - Nem láthatók védett márkajelzések, logók.
-  - Tiszta építészeti, táj-, természet- vagy absztrakt fotók.
-  - Leírás: Tárgyilagos, leíró jellegű cím angol nyelven.
-- **Editorial (Szerkesztőségi / Sajtó célú):**
-  - Felismerhető turisták, látogatók, védett márkanevek, rendszámok vagy nem engedélyezett modern műalkotások láthatók.
-  - **Kötelező formátum:** `VÁROS, ORSZÁG - HÓNAP ÉV: Esemény / helyszín leírása angolul.`  
-    *Példa:* `SZEKESFEHERVAR, HUNGARY - AUGUST 2023: Tourists visit the fairytale Bory Castle (Bory-var) surrounded by lush garden.`
-
-### 3. Lépés: Kulcsszavak és Kategóriák meghatározása
-- **Kulcsszavak száma:** Képenként 25–45 releváns, keresett angol kifejezés.
-- **Fontossági sorrend:** A legfontosabb specifikus kulcsszavak elöl (pl. `bory castle`, `szekesfehervar`, `hungary`), majd a tágabb tematikus kategóriák (`architecture`, `travel`, `scenic`).
-- **Kategóriák:**
-  - Adobe Stock: Numerikus ID (`2`: Buildings and Architecture, `21`: Travel, stb.).
-  - Shutterstock: Hivatalos kategórianevek (`Buildings/Landmarks, Travel`).
-
-### 4. Lépés: Platform-kompatibilis CSV fájlok generálása
-A `generate_stock_csv.py` szkript előállítja:
-1. `adobe_stock.csv`: Kötegelt feltöltéshez az Adobe Stock Contributor felületére.
-2. `shutterstock.csv`: Kötegelt feltöltéshez a Shutterstock Contributor felületére.
-3. `<fájlnév>_adobe.csv` és `<fájlnév>_shutterstock.csv`: Egyedi fájlkezelőkhöz / külső stock menedzser szoftverekhez (pl. StockSubmitter, Xpiks).
+This directory contains the automated stock photography preparation, downscaling, and metadata generation pipeline for **Adobe Stock**, **Shutterstock**, and related microstock platforms.
 
 ---
 
-## 📂 Fájlstruktúra
+## 🚀 Workflow Steps
+
+### Step 1: Thumbnail Generation (Token & Bandwidth Optimization)
+Directly uploading and analyzing high-resolution RAW or 24–50+ megapixel images with multimodal LLMs consumes excessive bandwidth and tokens.
+- The `create_thumbnails.py` script creates a `_temp/` subfolder inside the target directory.
+- It generates web-optimized downscaled copies (max. 1024px width/height, high-quality Lanczos resampling) for each image.
+- In parallel, it extracts embedded **EXIF**, **XMP**, and **GPS** coordinate telemetry into `metadata_extracted.json`.
+
+### Step 2: AI Image Analysis and Classification (Commercial vs. Editorial)
+The multimodal AI engine (or human curator) reviews the `_temp` preview images and classifies them according to strict microstock legal standards:
+- **Commercial:**
+  - No recognizable human faces or persons (unless covered by a signed Model Release).
+  - No visible protected trademarks, logos, or brand marks.
+  - Pure architecture, landscape, nature, botanical, or abstract imagery.
+  - Title/Description: Clear, objective, factual description in English.
+- **Editorial:**
+  - Visible tourists, pedestrians, protected brand names, vehicle license plates, or copyrighted modern architecture/art.
+  - **Mandatory Dateline Format:** `CITY, COUNTRY - MONTH DAY, YEAR: Factual description of event/scene.`  
+    *Example:* `Szekesfehervar, Hungary - August 20, 2023: Tourists visit the fairytale Bory Castle surrounded by lush landscaped gardens.`
+
+### Step 3: Keywords and Category Assignment
+- **Keyword Count:** 25–45 highly relevant, searchable English terms per image.
+- **Relevance Ordering:** Most specific primary keywords first (e.g. `bory castle`, `szekesfehervar`, `hungary`), followed by broader thematic terms (`architecture`, `travel`, `scenic`).
+- **Agency Categories:**
+  - Adobe Stock: Numeric ID (`2`: Buildings and Architecture, `21`: Travel, `11`: Nature, etc.).
+  - Shutterstock: Official category names (`buildings/landmarks, travel`).
+
+### Step 4: Generating Platform-Compliant CSVs
+The `generate_stock_csv.py` script generates:
+1. `adobe_stock.csv`: For batch upload to the Adobe Stock Contributor portal.
+2. `shutterstock.csv`: For batch upload to the Shutterstock Contributor portal.
+3. `<filename>_adobe.csv` and `<filename>_shutterstock.csv`: For specialized individual asset managers / metadata submitters (e.g., StockSubmitter, Xpiks).
+
+---
+
+## 📂 File Structure
 
 ```text
 stock-workflow/
-├── README.md                  # Ez a dokumentáció
-├── create_thumbnails.py       # Előnézet-készítő és EXIF/GPS kinyerő szkript
-├── generate_stock_csv.py      # Adobe Stock és Shutterstock CSV generáló szkript
-└── bory_castle_example.json   # Referencia adatkészlet a Bory-vár fotóiról
+├── README.md                  # Workflow documentation
+├── create_thumbnails.py       # Thumbnail downscaler and EXIF/GPS telemetry extractor
+├── generate_stock_csv.py      # Adobe Stock and Shutterstock CSV exporter
+├── process_vecteezy_batch.py  # Vecteezy automated batch pipeline
+├── apply_alamy_metadata.py    # Alamy metadata embedding tool
+└── test_data/
+    └── bory_castle_example.json   # Reference sample dataset
 ```
 
 ---
 
-## 🛠️ Használati Útmutató Új Fotósorozathoz
+## 🛠️ Usage Guide
 
-### 1. Képek kicsinyítése és metaadat kinyerése
-Futtasd a szkriptet az új fotókat tartalmazó mappára:
-```powershell
-python "F:\AI-WORK\ai-workflows\stock-workflow\create_thumbnails.py" --input "F:\Kepek\Uj_Helyszin" --max-size 1024
+### 1. Downscale Images and Extract Telemetry
+Run the thumbnail extractor on your target image directory:
+```bash
+python create_thumbnails.py --input "G:\path\to\your\images" --max-size 1024
 ```
-*Ez létrehozza az `F:\Kepek\Uj_Helyszin\_temp` mappát az átméretezett képekkel és a `metadata_extracted.json` fájllal.*
+*This generates a `_temp/` folder with downscaled images and `metadata_extracted.json`.*
 
-### 2. AI Elemzés és Adatstruktúra
-A `_temp` mappában lévő képeket az AI gyorsan és kis tokenfogyasztással be tudja olvasni, majd elkészíteni a JSON leírást (lásd a `bory_castle_example.json` mintát).
+### 2. AI Multimodal Analysis
+The AI reads the downscaled images from `_temp/` and generates structured JSON metadata according to agency specifications.
 
-### 3. CSV fájlok legenerálása
-Ha a JSON leírás elkészült, futtasd:
-```powershell
-python "F:\AI-WORK\ai-workflows\stock-workflow\generate_stock_csv.py" --json "F:\Kepek\Uj_Helyszin\image_data.json" --output "F:\Kepek\Uj_Helyszin"
+### 3. Generate CSV Files
+Once the JSON dataset is ready, export the CSV files:
+```bash
+python generate_stock_csv.py --json "G:\path\to\your\images\image_data.json" --output "G:\path\to\your\images"
 ```
 
 ---
 
-## 📋 Stock Platform Szabványok Összegzése
+## 📋 Agency Platform Standards Summary
 
-| Tulajdonság | Adobe Stock | Shutterstock |
+| Specification | Adobe Stock | Shutterstock |
 | :--- | :--- | :--- |
-| **Kötegelt fájlnév** | `adobe_stock.csv` | `shutterstock.csv` |
-| **Oszlopok** | `Filename,Title,Keywords,Category,Releases` | `Filename,Description,Keywords,Categories,Illustration,Mature content,Editorial` |
-| **Editorial Jelölés** | A címben vagy a feltöltési felületen | `Editorial` oszlopban: `yes` / `no` |
-| **Editorial Címforma** | Szabad leírás vagy `CITY, COUNTRY - DATE: ...` | `CITY, COUNTRY - MONTH DAY, YEAR: ...` |
-| **Kulcsszavak száma** | Max. 49 (első 10 kiemelten fontos) | Min. 7, Max. 50 |
-| **Kategória mező** | Kategória száma (pl. `2`) | Vesszővel elválasztott név (max 2) |
+| **Batch CSV Filename** | `adobe_stock.csv` | `shutterstock.csv` |
+| **Header Columns** | `Filename,Title,Keywords,Category,Releases` | `Filename,Description,Keywords,Categories,Illustration,Mature content,Editorial` |
+| **Editorial Flag** | Embedded in title or marked in contributor portal | `Editorial` column: `yes` / `no` |
+| **Editorial Dateline** | Factual description or `City, Country - Date: ...` | `City, Country - Month Day, Year: ...` |
+| **Keyword Count** | Max 49 (first 10 carry highest search weight) | Min. 7, Max. 50 |
+| **Category Field** | Numeric category code (e.g. `2`, `21`) | Comma-separated category names (max 2) |

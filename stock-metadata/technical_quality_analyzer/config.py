@@ -20,6 +20,19 @@ class QualityConfig:
     # Dead pixel parameters (increased threshold to avoid false positives on high frequency textures like fields/flowers)
     dead_pixel_threshold: int = 250
     
+    # Noise parameters
+    # Fast noise sigma estimation thresholds (Immerkaer method)
+    noise_sigma_review_production: float = 8.0
+    noise_sigma_high_risk_production: float = 14.0
+    noise_sigma_review_paranoid: float = 5.0
+    noise_sigma_high_risk_paranoid: float = 10.0
+    
+    # Chrominance noise thresholds (high frequency std-dev in Lab color space)
+    chroma_noise_review_production: float = 4.5
+    chroma_noise_high_risk_production: float = 8.0
+    chroma_noise_review_paranoid: float = 3.5
+    chroma_noise_high_risk_paranoid: float = 6.0
+    
     # Image analysis resolution
     analysis_resolution_max_dim: int = 2048 
 

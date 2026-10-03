@@ -753,12 +753,15 @@
     score: 0.7
     timestamp: '2026-09-26T11:42:47.966191'
 - id: 107
-  x: 0.3081
-  y: 0.395
+  x: 0.3039
+  y: 0.4038
   observations:
   - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
     score: 0.7
     timestamp: '2026-09-26T11:42:47.991666'
+  - image_path: "F:\\K\xE9pek\\Strabisov-Oulehla\\final\\IMGP3475.jpg"
+    score: 0.655
+    timestamp: '2026-10-03T12:03:58.840981'
 - id: 108
   x: 0.293
   y: 0.3884
@@ -1308,8 +1311,8 @@
     score: 0.787
     timestamp: '2026-09-26T17:18:57.589943'
 - id: 170
-  x: 0.1018
-  y: 0.181
+  x: 0.0993
+  y: 0.1762
   observations:
   - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0073.jpg
     score: 0.7
@@ -1317,6 +1320,9 @@
   - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5565.jpg"
     score: 0.691
     timestamp: '2026-09-26T17:19:07.022512'
+  - image_path: "F:\\K\xE9pek\\Strabisov-Oulehla\\final\\IMGP3509.jpg"
+    score: 0.794
+    timestamp: '2026-10-03T12:15:43.765902'
 - id: 171
   x: 0.0503
   y: 0.1681
@@ -2118,8 +2124,8 @@
     score: 0.727
     timestamp: '2026-09-26T17:19:06.599409'
 - id: 254
-  x: 0.6331
-  y: 0.297
+  x: 0.6389
+  y: 0.2971
   observations:
   - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5565.jpg"
     score: 0.707
@@ -2127,6 +2133,9 @@
   - image_path: "F:\\K\xE9pek\\Sunflower\\final\\IMGP5570-2.jpg"
     score: 0.695
     timestamp: '2026-09-26T17:19:09.515425'
+  - image_path: "F:\\K\xE9pek\\Strabisov-Oulehla\\final\\IMGP3506.jpg"
+    score: 0.712
+    timestamp: '2026-10-03T12:15:13.333514'
 - id: 255
   x: 0.645
   y: 0.2408
@@ -2621,3 +2630,94 @@
   - image_path: "F:\\K\xE9pek\\Namest Nad Oslavou\\final\\IMGP5509.jpg"
     score: 0.76
     timestamp: '2026-09-26T18:23:40.865862'
+- id: 320
+  x: 0.6357
+  y: 0.0969
+  observations:
+  - image_path: G:\upload_temp\Art-Heroes_temp\IMGP0358.jpg
+    score: 0.691
+    timestamp: '2026-10-03T10:26:45.424877'
+- id: 321
+  x: 0.9829
+  y: 0.3576
+  observations:
+  - image_path: "F:\\K\xE9pek\\Junacka louka\\final\\_IMG9954.jpg"
+    score: 0.665
+    timestamp: '2026-10-03T11:52:24.563060'
+- id: 322
+  x: 0.9429
+  y: 0.3554
+  observations:
+  - image_path: "F:\\K\xE9pek\\Junacka louka\\final\\_IMG9954.jpg"
+    score: 0.661
+    timestamp: '2026-10-03T11:52:24.705739'
+- id: 323
+  x: 0.7402
+  y: 0.1145
+  observations:
+  - image_path: "F:\\K\xE9pek\\Junacka louka\\final\\_IMG9954.jpg"
+    score: 0.686
+    timestamp: '2026-10-03T11:52:24.861726'
+- id: 324
+  x: 0.729
+  y: 0.047
+  observations:
+  - image_path: "F:\\K\xE9pek\\Junacka louka\\final\\_IMG9954.jpg"
+    score: 0.73
+    timestamp: '2026-10-03T11:52:25.019390'
+- id: 325
+  x: 0.2446
+  y: 0.0264
+  observations:
+  - image_path: "F:\\K\xE9pek\\Junacka louka\\final\\_IMG9954.jpg"
+    score: 0.707
+    timestamp: '2026-10-03T11:52:25.162966'
+- id: 326
+  x: 0.2158
+  y: 0.3928
+  observations:
+  - image_path: "F:\\K\xE9pek\\Junacka louka\\final\\_IMG9961.jpg"
+    score: 0.682
+    timestamp: '2026-10-03T11:52:49.778048'
+- id: 327
+  x: 0.2925
+  y: 0.3399
+  observations:
+  - image_path: "F:\\K\xE9pek\\Junacka louka\\final\\_IMG9961.jpg"
+    score: 0.71
+    timestamp: '2026-10-03T11:52:49.922114'
+- id: 328
+  x: 0.7422
+  y: 0.4016
+  observations:
+  - image_path: "F:\\K\xE9pek\\Strabisov-Oulehla\\final\\IMGP3506.jpg"
+    score: 0.721
+    timestamp: '2026-10-03T12:15:13.188308'
+- id: 329
+  x: 0.4058
+  y: 0.1659
+  observations:
+  - image_path: "F:\\K\xE9pek\\Strabisov-Oulehla\\final\\IMGP3506.jpg"
+    score: 0.663
+    timestamp: '2026-10-03T12:15:13.479469'
+- id: 330
+  x: 0.9526
+  y: 0.1366
+  observations:
+  - image_path: "F:\\K\xE9pek\\Strabisov-Oulehla\\final\\IMGP3509.jpg"
+    score: 0.696
+    timestamp: '2026-10-03T12:15:43.902011'
+- id: 331
+  x: 0.9834
+  y: 0.0991
+  observations:
+  - image_path: "F:\\K\xE9pek\\Strabisov-Oulehla\\final\\IMGP3509.jpg"
+    score: 0.679
+    timestamp: '2026-10-03T12:15:44.040431'
+- id: 332
+  x: 0.0405
+  y: 0.5088
+  observations:
+  - image_path: "F:\\K\xE9pek\\Strabisov-Oulehla\\final\\IMGP3512.jpg"
+    score: 0.663
+    timestamp: '2026-10-03T12:19:36.860357'
