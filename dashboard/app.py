@@ -24,7 +24,15 @@ import io
 from datetime import datetime
 from PIL import Image
 
-for _m in ["db", "dashboard.db", "llm_client", "dashboard.llm_client", "ftp_uploader", "dashboard.ftp_uploader", "credentials", "dashboard.credentials", "video_studio", "dashboard.video_studio", "stock_metadata", "dashboard.stock_metadata"]:
+for _m in [
+    "db", "dashboard.db",
+    "llm_client", "dashboard.llm_client",
+    "ftp_uploader", "dashboard.ftp_uploader",
+    "credentials", "dashboard.credentials",
+    "video_studio", "dashboard.video_studio",
+    "stock_metadata", "dashboard.stock_metadata",
+    "pod_workflow.ArtHeroes.apply_art_heroes_metadata",
+]:
     if _m in sys.modules and sys.modules[_m] is not None:
         try:
             importlib.reload(sys.modules[_m])
@@ -36,7 +44,32 @@ try:
 except ImportError:
     import db, llm_client, ftp_uploader, credentials, video_studio, stock_metadata
 
-from pod_workflow.ArtHeroes.apply_art_heroes_metadata import apply_metadata_to_image, find_exiftool
+# Ensure fresh stock_metadata attributes under hot-reloading Streamlit processes
+if not hasattr(stock_metadata, "map_to_shutterstock_categories"):
+    try:
+        if "dashboard.stock_metadata" in sys.modules and sys.modules["dashboard.stock_metadata"] is not None:
+            stock_metadata = importlib.reload(sys.modules["dashboard.stock_metadata"])
+        elif "stock_metadata" in sys.modules and sys.modules["stock_metadata"] is not None:
+            stock_metadata = importlib.reload(sys.modules["stock_metadata"])
+    except Exception:
+        pass
+
+# Direct attribute binding fallback
+try:
+    from dashboard.stock_metadata import map_to_shutterstock_categories, SHUTTERSTOCK_CATEGORIES
+    stock_metadata.map_to_shutterstock_categories = map_to_shutterstock_categories
+    stock_metadata.SHUTTERSTOCK_CATEGORIES = SHUTTERSTOCK_CATEGORIES
+except (ImportError, AttributeError):
+    try:
+        from stock_metadata import map_to_shutterstock_categories, SHUTTERSTOCK_CATEGORIES
+        stock_metadata.map_to_shutterstock_categories = map_to_shutterstock_categories
+        stock_metadata.SHUTTERSTOCK_CATEGORIES = SHUTTERSTOCK_CATEGORIES
+    except (ImportError, AttributeError):
+        pass
+
+import pod_workflow.ArtHeroes.apply_art_heroes_metadata as art_heroes_meta
+apply_metadata_to_image = art_heroes_meta.apply_metadata_to_image
+find_exiftool = art_heroes_meta.find_exiftool
 try:
     from pod_workflow.displate.displate_tool import analyze_displate_compliance, prepare_for_displate
 except ImportError:
@@ -548,7 +581,7 @@ def main():
 
             st.divider()
             st.subheader("📤 Export Metadata")
-            export_target = st.selectbox("Export Platform", ["Adobe Stock", "Alamy", "Depositphotos", "Vecteezy", "Pond5", "Dreamstime", "Shutterstock", "ArtHeroes", "Displate"])
+            export_target = st.selectbox("Export Platform", ["Adobe Stock", "Alamy", "Depositphotos", "Vecteezy", "Pond5", "Dreamstime", "Shutterstock", "ArtHeroes", "Displate", "Redbubble"])
             if st.button(f"📊 Export {export_target} CSV", use_container_width=True):
                 target_slug = export_target.lower().replace(" ", "_")
                 csv_out = Path(folder_path) / f"stockforge_{target_slug}_export.csv"
@@ -806,13 +839,15 @@ def main():
 
             batch_target = st.selectbox(
                 "Batch Target Platform",
-                ["All", "Both", "Stock", "ArtHeroes", "Displate"],
+                ["All", "Both", "Stock", "ArtHeroes", "Displate", "Redbubble (Wall Art)", "Redbubble (Merch)"],
                 format_func=lambda x: {
-                    "All": "✨ All (Art Heroes + Displate + Stock)",
+                    "All": "✨ All (Art Heroes + Displate + Stock + Redbubble)",
                     "Both": "🎨🏆 Both POD (Art Heroes + Displate)",
                     "Stock": "📸 Stock Only (Vecteezy, Adobe, Alamy)",
                     "ArtHeroes": "🎨 Art Heroes Only",
-                    "Displate": "🏆 Displate Only"
+                    "Displate": "🏆 Displate Only",
+                    "Redbubble (Wall Art)": "🎨 Redbubble (Wall Art Profile)",
+                    "Redbubble (Merch)": "👕 Redbubble (Merch & Apparel Profile)"
                 }[x],
                 key="batch_target_select"
             )
@@ -865,12 +900,19 @@ def main():
                                 update_kwargs["stock_description"] = stk.get("description")
                                 update_kwargs["stock_keywords"] = ", ".join(stk.get("keywords", [])) if isinstance(stk.get("keywords"), list) else stk.get("keywords", "")
                                 update_kwargs["stock_category"] = stk.get("category", "Travel")
+                                update_kwargs["shutterstock_categories"] = stk.get("shutterstock_categories")
                             if "adobe" in meta:
                                 adb = meta["adobe"]
                                 update_kwargs["adobe_title"] = adb.get("title")
                                 update_kwargs["adobe_description"] = adb.get("description")
                                 update_kwargs["adobe_keywords"] = ", ".join(adb.get("keywords", [])) if isinstance(adb.get("keywords"), list) else adb.get("keywords", "")
                                 update_kwargs["adobe_category"] = adb.get("category", "Travel")
+                            if "redbubble" in meta:
+                                rb = meta["redbubble"]
+                                update_kwargs["redbubble_title"] = rb.get("title")
+                                update_kwargs["redbubble_description"] = rb.get("description")
+                                update_kwargs["redbubble_tags"] = ", ".join(rb.get("tags", [])) if isinstance(rb.get("tags"), list) else rb.get("tags", "")
+                                update_kwargs["redbubble_profile"] = rb.get("profile", "wall_art")
 
                             db.update_image(item["id"], **update_kwargs)
                         except Exception as err:
@@ -982,7 +1024,17 @@ def main():
                         st.caption("No preview")
 
                 with meta_col:
-                    st.caption(f"Status: `{st_b}` | QC: {qc_b}")
+                    noise_v = img_item.get("qc_noise")
+                    if noise_v is not None:
+                        if noise_v < 8.0:
+                            noise_tag = f"🟢 {noise_v:.1f}"
+                        elif noise_v < 14.0:
+                            noise_tag = f"🟠 {noise_v:.1f}"
+                        else:
+                            noise_tag = f"🔴 {noise_v:.1f}"
+                        st.caption(f"Status: `{st_b}` | QC: {qc_b} | Noise: {noise_tag}")
+                    else:
+                        st.caption(f"Status: `{st_b}` | QC: {qc_b}")
                     attr_badges = []
                     if img_item.get("is_ai_generated"): attr_badges.append("🤖 AI")
                     if img_item.get("is_infrared"): attr_badges.append("🔴 IR")
@@ -1042,7 +1094,15 @@ def main():
                         sharp_str = f"{sharp_val:.1f}" if sharp_val is not None else "-"
                         dust_cnt = len(dust.anomalies) if dust and hasattr(dust, "anomalies") else 0
                         noise_val = float(noise.score) if noise and noise.score is not None else None
-                        noise_str = f"{noise_val:.1f}" if noise_val is not None else "-"
+                        if noise_val is not None:
+                            if noise_val < 8.0:
+                                noise_str = f"🟢 {noise_val:.1f} (Acceptable)"
+                            elif noise_val < 14.0:
+                                noise_str = f"🟠 {noise_val:.1f} (Review)"
+                            else:
+                                noise_str = f"🔴 {noise_val:.1f} (High Risk)"
+                        else:
+                            noise_str = "-"
                         warn_list = [w for d in rep.technical_quality.values() for w in d.warnings]
                         warns_str = "; ".join(warn_list)
 
@@ -1541,8 +1601,16 @@ def main():
                         mcol1.metric("Sharpness", score_str, delta="OK" if sharp_res.status == Status.PASS else "Low")
                     if noise_res:
                         noise_score_str = f"{noise_res.score:.1f}" if noise_res.score is not None else "N/A"
-                        delta_noise = "Clean" if noise_res.status == Status.PASS else ("Review" if noise_res.status == Status.REVIEW else "High Risk")
-                        mcol2.metric("Noise (Grain)", noise_score_str, delta=delta_noise)
+                        if noise_res.status == Status.PASS:
+                            delta_noise = "🟢 Acceptable (<8.0)"
+                            delta_col = "normal"
+                        elif noise_res.status == Status.REVIEW:
+                            delta_noise = "🟠 Review (8.0–14.0)"
+                            delta_col = "inverse"
+                        else:
+                            delta_noise = "🔴 High Risk (>14.0)"
+                            delta_col = "inverse"
+                        mcol2.metric("Noise (Grain)", noise_score_str, delta=delta_noise, delta_color=delta_col)
                     if dust_res:
                         cand_count = len(dust_res.anomalies) if hasattr(dust_res, "anomalies") else dust_res.metrics.get("candidates", 0)
                         sky_cnt = dust_res.metrics.get("sky_candidates", 0)
@@ -1557,6 +1625,27 @@ def main():
                         mcol4.metric("Exposure", exp_res.status.value)
                     if dead_res:
                         mcol5.metric("Dead Pixels", dead_res.status.value)
+
+                    # Explicit Noise Assessment Section
+                    if noise_res:
+                        eff_s = noise_res.metrics.get("effective_sigma", noise_res.score or 0.0)
+                        imm_s = noise_res.metrics.get("immerkaer_sigma", 0.0)
+                        patch_s = noise_res.metrics.get("smooth_patch_sigma")
+                        chroma_n = noise_res.metrics.get("chroma_noise", 0.0)
+                        num_patches = noise_res.metrics.get("smooth_patches_count", 0)
+
+                        if noise_res.status == Status.PASS:
+                            st.success(f"✅ **Noise Status: ACCEPTABLE ({eff_s:.1f} / limit 8.0)** — Digital sensor noise and grain are within safe limits for commercial stock (Adobe/Shutterstock) and POD submission.")
+                        elif noise_res.status == Status.REVIEW:
+                            st.warning(f"⚠️ **Noise Status: REVIEW NEEDED ({eff_s:.1f} / threshold 8.0)** — Elevated grain detected, especially in smooth regions (sky/shadows). Inspect at 100% zoom before submission.")
+                        else:
+                            st.error(f"🚨 **Noise Status: EXCESSIVE NOISE ({eff_s:.1f} > limit 14.0)** — Heavy digital grain or chroma blotches. High risk of rejection by stock agency reviewers.")
+
+                        with st.expander("📊 Detailed Noise & Grain Breakdown", expanded=False):
+                            nc1, nc2, nc3 = st.columns(3)
+                            nc1.metric("Global Luminance Grain", f"{imm_s:.2f}", help="Laplacian noise variance across the whole image.")
+                            nc2.metric("Flat Areas / Sky Grain", f"{patch_s:.2f}" if patch_s else "N/A", help=f"Noise standard deviation in {num_patches} detected smooth patches.")
+                            nc3.metric("Color / Chroma Noise", f"{chroma_n:.2f}", delta="Clean (<4.5)" if chroma_n < 4.5 else "Elevated (>4.5)", delta_color="normal" if chroma_n < 4.5 else "inverse", help="High-frequency color channel fluctuations in CIELAB space.")
 
                     # Warnings
                     all_warns = []
@@ -1584,8 +1673,33 @@ def main():
                     sharp_val = selected_img.get("qc_sharpness")
                     noise_val = selected_img.get("qc_noise")
                     m1.metric("Sharpness Score", f"{sharp_val:.1f}" if sharp_val is not None else "N/A")
-                    m2.metric("Noise Level", f"{noise_val:.1f}" if noise_val is not None else "N/A")
+
+                    if noise_val is not None:
+                        if noise_val < 8.0:
+                            delta_noise = "🟢 Acceptable (<8.0)"
+                            delta_col = "normal"
+                        elif noise_val < 14.0:
+                            delta_noise = "🟠 Review (8.0–14.0)"
+                            delta_col = "inverse"
+                        else:
+                            delta_noise = "🔴 High Risk (>14.0)"
+                            delta_col = "inverse"
+                        m2.metric("Noise Level", f"{noise_val:.1f}", delta=delta_noise, delta_color=delta_col)
+                    else:
+                        m2.metric("Noise Level", "N/A", delta="Re-run QC to test", delta_color="off")
+
                     m3.metric("Dust Candidates", selected_img.get("qc_dust_count") or 0)
+
+                    if noise_val is not None:
+                        if noise_val < 8.0:
+                            st.success(f"✅ **Noise Status: ACCEPTABLE ({noise_val:.1f} / 8.0 max)** — Digital sensor noise and grain are within safe limits for commercial stock & POD submission.")
+                        elif noise_val < 14.0:
+                            st.warning(f"⚠️ **Noise Status: REVIEW NEEDED ({noise_val:.1f} / 8.0 threshold)** — Elevated digital grain detected. Check flat areas (sky, shadows) at 100% zoom before submission.")
+                        else:
+                            st.error(f"🚨 **Noise Status: EXCESSIVE NOISE ({noise_val:.1f} > 14.0 limit)** — Heavy digital noise detected. Stock agencies likely to reject for 'Noise / Artifacts'.")
+                    else:
+                        st.info("ℹ️ **Noise Level Not Measured:** This image was analyzed before noise checking was recorded. Click **'Run Quality Check'** above to evaluate noise levels.")
+
                     if selected_img.get("qc_warnings"):
                         st.info(f"Warnings: {selected_img['qc_warnings']}")
 
@@ -1653,17 +1767,44 @@ def main():
                 st.session_state[f"rev_{selected_img['id']}"] = form_rev + 1
                 st.rerun()
 
+            # Fast 1-click Adaptation from Art Heroes to Redbubble if available
+            has_ah_data = bool(selected_img.get("title") and selected_img.get("description"))
+            if has_ah_data:
+                rb_adapt_col1, rb_adapt_col2 = st.columns([3, 1])
+                with rb_adapt_col1:
+                    st.caption("💡 Art Heroes metadata detected. You can instantly adapt it for Redbubble with 0 token cost:")
+                with rb_adapt_col2:
+                    if st.button("⚡ Adapt to Redbubble ($0)", key=f"btn_adapt_rb_{selected_img['id']}", use_container_width=True, help="Converts Art Heroes description to <=250 chars and top 12 tags with zero token cost."):
+                        curr_prof = selected_img.get("redbubble_profile") or "wall_art"
+                        adapted = llm_client.adapt_art_heroes_to_redbubble(
+                            selected_img.get("title", ""),
+                            selected_img.get("description", ""),
+                            selected_img.get("keywords", ""),
+                            profile=curr_prof
+                        )
+                        db.update_image(
+                            selected_img["id"],
+                            redbubble_title=adapted["title"],
+                            redbubble_description=adapted["description"],
+                            redbubble_tags=", ".join(adapted["tags"]),
+                            redbubble_profile=adapted["profile"],
+                            status="GENERATED" if selected_img["status"] == "NEW" else selected_img["status"]
+                        )
+                        st.session_state[f"rev_{selected_img['id']}"] = form_rev + 1
+                        st.success("Art Heroes metadata successfully adapted for Redbubble!")
+                        st.rerun()
+
             cat_options = ["Buildings and Architecture", "Travel", "Landscapes", "The Environment", "Transport", "Technology", "People", "Culture and Religion", "Industry", "Nature", "Lifestyle", "Graphic Resources"]
             is_hybrid_img = bool(selected_img.get("is_adobe_hybrid")) or bool(st.session_state.get(f"hybrid_mode_{selected_img['id']}")) or llm_client.is_hybrid_requested(selected_img.get("custom_prompt") or "")
 
             with st.form(key=f"edit_form_{selected_img['id']}_{form_rev}"):
                 if is_hybrid_img:
-                    tab_artheroes, tab_displate, tab_adobe, tab_stock = st.tabs([
-                        "🎨 Art Heroes", "🏆 Displate", "🖼️ Adobe Stock (Hybrid)", "📸 Microstock (Alamy, Vecteezy, etc.)"
+                    tab_artheroes, tab_displate, tab_redbubble, tab_adobe, tab_stock = st.tabs([
+                        "🎨 Art Heroes", "🏆 Displate", "👕 Merch Studio (Redbubble)", "🖼️ Adobe Stock (Hybrid)", "📸 Microstock (Alamy, Vecteezy, etc.)"
                     ])
                 else:
-                    tab_artheroes, tab_displate, tab_stock = st.tabs([
-                        "🎨 Art Heroes", "🏆 Displate", "📸 Microstock (Stock)"
+                    tab_artheroes, tab_displate, tab_redbubble, tab_stock = st.tabs([
+                        "🎨 Art Heroes", "🏆 Displate", "👕 Merch Studio (Redbubble)", "📸 Microstock (Stock)"
                     ])
                     tab_adobe = None
 
@@ -1698,6 +1839,128 @@ def main():
 
                     disp_tags_list = [k.strip() for k in new_disp_tags.split(",") if k.strip()]
                     st.caption(f"Tags: **{len(disp_tags_list)} / 20** {'⚠️ Exceeds 20!' if len(disp_tags_list) > 20 else '✅ Optimal'}")
+
+                with tab_redbubble:
+                    saved_rb_prof = selected_img.get("redbubble_profile")
+                    if not saved_rb_prof:
+                        default_prof = "merch" if selected_img.get("is_ai_generated") else "wall_art"
+                    else:
+                        default_prof = saved_rb_prof
+                    prof_idx = 0 if default_prof == "wall_art" else 1
+                    new_rb_prof = st.radio(
+                        "Product Profile Strategy",
+                        ["wall_art", "merch"],
+                        index=prof_idx,
+                        format_func=lambda x: "🖼️ Wall Art Focus (Fine Art Photography / Scenic Wall Decor)" if x == "wall_art" else "👕 Merch Focus (Apparel, Stickers, Cases, Graphic Statement)",
+                        key=f"rb_p_{selected_img['id']}_{form_rev}",
+                        horizontal=True
+                    )
+
+                    new_rb_title = st.text_input(
+                        "Title (40-50 chars max: [Descriptor] + [Subject/Niche] + [Art Style/Vibe] + [Product Hint])",
+                        value=selected_img.get("redbubble_title") or "",
+                        key=f"rb_t_{selected_img['id']}_{form_rev}",
+                        help="Target: 40-50 chars max. Front-load the most important 30 chars with high-intent keywords for mobile buyers."
+                    )
+                    rb_title_len = len(new_rb_title)
+                    rb_words = len(new_rb_title.split())
+                    if 35 <= rb_title_len <= 50:
+                        st.caption(f"Title: **{rb_title_len} chars ({rb_words} words)** ✅ Optimal (Target: 40-50 chars max, first 30 front-loaded)")
+                    elif rb_title_len > 50:
+                        st.caption(f"Title: **{rb_title_len} chars ({rb_words} words)** ⚠️ Over 50 chars ({rb_title_len - 50} chars over target)")
+                    elif rb_title_len > 0:
+                        st.caption(f"Title: **{rb_title_len} chars ({rb_words} words)** ℹ️ Under 40 chars ({50 - rb_title_len} chars remaining)")
+                    else:
+                        st.caption("Title: **0 chars** (Required)")
+
+                    # Split tags into Main Tag and Supporting Tags
+                    curr_raw_tags = selected_img.get("redbubble_tags") or ""
+                    init_main, init_supp = llm_client.split_redbubble_tags(curr_raw_tags)
+                    
+                    rb_tag_col1, rb_tag_col2 = st.columns([1, 2])
+                    with rb_tag_col1:
+                        new_rb_main_tag = st.text_input(
+                            "Main Tag (Primary Search Word)",
+                            value=init_main,
+                            key=f"rb_main_{selected_img['id']}_{form_rev}",
+                            help="Top #1 search phrase for Google and Redbubble ranking."
+                        )
+                    with rb_tag_col2:
+                        new_rb_supp_tags = st.text_input(
+                            "Supporting Tags (14 multi-word phrases, comma-separated)",
+                            value=init_supp,
+                            key=f"rb_supp_{selected_img['id']}_{form_rev}",
+                            help="Provide exactly 14 multi-word phrases (60% specific long-tail, 40% room decor/aesthetic/gift). No single-word tags."
+                        )
+
+                    # Assemble combined tags
+                    supp_list = [k.strip() for k in new_rb_supp_tags.split(",") if k.strip()]
+                    full_tags_list = ([new_rb_main_tag.strip().rstrip(",")] if new_rb_main_tag.strip().rstrip(",") else []) + [s.rstrip(",") for s in supp_list]
+                    new_rb_tags = ", ".join(full_tags_list)
+                    
+                    rb_tag_count = len(full_tags_list)
+                    single_word_tags = [t for t in full_tags_list if len(t.split()) < 2]
+                    banned_found = [
+                        t for t in full_tags_list
+                        if any(b in t.lower() for b in ("best selling", "trending", "top selling", "cheap", "viral", "discount"))
+                        or t.lower() in ("gift", "gifts", "art", "photo", "funny", "poster")
+                    ]
+                    
+                    if rb_tag_count == 15 and not single_word_tags and not banned_found:
+                        st.caption(f"Total Tags: **15 / 15 multi-word phrases** (1 Main + 14 Supporting) ✅ Optimal 2026 Redbubble & Google SEO (Top 10 indexed)")
+                    else:
+                        caps = []
+                        if rb_tag_count > 15:
+                            caps.append(f"⚠️ **{rb_tag_count} / 15 tags** (Exceeds 15 tags)")
+                        else:
+                            caps.append(f"Tags: **{rb_tag_count} / 15 phrases** (Target: Exactly 15 multi-word phrases)")
+                        if single_word_tags:
+                            caps.append(f"⚠️ Single-word tags banned: `{', '.join(single_word_tags[:4])}`")
+                        if banned_found:
+                            caps.append(f"⚠️ Banned spam tags detected: `{', '.join(banned_found[:3])}`")
+                        st.caption(" | ".join(caps))
+
+                    new_rb_desc = st.text_area(
+                        "Description (2-3 engaging prose paragraphs - Target: 60-120 words for Redbubble & Google SEO)",
+                        value=selected_img.get("redbubble_description") or "",
+                        height=120,
+                        key=f"rb_d_{selected_img['id']}_{form_rev}",
+                        help="Para 1: Visual depiction, color palette, mood, technique. Para 2: Ideal interior design placement or target audience / gift appeal."
+                    )
+                    rb_desc_words = len(new_rb_desc.split())
+                    rb_desc_len = len(new_rb_desc)
+                    if 60 <= rb_desc_words <= 120:
+                        st.caption(f"Description: **{rb_desc_words} words ({rb_desc_len} chars)** ✅ Optimal length for Redbubble & Google SEO (Target: 60-120 words in 2-3 paragraphs)")
+                    elif rb_desc_words > 120:
+                        st.caption(f"Description: **{rb_desc_words} words ({rb_desc_len} chars)** ℹ️ Over 120 words (Target: 60-120 words)")
+                    elif rb_desc_words > 0:
+                        st.caption(f"Description: **{rb_desc_words} words ({rb_desc_len} chars)** ℹ️ Under 60 words (Target: 60-120 words in 2-3 paragraphs)")
+                    else:
+                        st.caption("Description: **0 words** (Empty)")
+
+                    # Quick 1-Click Copy row inside tab_redbubble
+                    st.markdown("###### 📋 1-Click Copy Boxes for Redbubble Fields (with trailing commas)")
+                    all_tags_clean = new_rb_tags.strip().rstrip(",")
+                    all_tags_copy_val = f"{all_tags_clean}," if all_tags_clean else ""
+                    main_clean = new_rb_main_tag.strip().rstrip(",")
+                    main_copy_val = f"{main_clean}," if main_clean else ""
+                    supp_clean = new_rb_supp_tags.strip().rstrip(",")
+                    supp_copy_val = f"{supp_clean}," if supp_clean else ""
+
+                    rb_box_c1, rb_box_c2 = st.columns(2)
+                    with rb_box_c1:
+                        st.caption("Title (Click copy icon top right):")
+                        st.code(new_rb_title or "", language=None)
+                        st.caption("All 15 Tags (Single paste with trailing comma):")
+                        st.code(all_tags_copy_val or "", language=None)
+
+                    with rb_box_c2:
+                        st.caption("Main Tag (with automatic trailing comma):")
+                        st.code(main_copy_val or "", language=None)
+                        st.caption("Supporting Tags (with automatic trailing comma):")
+                        st.code(supp_copy_val or "", language=None)
+                        st.caption("Description (Story & Meaning):")
+                        st.code(new_rb_desc or "", language=None)
 
                 if tab_adobe is not None:
                     with tab_adobe:
@@ -1767,9 +2030,40 @@ def main():
                     cat_idx = cat_options.index(curr_cat) if curr_cat in cat_options else 1
                     new_stock_cat = st.selectbox("Microstock Category", cat_options, index=cat_idx, key=f"stk_cat_{selected_img['id']}_{form_rev}")
 
+                    # Shutterstock Categories (Official 26 categories - exactly 2 required)
+                    _sh_mapper = getattr(stock_metadata, "map_to_shutterstock_categories", map_to_shutterstock_categories)
+                    _sh_cats_list = getattr(stock_metadata, "SHUTTERSTOCK_CATEGORIES", SHUTTERSTOCK_CATEGORIES)
+                    existing_sh_raw = selected_img.get("shutterstock_categories")
+                    if not existing_sh_raw:
+                        existing_sh_raw = _sh_mapper(
+                            curr_cat,
+                            title=new_stock_title,
+                            description=new_stock_desc,
+                            keywords=new_stock_kws
+                        )
+                    parsed_sh_cats = [c.strip() for c in existing_sh_raw.split(",") if c.strip() in _sh_cats_list]
+                    new_sh_cats = st.multiselect(
+                        "Shutterstock Categories (Strictly 2 categories)",
+                        options=_sh_cats_list,
+                        default=parsed_sh_cats[:2],
+                        max_selections=2,
+                        key=f"stk_sh_cats_{selected_img['id']}_{form_rev}",
+                        help="Shutterstock requires exactly two categories from this standardized 26-category list."
+                    )
+                    if len(new_sh_cats) == 2:
+                        st.caption(f"Shutterstock Categories: **{new_sh_cats[0]}**, **{new_sh_cats[1]}** ✅")
+                    else:
+                        st.caption("⚠️ Please select exactly 2 categories for Shutterstock.")
+
                 save_btn = st.form_submit_button("💾 Save All Changes to Database", type="secondary")
 
                 if save_btn:
+                    final_sh_cats = _sh_mapper(
+                        ", ".join(new_sh_cats) if new_sh_cats else new_stock_cat,
+                        title=new_stock_title,
+                        description=new_stock_desc,
+                        keywords=new_stock_kws
+                    )
                     save_payload = {
                         "title": new_title,
                         "description": new_desc,
@@ -1777,10 +2071,15 @@ def main():
                         "displate_title": new_disp_title,
                         "displate_description": new_disp_desc,
                         "displate_tags": new_disp_tags,
+                        "redbubble_title": new_rb_title,
+                        "redbubble_description": new_rb_desc,
+                        "redbubble_tags": new_rb_tags,
+                        "redbubble_profile": new_rb_prof,
                         "stock_title": new_stock_title,
                         "stock_description": new_stock_desc,
                         "stock_keywords": new_stock_kws,
                         "stock_category": new_stock_cat,
+                        "shutterstock_categories": final_sh_cats,
                         "status": "GENERATED" if selected_img["status"] == "NEW" else selected_img["status"]
                     }
                     if is_hybrid_img and new_adobe_title is not None:
@@ -1799,9 +2098,9 @@ def main():
             st.caption("Copy individual fields or the full bundle directly into your clipboard:")
 
             if is_hybrid_img:
-                clip_ah, clip_disp, clip_adb, clip_stk = st.tabs(["🎨 Art Heroes", "🏆 Displate", "🖼️ Adobe Stock (Hybrid)", "📸 Microstock"])
+                clip_ah, clip_disp, clip_rb, clip_adb, clip_stk = st.tabs(["🎨 Art Heroes", "🏆 Displate", "👕 Redbubble", "🖼️ Adobe Stock (Hybrid)", "📸 Microstock"])
             else:
-                clip_ah, clip_disp, clip_stk = st.tabs(["🎨 Art Heroes", "🏆 Displate", "📸 Microstock"])
+                clip_ah, clip_disp, clip_rb, clip_stk = st.tabs(["🎨 Art Heroes", "🏆 Displate", "👕 Redbubble", "📸 Microstock"])
                 clip_adb = None
 
             with clip_ah:
@@ -1829,6 +2128,24 @@ def main():
                     "Copy Tags (20)": disp_tg,
                     "Copy All": disp_bundle
                 }, key_prefix="disp")
+
+            with clip_rb:
+                rb_t = selected_img.get("redbubble_title") or ""
+                rb_d = selected_img.get("redbubble_description") or ""
+                rb_tg = selected_img.get("redbubble_tags") or ""
+                main_tag, supp_tags = llm_client.split_redbubble_tags(rb_tg, trailing_comma=True)
+                all_tags_clean = rb_tg.strip().rstrip(",")
+                all_tags_copy = f"{all_tags_clean}," if all_tags_clean else ""
+                rb_bundle = f"Title:\n{rb_t}\n\nTags (15):\n{rb_tg}\n\nMain Tag:\n{main_tag}\n\nSupporting Tags:\n{supp_tags}\n\nDescription:\n{rb_d}".strip()
+
+                render_clipboard_buttons({
+                    "Copy Title (40-50 chars)": rb_t,
+                    "Copy All 15 Tags (with ,)": all_tags_copy,
+                    "Copy Main Tag (with ,)": main_tag,
+                    "Copy Supporting Tags (with ,)": supp_tags,
+                    "Copy Description (60-120 words)": rb_d,
+                    "Copy All": rb_bundle
+                }, key_prefix="rb")
 
             if clip_adb is not None:
                 with clip_adb:
@@ -1892,7 +2209,7 @@ def main():
             if adobe_hybrid_enabled:
                 st.info("💡 **Adobe / Posters.cz Hybrid Active:** Stock metadata combines factual landmark/subject details with interior design copywriting (wall art, room styling, posters.cz keywords) for optimal poster sales.")
 
-            gen_col1, gen_col2, gen_col3, gen_col4 = st.columns(4)
+            gen_col1, gen_col2, gen_col3, gen_col4, gen_col5 = st.columns(5)
             
             # Art Heroes Only
             if gen_col1.button("🎨 Art Heroes", use_container_width=True):
@@ -1962,9 +2279,50 @@ def main():
                         except Exception as e:
                             st.error(f"Generation error: {e}")
 
+            # Redbubble Only
+            curr_profile_ui = st.session_state.get(f"rb_p_{selected_img['id']}_{form_rev}")
+            if not curr_profile_ui:
+                curr_profile_ui = selected_img.get("redbubble_profile") or ("merch" if selected_img.get("is_ai_generated") else "wall_art")
+            rb_target = "Redbubble_Merch" if curr_profile_ui == "merch" else "Redbubble_WallArt"
+            rb_label = "👕 Redbubble (Merch)" if curr_profile_ui == "merch" else "🎨 Redbubble (Wall Art)"
+            if gen_col3.button(rb_label, use_container_width=True, help="Generate Redbubble 2026 SEO metadata (40-50 char title, 60-120 word description, 15 multi-word tags)"):
+                if "Gemini" in engine_choice and not active_api_key:
+                    st.error("Please supply Gemini API Key in the sidebar.")
+                else:
+                    with st.spinner(f"Generating {rb_label} metadata..."):
+                        try:
+                            meta = llm_client.generate_metadata(
+                                selected_img["file_path"],
+                                target=rb_target,
+                                engine=engine_choice,
+                                api_key=active_api_key,
+                                user_context=full_img_context,
+                                is_editorial=new_editorial,
+                                is_ai_generated=new_ai,
+                                is_infrared=new_ir,
+                                is_surreal=new_surreal
+                            )
+                            rb = meta.get("redbubble", {})
+                            rb_tags = ", ".join(rb.get("tags", [])) if isinstance(rb.get("tags"), list) else rb.get("tags", "")
+                            db.update_image(
+                                selected_img["id"],
+                                redbubble_title=rb.get("title"),
+                                redbubble_description=rb.get("description"),
+                                redbubble_tags=rb_tags,
+                                redbubble_profile=rb.get("profile", curr_profile_ui),
+                                grade="FINE_ART" if not selected_img.get("grade") or selected_img.get("grade") == "NONE" else selected_img.get("grade"),
+                                status="GENERATED"
+                            )
+                            st.session_state[f"rev_{selected_img['id']}"] = form_rev + 1
+                            st.session_state[f"rb_p_{selected_img['id']}_{form_rev + 1}"] = rb.get("profile", curr_profile_ui)
+                            st.success(f"{rb_label} metadata updated!")
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Generation error: {e}")
+
             # Stock Only
             stock_btn_label = "📸 Stock (Hybrid)" if adobe_hybrid_enabled else "📸 Stock"
-            if gen_col3.button(stock_btn_label, use_container_width=True):
+            if gen_col4.button(stock_btn_label, use_container_width=True):
                 if "Gemini" in engine_choice and not active_api_key:
                     st.error("Please supply Gemini API Key in the sidebar.")
                 else:
@@ -1994,6 +2352,7 @@ def main():
                                 "stock_description": stk.get("description"),
                                 "stock_keywords": stk_kws,
                                 "stock_category": stk.get("category", "Travel"),
+                                "shutterstock_categories": stk.get("shutterstock_categories"),
                                 "is_adobe_hybrid": 1 if adobe_hybrid_enabled else 0,
                                 "grade": new_g,
                                 "status": "GENERATED"
@@ -2013,7 +2372,7 @@ def main():
 
             # All Platforms
             all_btn_label = "✨ Gen All (Hybrid)" if adobe_hybrid_enabled else "✨ Gen All"
-            if gen_col4.button(all_btn_label, use_container_width=True):
+            if gen_col5.button(all_btn_label, use_container_width=True):
                 if "Gemini" in engine_choice and not active_api_key:
                     st.error("Please supply Gemini API Key in the sidebar.")
                 else:
@@ -2035,11 +2394,13 @@ def main():
                             disp = meta.get("displate", {})
                             stk = meta.get("stock", {})
                             adb = meta.get("adobe", {})
+                            rb = meta.get("redbubble", {})
 
                             ah_kws = ", ".join(ah.get("keywords", [])) if isinstance(ah.get("keywords"), list) else ah.get("keywords", "")
                             disp_tags = ", ".join(disp.get("tags", [])) if isinstance(disp.get("tags"), list) else disp.get("tags", "")
                             stk_kws = ", ".join(stk.get("keywords", [])) if isinstance(stk.get("keywords"), list) else stk.get("keywords", "")
                             adb_kws = ", ".join(adb.get("keywords", [])) if isinstance(adb.get("keywords"), list) else adb.get("keywords", "")
+                            rb_tags = ", ".join(rb.get("tags", [])) if isinstance(rb.get("tags"), list) else rb.get("tags", "")
 
                             update_all_data = {
                                 "title": ah.get("title"),
@@ -2052,10 +2413,16 @@ def main():
                                 "stock_description": stk.get("description"),
                                 "stock_keywords": stk_kws,
                                 "stock_category": stk.get("category", "Travel"),
+                                "shutterstock_categories": stk.get("shutterstock_categories"),
                                 "is_adobe_hybrid": 1 if adobe_hybrid_enabled else 0,
                                 "grade": "BOTH",
                                 "status": "GENERATED"
                             }
+                            if rb:
+                                update_all_data["redbubble_title"] = rb.get("title")
+                                update_all_data["redbubble_description"] = rb.get("description")
+                                update_all_data["redbubble_tags"] = rb_tags
+                                update_all_data["redbubble_profile"] = rb.get("profile", "wall_art")
                             if adb:
                                 update_all_data["adobe_title"] = adb.get("title")
                                 update_all_data["adobe_description"] = adb.get("description")
@@ -2064,7 +2431,7 @@ def main():
 
                             db.update_image(selected_img["id"], **update_all_data)
                             st.session_state[f"rev_{selected_img['id']}"] = form_rev + 1
-                            st.success("All platforms metadata generated (including Adobe Hybrid & Pure Stock) and grade set to Dual (BOTH)!")
+                            st.success("All platforms metadata generated (including Art Heroes, Displate, Redbubble & Stock) and grade set to Dual (BOTH)!")
                             st.rerun()
                         except Exception as e:
                             st.error(f"Generation error: {e}")

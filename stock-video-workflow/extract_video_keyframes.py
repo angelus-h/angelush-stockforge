@@ -26,6 +26,27 @@ if not shutil.which("ffmpeg"):
             break
 
 
+def save_cv2_image(path, img, quality=85):
+    """Saves image safely supporting Windows Unicode file paths."""
+    try:
+        success, buf = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, quality])
+        if success:
+            buf.tofile(path)
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def read_cv2_image(path):
+    """Reads image safely supporting Windows Unicode file paths."""
+    try:
+        data = np.fromfile(path, dtype=np.uint8)
+        return cv2.imdecode(data, cv2.IMREAD_COLOR)
+    except Exception:
+        return None
+
+
 def get_gps_from_file(file_path):
     """Extracts ISO 6709 GPS coordinates from MP4 file headers or tail moov atom."""
     try:
@@ -57,6 +78,7 @@ def get_gps_from_file(file_path):
 KNOWN_CLUSTERS = [
     # (lat_min, lat_max, lon_min, lon_max, city, country, landmark_hint)
     (47.45, 47.55, 19.00, 19.12, "Budapest", "Hungary", "Budapest city center, Danube river"),
+    (47.43, 47.49, 18.90, 18.99, "Budaors", "Hungary", "Budaors hills, Csiki-hegyek, Odvas-hegy, Pest County"),
     (47.48, 47.55, 19.13, 19.28, "Budapest / Pest County", "Hungary", "Eastern Budapest / Godollo hills"),
     (47.65, 47.72, 19.05, 19.12, "Szentendre", "Hungary", "Danube promenade / Szentendre"),
     (47.75, 47.85, 18.85, 19.00, "Visegrad / Esztergom", "Hungary", "Danube Bend / Castle"),
@@ -64,17 +86,21 @@ KNOWN_CLUSTERS = [
     (46.65, 46.85, 16.20, 16.60, "Orseg", "Hungary", "Orseg National Park"),
     (47.00, 47.15, 16.80, 17.00, "Kam", "Hungary", "Jeli Arboretum botanical garden, blooming rhododendron and azalea flowers, Vas County"),
     (48.10, 48.20, 17.05, 17.20, "Bratislava", "Slovakia", "Bratislava Old Town / Danube"),
+    (48.71, 48.74, 16.56, 16.61, "Falkenstein", "Austria", "Burg Falkenstein (Falkenstein Castle ruin), Weinviertel, Lower Austria"),
     (48.78, 48.83, 16.78, 16.85, "Lednice", "Czech Republic", "Lednice Castle and Park UNESCO World Heritage site, South Moravia"),
     (48.70, 48.85, 16.55, 16.90, "Lednice-Valtice / Mikulov", "Czech Republic", "South Moravia / Lednice UNESCO"),
-    (48.80, 48.95, 15.75, 16.10, "Znojmo / Vranov nad Dyji", "Czech Republic", "South Moravia / Vranov Castle & Reservoir"),
+    (48.91, 48.95, 16.62, 16.67, "Pouzdrany", "Czech Republic", "Pouzdrany, Pouzdranska step national nature reserve, South Moravia"),
+    (48.80, 48.95, 15.75, 16.10, "Znojmo", "Czech Republic", "Znojmo historic town, castle, Rotunda of St. Catherine, South Moravia"),
     (48.84, 48.87, 15.84, 15.87, "Hardegg", "Austria", "Hardegg Castle / Thayatal National Park"),
     (49.15, 49.22, 15.40, 15.50, "Telc", "Czech Republic", "Telc UNESCO historic center / Chateau / Namesti Zachariase z Hradce"),
     (49.15, 49.25, 16.55, 16.70, "Brno", "Czech Republic", "Brno city center / Spilberk Castle"),
     (49.17, 49.21, 16.74, 16.79, "Tvarozna", "Czech Republic", "Tvarozna, Santon Hill, Battle of Austerlitz (Slavkov) historical Napoleonic battlefield reenactment, South Moravia"),
     (49.18, 49.23, 16.13, 16.18, "Namest nad Oslavou", "Czech Republic", "Namest nad Oslavou Castle & Square"),
     (49.30, 49.50, 16.60, 16.80, "Blansko", "Czech Republic", "Punkva Caves, Macocha Abyss, Moravian Karst (Moravsky kras) nature reserve"),
+    (49.34, 49.38, 16.32, 16.38, "Dolni Loucky", "Czech Republic", "Dolni Loucky railway viaduct (Mirovy most), Loucka river valley, Tisnov, South Moravia"),
     (49.43, 49.48, 16.30, 16.36, "Pernstejn / Nedvedice", "Czech Republic", "Pernstejn Castle / Nedvedice"),
     (49.44, 49.48, 17.00, 17.05, "Plumlov", "Czech Republic", "Plumlov Castle & Reservoir / Prostejov"),
+    (49.52, 49.57, 16.55, 16.61, "Letovice", "Czech Republic", "Letovice Castle (Zamek Letovice) and park, South Moravia"),
     (49.55, 49.65, 17.20, 17.35, "Olomouc", "Czech Republic", "Olomouc historic center"),
     (50.00, 50.15, 14.35, 14.55, "Prague", "Czech Republic", "Prague Old Town / Charles Bridge")
 ]
@@ -105,27 +131,41 @@ def extract_frames_from_video(video_path, output_dir, max_thumb_dim=640, default
     contact_sheet_path = os.path.join(output_dir, f"{base_name}_filmstrip.jpg")
     video_temp_dir = os.path.join(output_dir, base_name)
     
+    width = 0
+    height = 0
+    duration = 0.0
+    fps = 30.0
+    total_frames = 0
+
     cmd_probe = ["ffprobe", "-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", video_path]
     probe_res = subprocess.run(cmd_probe, capture_output=True, text=True)
-    if probe_res.returncode != 0:
-        return None
-    try:
-        data = json.loads(probe_res.stdout)
-    except Exception:
-        return None
+    if probe_res.returncode == 0:
+        try:
+            data = json.loads(probe_res.stdout)
+            v_stream = next((s for s in data.get("streams", []) if s.get("codec_type") == "video"), {})
+            width = int(v_stream.get("width", 0))
+            height = int(v_stream.get("height", 0))
+            duration = float(data.get("format", {}).get("duration", 0))
+            fps_eval = v_stream.get("r_frame_rate", "30/1")
+            if "/" in fps_eval:
+                num, den = fps_eval.split("/")
+                fps = float(num) / float(den) if float(den) > 0 else 30.0
+            else:
+                fps = float(fps_eval) if fps_eval else 30.0
+            total_frames = int(v_stream.get("nb_frames") or (duration * fps))
+        except Exception:
+            pass
 
-    v_stream = next((s for s in data.get("streams", []) if s.get("codec_type") == "video"), {})
-    width = int(v_stream.get("width", 0))
-    height = int(v_stream.get("height", 0))
-    duration = float(data.get("format", {}).get("duration", 0))
-    
-    fps_eval = v_stream.get("r_frame_rate", "30/1")
-    if "/" in fps_eval:
-        num, den = fps_eval.split("/")
-        fps = float(num) / float(den) if float(den) > 0 else 30.0
-    else:
-        fps = float(fps_eval) if fps_eval else 30.0
-    total_frames = int(v_stream.get("nb_frames") or (duration * fps))
+    # Robust OpenCV fallback (essential for Windows Unicode paths or if ffprobe fails)
+    if duration <= 0 or width <= 0 or height <= 0:
+        cap = cv2.VideoCapture(video_path)
+        if cap.isOpened():
+            width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            fps = float(cap.get(cv2.CAP_PROP_FPS)) or 30.0
+            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            duration = (total_frames / fps) if fps > 0 else 0.0
+            cap.release()
 
     if duration <= 0:
         return None
@@ -149,6 +189,16 @@ def extract_frames_from_video(video_path, output_dir, max_thumb_dim=640, default
             candidate_parent = os.path.join(os.path.dirname(parent_dir), f"{clean_base}.mp4")
         if os.path.exists(candidate_parent):
             lat, lon = get_gps_from_file(candidate_parent)
+        
+        if lat is None or lon is None:
+            p_dir = os.path.dirname(parent_dir)
+            if os.path.exists(p_dir):
+                for cand_f in os.listdir(p_dir):
+                    if cand_f.lower().endswith(('.mp4', '.mov')):
+                        c_lat, c_lon = get_gps_from_file(os.path.join(p_dir, cand_f))
+                        if c_lat is not None and c_lon is not None:
+                            lat, lon = c_lat, c_lon
+                            break
 
     loc_info = resolve_location(lat, lon, default_loc=default_loc)
 
@@ -182,9 +232,28 @@ def extract_frames_from_video(video_path, output_dir, max_thumb_dim=640, default
         ]
         subprocess.run(cmd_ffmpeg, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         if os.path.exists(out_frame_path):
-            img_data = cv2.imread(out_frame_path)
+            img_data = read_cv2_image(out_frame_path)
             if img_data is not None:
                 extracted_frames.append((p, img_data, out_frame_path))
+                continue
+
+        # OpenCV extraction fallback (if ffmpeg fails or on unicode paths)
+        cap = cv2.VideoCapture(video_path)
+        if cap.isOpened():
+            frame_idx = int((p / 100.0) * total_frames)
+            cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+            ret, frame = cap.read()
+            if ret and frame is not None:
+                if width > max_thumb_dim:
+                    scale = max_thumb_dim / float(width)
+                    new_w = max_thumb_dim
+                    new_h = int(height * scale)
+                    thumb = cv2.resize(frame, (new_w, new_h), interpolation=cv2.INTER_AREA)
+                else:
+                    thumb = frame
+                save_cv2_image(out_frame_path, thumb, quality=92)
+                extracted_frames.append((p, thumb, out_frame_path))
+            cap.release()
 
     # Create a 5-frame filmstrip contact sheet (grid or horizontal strip)
     contact_sheet_path = None
@@ -199,7 +268,7 @@ def extract_frames_from_video(video_path, output_dir, max_thumb_dim=640, default
             cv2.putText(strip, f"{pct}%", (x_offset + 10, 18), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (220, 220, 220), 1, cv2.LINE_AA)
 
         contact_sheet_path = os.path.join(output_dir, f"{base_name}_filmstrip.jpg")
-        cv2.imwrite(contact_sheet_path, strip, [cv2.IMWRITE_JPEG_QUALITY, 85])
+        save_cv2_image(contact_sheet_path, strip, quality=85)
 
     return {
         "filename": os.path.basename(video_path),

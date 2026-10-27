@@ -19,6 +19,11 @@ If the script flags an issue, you can quickly review it (using the `--diagnostic
    - Analyzes the histogram for severe shadow and highlight clipping.
 4. **Dead / Hot Pixels**
    - Looks for isolated pixels that are unnaturally bright (e.g., `>250` intensity) *and* exhibit extreme contrast against their immediate surrounding neighbors, preventing false positives on natural high-frequency textures like foliage or flowers.
+5. **Digital Noise & Grain Detection (Luminance & Chroma)**
+   - Uses Immerkaer Fast Noise Variance across luminance.
+   - Evaluates smooth/homogeneous patches (sky, flat backgrounds) where microstock inspectors penalize noise first.
+   - Measures high-frequency chroma fluctuations in CIELAB color space to detect color blotches.
+   - Categorizes noise as Acceptable (`< 8.0`), Review (`8.0 - 14.0`), or High Risk / Rejection (`> 14.0`).
 
 ## Pipeline Context
 This tool fits into a modern AI-assisted photography workflow:
@@ -87,7 +92,8 @@ technical_quality_analyzer/
 │   ├── dust.py
 │   ├── exposure.py
 │   ├── sharpness.py
-│   └── dead_pixels.py
+│   ├── dead_pixels.py
+│   └── noise.py
 ├── fingerprint/
 │   └── dust_database.py # YAML-based persistent dust tracking
 └── reporting/

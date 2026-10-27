@@ -57,12 +57,28 @@
 - **Caption:** Concise, factual description (who, what, where, when). Editorial formatting when applicable.
 - **Keywords:** 30–50 comma-separated tags, distinct essential vs secondary tags.
 
-### E. Depositphotos
+### E. Vecteezy
+- **CSV Specs:** Strictly **4 columns**: `Filename,Title,Description,Keywords`.
+- **Encoding:** Clean **UTF-8 without BOM** (presence of UTF-8 BOM or extra columns like `License` breaks the web parser with `CSV file has an incorrect header line. It should include "Filename" column`).
+- **Title:** Strictly 3–8 words, sentence case, no subjective buzzwords (`beautiful, stunning, scenic, etc.`).
+- **Keywords:** Strictly 20–30 tags, lowercase, no hyphens or special characters.
+
+### F. Depositphotos
 - **FTP Ingestion:** `ftp.depositphotos.com:21` (credentials stored under `DEPOSITPHOTOS_PASSWORD`).
 - **Image Specs:** Min 3.8 MP (2400 × 1600), RGB, max 50 MB. Strictly NO AI-generated submissions. Auto-imports embedded IPTC/XMP.
 - **Video Specs:** MOV/MP4 (H.264/ProRes), duration strictly 3–60 seconds, broadcast FPS (24/25/30/50/60), max 4096 MB.
 - **Editorial Syntax:** `CITY, COUNTRY – MONTH DAY, YEAR: [Factual sentence answering Who, Where, What]`.
 - **Documentation:** `DEPOSITPHOTOS_CONTRIBUTOR_GUIDE.md`.
+
+### G. Redbubble (2026 SEO & Indexing Standards)
+- **Trademark & Brand Safety:** ABSOLUTELY ZERO trademarked brand names (e.g. LinkedIn, Red Hat, Photoshop, Windows, Disney). Generic or parody equivalents required (e.g., "professional networking site", "open source linux").
+- **Title (40-50 chars max):** `[Specific Descriptor] + [Subject/Niche] + [Art Style/Vibe] + [Product Hint]`. Front-load first 30 characters with high-intent keywords for mobile buyers.
+- **Tags (Exactly 15 multi-word phrases):** Strictly comma-separated multi-word phrases (2-5 words each, NO single-word tags like "art", "photo", "funny", "poster").
+  - **60/40 Split Rule:** 9 specific long-tail tags (exact subject/niche) + 6 broader aesthetic/room decor/gift tags.
+  - **Spam Bans:** Never use "best selling", "trending", "top selling", "cheap", "viral", "discount", "gift".
+  - **Indexing:** Top 10 tags placed first (indexed by Google).
+- **Description (60-120 words):** 2-3 engaging prose paragraphs (Para 1: visual depiction, mood, technique; Para 2: interior styling or target audience/gift suitability).
+- **Primary Product Detection:** Auto-detects "Wall Art" (landscapes/fine art) vs "Sticker" or "T-Shirt" (merch/pop-art/illustrations).
 
 ---
 

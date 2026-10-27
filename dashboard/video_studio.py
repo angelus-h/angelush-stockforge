@@ -375,7 +375,7 @@ def render_video_studio(active_api_key=""):
 
                                         desc_txt = res.get("editorial_description", "").strip() or "Tourists explore the historic castle grounds."
                                         item.setdefault("shutterstock", {})["description"] = f"{city_input}, {country_input} - {ed_date}: {desc_txt}"
-                                        item["shutterstock"]["categories"] = "people,buildings/landmarks"
+                                        item["shutterstock"]["categories"] = "People, Buildings/Landmarks"
 
                                         item.setdefault("pond5", {})["title"] = f"{city_input}, {country_input} {p5_date}: Tourists in Park Scene"
                                         item["pond5"]["description"] = f"{city_input}, {country_input} {p5_date}: {desc_txt}"
@@ -473,7 +473,7 @@ def render_video_studio(active_api_key=""):
 
                     with p_tab_shutter:
                         sh_d = st.text_area("Shutterstock Description (Dateline required if Editorial)", value=item.get("shutterstock", {}).get("description", ""), height=100, key=f"sh_d_{item['new_filename']}")
-                        sh_c = st.text_input("Shutterstock Categories (1 or 2, comma separated)", value=item.get("shutterstock", {}).get("categories", "buildings/landmarks"), key=f"sh_c_{item['new_filename']}")
+                        sh_c = st.text_input("Shutterstock Categories (Strictly 2, comma separated)", value=item.get("shutterstock", {}).get("categories", "Buildings/Landmarks, Nature"), key=f"sh_c_{item['new_filename']}")
 
                     with p_tab_pond5:
                         p5_t = st.text_input("Pond5 Title (Strictly 40-80 chars)", value=item.get("pond5", {}).get("title", ""), key=f"p5_t_{item['new_filename']}")
@@ -493,7 +493,8 @@ def render_video_studio(active_api_key=""):
                         item.setdefault("adobe", {})["title"] = ad_t
                         item["adobe"]["category"] = ad_cat
                         item.setdefault("shutterstock", {})["description"] = sh_d
-                        item["shutterstock"]["categories"] = sh_c
+                        from dashboard.stock_metadata import map_to_shutterstock_categories
+                        item["shutterstock"]["categories"] = map_to_shutterstock_categories(sh_c, description=sh_d, keywords=kws_input)
                         item.setdefault("pond5", {})["title"] = p5_t
                         item["pond5"]["description"] = p5_d
                         item.setdefault("dreamstime", {})["video_name"] = dt_n

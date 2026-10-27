@@ -215,13 +215,12 @@ def main():
     def write_vecteezy_csv(data_dict):
         with open(csv_path, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
-            writer.writerow(["Filename", "Title", "Description", "Keywords", "License"])
+            writer.writerow(["Filename", "Title", "Description", "Keywords"])
             for r in data_dict.values():
                 fn = r["filename"]
                 if args.strip_ext:
                     fn = os.path.splitext(fn)[0]
-                lic = str(r.get("license") or args.license).lower()
-                writer.writerow([fn, r["title"], r["description"], r["keywords"], lic])
+                writer.writerow([fn, r["title"], r["description"], r["keywords"]])
 
     if args.csv_only:
         print("Regenerating CSV from existing metadata...", flush=True)

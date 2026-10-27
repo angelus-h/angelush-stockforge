@@ -22,11 +22,11 @@ You must respond strictly in JSON format with exactly three keys: "title", "desc
 1. "title":
    - STRICT LENGTH RULE: Must be strictly between 40 and 80 characters long (optimal target: 55 to 75 characters). NEVER exceed 80 characters!
    - Must be written strictly in English.
-   - EDITORIAL RULE: If the footage is Editorial, the title MUST strictly start with the dateline:
-     `City, Country YYYY/MM/DD: <Subject Action>` (strictly NO ALL-CAPS, e.g., "Tvarozna, Czech Republic 2024/11/30: Napoleonic Soldiers Marching" -> 65 chars).
-   - COMMERCIAL FORMULA: If Commercial, organize title keywords in the order:
+   - FORMULA (Commercial & Editorial): Organize title keywords in the order:
      `[Main subject] + [Action] + [Environment] + [Type of shot]`
      (Example: "Danube River View Towards Szentendre Waterfront Promenade, Wide Shot" -> 68 chars)
+     (Editorial Example: "Tourists Walking Along Avenue In Lednice Castle Gardens Wide Shot" -> 65 chars)
+   - DO NOT include datelines or dates (e.g. "City, Country YYYY/MM/DD:") in the title! Datelines belong strictly in the Description, leaving the 40-80 character title space for high-converting search keywords.
    - STRICT PROHIBITIONS:
      - Do not use any number codes (such as "001" or "#2").
      - Do not use any file extensions (such as ".mov" or ".mp4").

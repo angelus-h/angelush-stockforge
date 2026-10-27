@@ -27,7 +27,28 @@ def draw_diagnostics(img_path: str, report: dict, output_path: str):
         return
     
     h, w = img.shape[:2]
-    
+
+    # Draw summary HUD banner at the top
+    tq = report.get("technical_quality", {})
+    noise_res = tq.get("noise")
+    sharp_res = tq.get("sharpness")
+    hud_parts = []
+    if sharp_res:
+        s_score = sharp_res.get("score")
+        s_txt = f"{s_score:.1f}" if s_score is not None else sharp_res.get("status", "N/A")
+        hud_parts.append(f"SHARPNESS: {s_txt}")
+    if noise_res:
+        n_score = noise_res.get("score")
+        n_stat = noise_res.get("status", "PASS")
+        n_stat_str = "ACCEPTABLE" if n_stat == "PASS" else ("REVIEW" if n_stat == "REVIEW" else "HIGH RISK")
+        n_score_str = f"{n_score:.1f}" if n_score is not None else "N/A"
+        hud_parts.append(f"NOISE: {n_score_str} [{n_stat_str}]")
+
+    if hud_parts:
+        hud_bar = "  |  ".join(hud_parts)
+        cv2.rectangle(img, (0, 0), (w, 36), (20, 20, 20), -1)
+        cv2.putText(img, hud_bar, (16, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (230, 230, 230), 2, cv2.LINE_AA)
+
     for det_name, det_res in report.get("technical_quality", {}).items():
         anomalies = det_res.get("anomalies", [])
             

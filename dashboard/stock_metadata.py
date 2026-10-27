@@ -56,6 +56,16 @@ def parse_keywords_list(keywords_input: Any, max_count: int = 50) -> List[str]:
     return unique_items[:max_count]
 
 
+def _escape_cstr(val: str) -> str:
+    """Escape backslashes and newlines for ExifTool #[CSTR] argfile directive."""
+    return (
+        val.replace("\\", "\\\\")
+        .replace("\r\n", "\\n")
+        .replace("\n", "\\n")
+        .replace("\r", "\\n")
+    )
+
+
 def apply_stock_metadata_to_image(
     image_path: Path,
     title: str,
@@ -77,8 +87,9 @@ def apply_stock_metadata_to_image(
 
     exe = exiftool_path or find_exiftool()
 
-    clean_title = (title or "").strip()
+    clean_title = (title or "").strip().replace("\r", " ").replace("\n", " ")
     clean_desc = (description or clean_title).strip()
+    esc_desc = _escape_cstr(clean_desc)
     tag_list = parse_keywords_list(keywords, max_count=50)
 
     # Clean legacy malformed XP tags and embed clean IPTC / XMP / EXIF
@@ -94,11 +105,11 @@ def apply_stock_metadata_to_image(
         "-IFD0:XPKeywords=",
         f"-IPTC:ObjectName={clean_title[:64]}",
         f"-IPTC:Headline={clean_title}",
-        f"-IPTC:Caption-Abstract={clean_desc}",
+        f"#[CSTR]-IPTC:Caption-Abstract={esc_desc}",
         f"-XMP-dc:Title={clean_title}",
-        f"-XMP-dc:Description={clean_desc}",
-        f"-IFD0:ImageDescription={clean_desc}",
-        f"-ExifIFD:UserComment={clean_desc}",
+        f"#[CSTR]-XMP-dc:Description={esc_desc}",
+        f"#[CSTR]-IFD0:ImageDescription={esc_desc}",
+        f"#[CSTR]-ExifIFD:UserComment={esc_desc}",
         f"-Artist={artist}",
         f"-By-line={artist}",
         f"-CopyrightNotice={copyright_notice}",
@@ -110,8 +121,10 @@ def apply_stock_metadata_to_image(
     ]
 
     for kw in tag_list:
-        args.append(f"-IPTC:Keywords={kw}")
-        args.append(f"-XMP-dc:Subject={kw}")
+        kw_clean = str(kw).strip().replace("\r", " ").replace("\n", " ")
+        if kw_clean:
+            args.append(f"-IPTC:Keywords={kw_clean}")
+            args.append(f"-XMP-dc:Subject={kw_clean}")
 
     args.append(str(img_path))
 
@@ -125,7 +138,13 @@ def apply_stock_metadata_to_image(
     last_err = None
     try:
         for attempt in range(max_retries):
-            res = subprocess.run([exe, "-@", argfile_path], capture_output=True, text=True, encoding="utf-8", errors="replace")
+            res = subprocess.run(
+                [exe, "-charset", "filename=utf8", "-@", argfile_path],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace"
+            )
             # If warning or error occurred, check return code and output
             if res.returncode == 0 and "Error" not in res.stderr:
                 return
@@ -152,6 +171,294 @@ AGENCY_CSV_FILENAMES = {
     "Shutterstock": "shutterstock.csv",
 }
 
+# The 26 official Shutterstock contributor categories
+SHUTTERSTOCK_CATEGORIES: List[str] = [
+    "Abstract",
+    "Animals/Wildlife",
+    "Arts",
+    "Backgrounds/Textures",
+    "Beauty/Fashion",
+    "Buildings/Landmarks",
+    "Business/Finance",
+    "Celebrities",
+    "Education",
+    "Food and drink",
+    "Healthcare/Medical",
+    "Holidays",
+    "Industrial",
+    "Interiors",
+    "Miscellaneous",
+    "Nature",
+    "Objects",
+    "Parks/Outdoor",
+    "People",
+    "Religion",
+    "Science",
+    "Signs/Symbols",
+    "Sports/Recreation",
+    "Technology",
+    "Transportation",
+    "Vintage",
+]
+
+_SHUTTERSTOCK_CANONICAL_LOOKUP = {c.lower(): c for c in SHUTTERSTOCK_CATEGORIES}
+
+_SHUTTERSTOCK_ALIASES = {
+    # Direct aliases & common variations
+    "animals": "Animals/Wildlife",
+    "wildlife": "Animals/Wildlife",
+    "animal": "Animals/Wildlife",
+    "fauna": "Animals/Wildlife",
+    "pets": "Animals/Wildlife",
+    "art": "Arts",
+    "artwork": "Arts",
+    "paintings": "Arts",
+    "sculpture": "Arts",
+    "backgrounds": "Backgrounds/Textures",
+    "textures": "Backgrounds/Textures",
+    "background": "Backgrounds/Textures",
+    "texture": "Backgrounds/Textures",
+    "patterns": "Backgrounds/Textures",
+    "pattern": "Backgrounds/Textures",
+    "beauty": "Beauty/Fashion",
+    "fashion": "Beauty/Fashion",
+    "buildings": "Buildings/Landmarks",
+    "landmarks": "Buildings/Landmarks",
+    "building": "Buildings/Landmarks",
+    "landmark": "Buildings/Landmarks",
+    "architecture": "Buildings/Landmarks",
+    "buildings and architecture": "Buildings/Landmarks",
+    "buildings & architecture": "Buildings/Landmarks",
+    "buildings/architecture": "Buildings/Landmarks",
+    "monuments": "Buildings/Landmarks",
+    "monument": "Buildings/Landmarks",
+    "castle": "Buildings/Landmarks",
+    "castles": "Buildings/Landmarks",
+    "business": "Business/Finance",
+    "finance": "Business/Finance",
+    "corporate": "Business/Finance",
+    "celebrity": "Celebrities",
+    "education": "Education",
+    "learning": "Education",
+    "school": "Education",
+    "food & drink": "Food and drink",
+    "food": "Food and drink",
+    "drink": "Food and drink",
+    "drinks": "Food and drink",
+    "beverage": "Food and drink",
+    "beverages": "Food and drink",
+    "healthcare": "Healthcare/Medical",
+    "medical": "Healthcare/Medical",
+    "health": "Healthcare/Medical",
+    "medicine": "Healthcare/Medical",
+    "holiday": "Holidays",
+    "industry": "Industrial",
+    "manufacturing": "Industrial",
+    "interior": "Interiors",
+    "indoor": "Interiors",
+    "indoors": "Interiors",
+    "misc": "Miscellaneous",
+    "general": "Miscellaneous",
+    "landscapes": "Nature",
+    "landscape": "Nature",
+    "the environment": "Nature",
+    "environment": "Nature",
+    "plants and flowers": "Nature",
+    "plants": "Nature",
+    "flowers": "Nature",
+    "flora": "Nature",
+    "scenery": "Nature",
+    "object": "Objects",
+    "still life": "Objects",
+    "item": "Objects",
+    "items": "Objects",
+    "parks": "Parks/Outdoor",
+    "outdoor": "Parks/Outdoor",
+    "outdoors": "Parks/Outdoor",
+    "park": "Parks/Outdoor",
+    "garden": "Parks/Outdoor",
+    "gardens": "Parks/Outdoor",
+    "countryside": "Parks/Outdoor",
+    "rural": "Parks/Outdoor",
+    "hobbies and leisure": "Parks/Outdoor",
+    "person": "People",
+    "human": "People",
+    "lifestyle": "People",
+    "culture and religion": "Religion",
+    "religious": "Religion",
+    "culture": "Religion",
+    "church": "Religion",
+    "spirituality": "Religion",
+    "scientific": "Science",
+    "research": "Science",
+    "signs": "Signs/Symbols",
+    "symbols": "Signs/Symbols",
+    "sign": "Signs/Symbols",
+    "symbol": "Signs/Symbols",
+    "sports": "Sports/Recreation",
+    "sport": "Sports/Recreation",
+    "recreation": "Sports/Recreation",
+    "fitness": "Sports/Recreation",
+    "tech": "Technology",
+    "digital": "Technology",
+    "computers": "Technology",
+    "computer": "Technology",
+    "transport": "Transportation",
+    "vehicles": "Transportation",
+    "vehicle": "Transportation",
+    "cars": "Transportation",
+    "car": "Transportation",
+    "trains": "Transportation",
+    "retro": "Vintage",
+    "antique": "Vintage",
+    "historical": "Vintage",
+    "historic": "Vintage",
+    "nostalgic": "Vintage",
+    "heritage": "Vintage",
+    # Adobe category numeric IDs
+    "1": "Animals/Wildlife",
+    "2": "Buildings/Landmarks",
+    "3": "Business/Finance",
+    "4": "Food and drink",
+    "5": "Nature",
+    "6": "Abstract",
+    "7": "Food and drink",
+    "8": "Backgrounds/Textures",
+    "9": "Sports/Recreation",
+    "10": "Industrial",
+    "11": "Nature",
+    "12": "People",
+    "13": "People",
+    "14": "Nature",
+    "15": "Religion",
+    "16": "Science",
+    "17": "People",
+    "18": "Sports/Recreation",
+    "19": "Technology",
+    "20": "Transportation",
+    "21": "Buildings/Landmarks",
+}
+
+_SHUTTERSTOCK_DEFAULT_PAIRS = {
+    "Buildings/Landmarks": "Parks/Outdoor",
+    "Nature": "Parks/Outdoor",
+    "Parks/Outdoor": "Nature",
+    "Religion": "Buildings/Landmarks",
+    "Transportation": "Technology",
+    "Technology": "Industrial",
+    "People": "Parks/Outdoor",
+    "Animals/Wildlife": "Nature",
+    "Abstract": "Backgrounds/Textures",
+    "Backgrounds/Textures": "Abstract",
+    "Interiors": "Buildings/Landmarks",
+    "Vintage": "Buildings/Landmarks",
+    "Arts": "Vintage",
+    "Food and drink": "Objects",
+    "Objects": "Miscellaneous",
+    "Industrial": "Technology",
+    "Business/Finance": "Technology",
+    "Healthcare/Medical": "Science",
+    "Science": "Technology",
+    "Education": "People",
+    "Celebrities": "People",
+    "Beauty/Fashion": "People",
+    "Holidays": "Religion",
+    "Signs/Symbols": "Objects",
+    "Sports/Recreation": "Parks/Outdoor",
+    "Miscellaneous": "Objects",
+}
+
+_CONTEXT_CATEGORY_TRIGGERS: List[Tuple[str, List[str]]] = [
+    ("Buildings/Landmarks", ["church", "tower", "castle", "fortress", "palace", "cathedral", "chapel", "building", "landmark", "monument", "architecture", "facade", "ruins", "bridge", "spire", "steeple"]),
+    ("Religion", ["church", "cathedral", "chapel", "monastery", "cross", "crucifix", "jesus", "shrine", "temple", "altar", "christian", "catholic", "religion", "religious", "spiritual", "saint", "faith", "basilica"]),
+    ("Nature", ["nature", "tree", "trees", "grass", "field", "meadow", "sky", "cloud", "clouds", "landscape", "hill", "hills", "mountain", "lake", "river", "sea", "flower", "poppy", "poppies", "forest", "sunlight", "rapeseed", "canola", "pastoral"]),
+    ("Parks/Outdoor", ["park", "outdoor", "outdoors", "garden", "rural", "countryside", "scenic", "path", "trail", "walkway"]),
+    ("Transportation", ["train", "railway", "rail", "tram", "station", "tracks", "car", "vehicle", "bus", "road", "street", "highway", "traffic", "subway", "metro", "locomotive"]),
+    ("Vintage", ["vintage", "historic", "historical", "medieval", "antique", "retro", "heritage", "ancient", "baroque", "gothic", "renaissance"]),
+    ("Interiors", ["interior", "interiors", "indoor", "room", "hall", "ceiling", "furniture", "inside", "corridor"]),
+    ("People", ["people", "person", "man", "woman", "tourist", "tourists", "crowd", "children", "pedestrian", "model"]),
+    ("Animals/Wildlife", ["animal", "wildlife", "bird", "fauna", "deer", "horse", "dog", "cat"]),
+    ("Food and drink", ["food", "drink", "wine", "coffee", "fruit", "vegetable", "dining", "meal"]),
+    ("Technology", ["technology", "computer", "digital", "screen", "electronic", "device", "modern"]),
+    ("Industrial", ["industrial", "factory", "manufacture", "crane", "power line", "industry"]),
+    ("Business/Finance", ["business", "finance", "money", "office", "bank", "corporate"]),
+    ("Sports/Recreation", ["sport", "sports", "fitness", "workout", "bike", "bicycle", "cycling", "recreation"]),
+    ("Arts", ["art", "artwork", "painting", "sculpture", "statue", "statues"]),
+    ("Backgrounds/Textures", ["texture", "background", "pattern", "surface"]),
+    ("Abstract", ["abstract", "surreal", "minimalist"]),
+    ("Objects", ["object", "objects", "still life", "tool"]),
+    ("Signs/Symbols", ["sign", "symbol", "emblem", "logo"]),
+    ("Healthcare/Medical", ["medical", "health", "hospital", "doctor", "medicine"]),
+    ("Education", ["education", "school", "university", "book", "student"]),
+    ("Holidays", ["holiday", "christmas", "easter", "halloween", "celebration"]),
+    ("Beauty/Fashion", ["beauty", "fashion", "dress", "style"]),
+    ("Celebrities", ["celebrity", "famous"]),
+]
+
+
+def map_to_shutterstock_categories(
+    category_input: Any = None,
+    title: str = "",
+    description: str = "",
+    keywords: Any = None
+) -> str:
+    """
+    Map and validate any platform category, keywords, and description into EXACTLY TWO
+    official Shutterstock categories selected from the strict 26-category list.
+    Always returns: 'Category1, Category2' (e.g. 'Buildings/Landmarks, Nature').
+    """
+    valid_cats: List[str] = []
+
+    # 1. Parse existing category inputs
+    raw_parts: List[str] = []
+    if category_input:
+        if isinstance(category_input, (list, tuple, set)):
+            raw_parts.extend([str(c).strip() for c in category_input if str(c).strip()])
+        elif isinstance(category_input, str):
+            for part in category_input.replace(";", ",").split(","):
+                part_clean = part.strip()
+                if part_clean:
+                    raw_parts.append(part_clean)
+
+    for p in raw_parts:
+        p_lower = p.lower()
+        canonical = _SHUTTERSTOCK_CANONICAL_LOOKUP.get(p_lower) or _SHUTTERSTOCK_ALIASES.get(p_lower)
+        if canonical and canonical not in valid_cats:
+            valid_cats.append(canonical)
+        if len(valid_cats) >= 2:
+            break
+
+    # 2. Build context text for keyword triggers
+    if isinstance(keywords, (list, tuple, set)):
+        kws_str = " ".join(str(k) for k in keywords)
+    else:
+        kws_str = str(keywords or "")
+    combined_text = f"{title} {description} {kws_str}".lower()
+
+    # 3. If we need more categories, inspect context triggers
+    if len(valid_cats) < 2:
+        for cat_candidate, triggers in _CONTEXT_CATEGORY_TRIGGERS:
+            if cat_candidate not in valid_cats:
+                if any(t in combined_text for t in triggers):
+                    valid_cats.append(cat_candidate)
+                    if len(valid_cats) >= 2:
+                        break
+
+    # 4. If still only 1 category, pick companion default pair
+    if len(valid_cats) == 1:
+        c1 = valid_cats[0]
+        fallback = _SHUTTERSTOCK_DEFAULT_PAIRS.get(c1, "Parks/Outdoor" if c1 != "Parks/Outdoor" else "Nature")
+        if fallback not in valid_cats:
+            valid_cats.append(fallback)
+
+    # 5. If no categories detected at all, default cleanly
+    if not valid_cats:
+        valid_cats = ["Buildings/Landmarks", "Nature"]
+    elif len(valid_cats) == 1:
+        valid_cats.append("Nature" if valid_cats[0] != "Nature" else "Parks/Outdoor")
+
+    return f"{valid_cats[0]}, {valid_cats[1]}"
+
 
 def get_image_stock_fields(img: Dict[str, Any], agency_name: Optional[str] = None) -> Dict[str, Any]:
     """
@@ -174,6 +481,7 @@ def get_image_stock_fields(img: Dict[str, Any], agency_name: Optional[str] = Non
         kws = (img.get("stock_keywords") or img.get("keywords") or "").strip()
         cat = (img.get("stock_category") or "2").strip()
 
+    sh_cat = (img.get("shutterstock_categories") or "").strip()
     is_editorial = bool(img.get("is_editorial", False))
 
     return {
@@ -182,6 +490,7 @@ def get_image_stock_fields(img: Dict[str, Any], agency_name: Optional[str] = Non
         "description": desc,
         "keywords": kws,
         "category": cat,
+        "shutterstock_categories": sh_cat,
         "editorial": is_editorial,
     }
 
@@ -203,7 +512,9 @@ def generate_agency_csv(
 
     rows_data = [get_image_stock_fields(img, agency_name=agency_name) for img in images]
 
-    with open(csv_path, "w", newline="", encoding="utf-8-sig") as f:
+    # Pond5 PHP parser fails when UTF-8 BOM is present; Vecteezy web parser also strictly requires UTF-8 without BOM
+    csv_encoding = "utf-8" if agency_name in ("Pond5", "Vecteezy") else "utf-8-sig"
+    with open(csv_path, "w", newline="", encoding=csv_encoding) as f:
         writer = csv.writer(f)
 
         if agency_name in ("Adobe Stock", "AdobeStock", "Adobe"):
@@ -213,10 +524,10 @@ def generate_agency_csv(
                 writer.writerow([r["filename"], r["title"], r["keywords"], r["category"] or "2", ""])
 
         elif agency_name == "Vecteezy":
-            # Vecteezy standard specification
-            writer.writerow(["Filename", "Title", "Description", "Keywords", "License"])
+            # Vecteezy standard specification: strictly 4 columns, UTF-8 without BOM
+            writer.writerow(["Filename", "Title", "Description", "Keywords"])
             for r in rows_data:
-                writer.writerow([r["filename"], r["title"], r["description"], r["keywords"], "Commercial"])
+                writer.writerow([r["filename"], r["title"], r["description"], r["keywords"]])
 
         elif agency_name == "Pond5":
             # Pond5 standard specification
@@ -261,14 +572,20 @@ def generate_agency_csv(
                 ])
 
         elif agency_name == "Shutterstock":
-            # Shutterstock specification
+            # Shutterstock specification: exactly 2 categories from the official 26 category list
             writer.writerow(["Filename", "Description", "Keywords", "Categories", "Editorial", "Mature content", "illustration"])
             for r in rows_data:
+                sh_cats = map_to_shutterstock_categories(
+                    r.get("shutterstock_categories") or r.get("category"),
+                    title=r.get("title", ""),
+                    description=r.get("description", ""),
+                    keywords=r.get("keywords", "")
+                )
                 writer.writerow([
                     r["filename"],
                     r["description"] or r["title"],
                     r["keywords"],
-                    r["category"] or "Buildings/Landmarks, Travel",
+                    sh_cats,
                     "yes" if r["editorial"] else "no",
                     "no",
                     "no"

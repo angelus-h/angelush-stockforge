@@ -52,6 +52,53 @@ Output exclusively valid JSON:
   "tags": ["fine art", "metal print", "wall decor", "landscape", "modern art"]
 }}"""
 
+REDBUBBLE_2026_SEO_PROMPT_TEMPLATE = """You are an elite Print-on-Demand (POD) SEO & Metadata Specialist specifically optimizing for Redbubble and Google Search indexing in 2026.
+Analyze the provided artwork image and generate metadata formatted strictly as a valid JSON object.
+Visual Scene Description: {description}
+
+STRICT REDBUBBLE SEO & CONTENT RULES:
+
+1. TRADEMARK & BRAND SAFETY (CRITICAL):
+   - ABSOLUTELY ZERO trademarked brand names, company logos, or copyrighted terms (e.g., NEVER use "LinkedIn", "Red Hat", "Photoshop", "Windows", "Disney", etc.).
+   - If the artwork contains satire, tech humor, or parody, replace all brand references with generic or parody equivalents (e.g., use "professional networking site" instead of "LinkedIn", "open source linux" instead of "Red Hat").
+
+2. TITLE (40-50 characters max):
+   - Formula: [Specific Descriptor] + [Subject/Niche] + [Art Style/Vibe] + [Product Hint]
+   - Front-load the most important 30 characters with high-intent keywords for mobile buyers.
+   - Write natural English. NO keyword stuffing, NO generic titles ("Cool Art", "Funny Poster").
+
+3. TAGS (EXACTLY 15 MULTI-WORD PHRASES):
+   - Provide EXACTLY 15 multi-word tag phrases separated by commas in a single string.
+   - Apply the 60/40 Split Rule:
+     * 9 tags (60%): Specific long-tail search phrases (2-5 words each) describing the exact subject, satire joke, or specific scene (e.g., "sysadmin caffeine coding skull", "infrared calvary landscape print").
+     * 6 tags (40%): Broader room decor, aesthetic, and gift phrases (2-4 words each) capturing the vibe or buyer intent (e.g., "minimalist zen bedroom decor", "gift for software engineer").
+   - STRICT TAG RESTRICTIONS:
+     * EVERY tag MUST be a multi-word phrase (2 to 5 words). NO SINGLE-WORD TAGS (e.g., BAN "art", "photo", "funny", "poster").
+     * BANNED SPAM WORDS: Do NOT use "best selling", "trending", "top selling", "cheap", "viral", "discount", "gift".
+     * Order: Place the top 10 most critical search terms FIRST (Google indexes only the first 10 tags).
+
+4. DESCRIPTION (60-120 words):
+   - Write 2-3 engaging, prose paragraphs in clear English.
+   - Paragraph 1: Visual depiction, color palette, mood, and artistic technique.
+   - Paragraph 2: Ideal interior design placement (e.g., modern living room, home office, gaming room) OR target personality/gift audience (e.g., sysadmins, Linux lovers, fine art collectors).
+   - DO NOT copy the title verbatim. DO NOT list tags as comma-separated lists.
+
+5. PRIMARY PRODUCT DETECTION:
+   - Determine the most natural primary display product:
+     * Set "Wall Art" for fine art photography, landscapes, oil/watercolor styles, and complex digital paintings.
+     * Set "Sticker" or "T-Shirt" for tech humor, code jokes, vector logos, slogans, or pop-art illustrations.
+
+OUTPUT FORMAT (STRICT JSON ONLY):
+{{
+  "title": "Front-loaded Specific Descriptor Subject Style Poster",
+  "tags": "multi word tag 1, multi word tag 2, multi word tag 3, multi word tag 4, multi word tag 5, multi word tag 6, multi word tag 7, multi word tag 8, multi word tag 9, multi word tag 10, multi word tag 11, multi word tag 12, multi word tag 13, multi word tag 14, multi word tag 15",
+  "description": "Engaging prose description of visual style, mood, interior context, and gift suitability.",
+  "primary_product": "Wall Art"
+}}"""
+
+REDBUBBLE_WALLART_PROMPT_TEMPLATE = REDBUBBLE_2026_SEO_PROMPT_TEMPLATE + "\n\nFOCUS CONSTRAINT: Bias primary_product detection to 'Wall Art'."
+REDBUBBLE_MERCH_PROMPT_TEMPLATE = REDBUBBLE_2026_SEO_PROMPT_TEMPLATE + "\n\nFOCUS CONSTRAINT: Bias primary_product detection to 'Sticker' or 'T-Shirt'."
+
 def is_hybrid_requested(user_context="", flag_value=False):
     """Detect whether Adobe Stock / Posters.cz Hybrid metadata is requested via flag or context text."""
     if flag_value:
@@ -348,6 +395,275 @@ def filter_ai_keywords(kws):
     return cleaned
 
 
+TRADEMARK_REPLACEMENTS = {
+    r"\blinkedin\b": "professional networking site",
+    r"\bred\s+hat\b": "open source linux",
+    r"\bphotoshop\b": "photo editing software",
+    r"\bwindows\b": "operating system",
+    r"\bdisney\b": "fairy tale animation",
+    r"\bapple\b": "tech brand",
+    r"\bmicrosoft\b": "tech enterprise",
+    r"\binstagram\b": "photo sharing platform",
+    r"\btwitter\b": "social network",
+    r"\btiktok\b": "short video platform",
+    r"\bfacebook\b": "social network",
+}
+
+
+def sanitize_redbubble_trademarks(text: str) -> str:
+    """Replace trademarked brand names and logos with generic equivalents for Redbubble safety."""
+    if not text:
+        return text
+    result = text
+    for pattern, replacement in TRADEMARK_REPLACEMENTS.items():
+        result = re.sub(pattern, replacement, result, flags=re.IGNORECASE)
+    return result
+
+
+def normalize_redbubble_title(title: str) -> str:
+    """
+    Sanitize and format direct Redbubble title to 40-50 characters max.
+    Formula: [Specific Descriptor] + [Subject/Niche] + [Art Style/Vibe] + [Product Hint].
+    Front-loads the most important high-intent keywords for mobile buyers and removes trademarks.
+    """
+    if not title:
+        return "Serene Alpine Nature Landscape Fine Art Print"
+    t = sanitize_redbubble_trademarks(title)
+    t = t.strip().strip('"\'')
+    t = re.sub(r"\s{2,}", " ", t).strip(" -–—|:,.")
+    # If excessively long (> 55 chars), trim cleanly to nearest word boundary under 50 chars
+    if len(t) > 55:
+        trimmed = t[:50].rsplit(" ", 1)[0].rstrip(",;:- ")
+        if len(trimmed) >= 20:
+            t = trimmed
+    return t
+
+
+def normalize_redbubble_description(desc: str, max_words: int = 140, max_chars: int = None, is_ai: bool = False) -> str:
+    """
+    Sanitize and ensure length adheres to 2026 guidelines (60-120 words across 2-3 engaging prose paragraphs).
+    Paragraph 1: Visual depiction, color palette, mood, and artistic technique.
+    Paragraph 2: Ideal interior design placement or target personality/gift audience.
+    """
+    if not desc:
+        return ""
+    d = sanitize_redbubble_trademarks(desc)
+    d = d.strip().strip('"\'')
+    if is_ai:
+        d = strip_ai_photo_attributions(d)
+    d = re.sub(r"[ \t]{2,}", " ", d).strip()
+
+    # If legacy caller specifically enforces character limit (e.g. max_chars=245)
+    if max_chars is not None:
+        if len(d) <= max_chars:
+            return d
+        trimmed = d[:max_chars].rsplit(" ", 1)[0].rstrip(",;:- ")
+        if not trimmed.endswith((".", "!", "?")):
+            trimmed += "."
+        return trimmed
+
+    # Word-based target (60-120 words, max 140 buffer)
+    words = d.split()
+    if len(words) <= max_words:
+        return d
+    trimmed_words = " ".join(words[:max_words]).rstrip(",;:- ")
+    if not trimmed_words.endswith((".", "!", "?")):
+        trimmed_words += "."
+    return trimmed_words
+
+
+def clean_redbubble_title(ah_title: str) -> str:
+    """
+    Produce an evocative, descriptive fine art title strictly between 4 and 8 words,
+    focusing on emotional visual mood and atmosphere. Specific landmark/location
+    is intentionally highlighted in the Description and Supporting Tags for optimal CTR & SEO.
+    """
+    if not ah_title:
+        return "Serene Landscape Reflection in Lake"
+    t = ah_title.strip()
+    
+    # Strip room and interior styling suffixes
+    patterns = [
+        r"\s*[-–—|:]\s*(?:for\s+)?(?:luxury\s+|wellness\s+|spa\s+|living\s+room|bedroom|office|modern|scandinavian|interior|wall\s+art|wall\s+decor|decor|home\s+decor|rustic|contemporary).*",
+        r"\s+(?:for|in)\s+(?:the\s+)?(?:modern\s+|rustic\s+|contemporary\s+|scandinavian\s+|luxury\s+|wellness\s+)?(?:living\s+room|bedroom|kitchen|office|dining\s+room|spa|interior(?:\s+decor)?).*",
+    ]
+    for pat in patterns:
+        t = re.sub(pat, "", t, flags=re.IGNORECASE).strip()
+    
+    # Remove dry/obscure geographic location names from Title to keep it universally compelling
+    t = re.sub(r"\b(?:Lednice\s+Minaret|Lednice\s+Castle|Lednice|Retz|South\s+Moravia|Czech\s+Republic|Moravia|Lower\s+Austria|Austria)\b", "", t, flags=re.IGNORECASE)
+    t = re.sub(r"\s{2,}", " ", t).strip(" -–—|:,.")
+    
+    # If stripping left a very short title, restore visual descriptive essence
+    if not t or len(t.split()) < 2:
+        t = "Serene Autumn Lake Water Mirror Reflection"
+    
+    words = t.split()
+    # Ensure 4 to 8 words
+    if len(words) < 4:
+        if len(words) == 3:
+            t = f"Serene {t}"
+        elif len(words) == 2:
+            t = f"Serene Reflection of {t}"
+        elif len(words) == 1:
+            t = f"Serene {t} Water Reflection"
+        words = t.split()
+        
+    if len(words) > 8:
+        t = " ".join(words[:8]).rstrip(",;:- ")
+        
+    # Strip dangling trailing prepositions / incomplete suffixes
+    t = re.sub(r"\s+(?:for|in|at|of|and|with|the|on|to)(?:\s+(?:refined|modern|spacious|elegant|historic|luxury))?\s*$", "", t, flags=re.IGNORECASE).strip(" -–—|:,.")
+        
+    return t
+
+
+def clean_redbubble_description(ah_description: str, max_chars: int = 245) -> str:
+    """
+    Craft the story and meaning behind the artwork (<250 chars) for Redbubble.
+    Explicitly features the authentic location and landmark, balanced with emotional resonance and interior harmony.
+    """
+    if not ah_description:
+        return "A graceful historic tower rises in peaceful stillness, mirrored across tranquil waters. Brings timeless harmony and serene beauty to your living room decor."
+        
+    paragraphs = [p.strip() for p in ah_description.split("\n\n") if p.strip()]
+    p1 = paragraphs[0] if paragraphs else ah_description.strip()
+    p2 = paragraphs[1] if len(paragraphs) > 1 else ""
+    
+    # Strip institutional and technical boilerplate, preserving genuine landmark & location
+    p1 = re.sub(r"\b(?:UNESCO-protected|UNESCO World Heritage|UNESCO heritage|Cultural Landscape)\b,?", "", p1, flags=re.IGNORECASE)
+    p1 = re.sub(r"(?:Original\s+)?fine\s+art\s+photography\s+by\s+[^.]*\.?", "", p1, flags=re.IGNORECASE).strip()
+    p1 = re.sub(r"Available\s+in\s+various\s+sizes\s+and\s+finishes[^.]*\.?", "", p1, flags=re.IGNORECASE).strip()
+    p1 = re.sub(r"\s+(?:in|at|across|of)\s*[\.,;]", ".", p1)
+    p1 = re.sub(r"\s{2,}", " ", p1).strip()
+    
+    # First poetic sentence from p1 describing scene and location
+    s1_match = re.search(r"^([^.!?]+[.!?])", p1)
+    s1 = s1_match.group(1).strip() if s1_match else p1
+    
+    # Extract interior & emotional feeling from p2
+    s2 = ""
+    if p2:
+        match_brings = re.search(r"((?:This\s+[^.]*|It\s+[^.]*)?(?:brings|harmonizes|infuses|creates|fosters|inspires)[^.!?]+[.!?])", p2, flags=re.IGNORECASE)
+        if match_brings:
+            s2 = match_brings.group(1).strip()
+            s2 = re.sub(r"^This\s+[^.]*?\s+(?=brings|pairs|harmonizes|infuses|creates|fosters|inspires)", "", s2, flags=re.IGNORECASE)
+            s2 = s2[0].upper() + s2[1:] if s2 else ""
+            
+    if not s2 and len(s1) < 80:
+        s2 = "Brings peaceful balance, timeless harmony, and refined beauty to your wall decor."
+        
+    combined = f"{s1} {s2}".strip()
+    if len(combined) <= max_chars:
+        return combined
+        
+    # If too long, use standard refined interior tail
+    short_tail = "Brings serene harmony and timeless elegance to living room decor."
+    if len(f"{s1} {short_tail}") <= max_chars:
+        return f"{s1} {short_tail}"
+        
+    trimmed_s1 = s1[:(max_chars - len(short_tail) - 2)].rsplit(" ", 1)[0].rstrip(",;:- ") + "."
+    if len(f"{trimmed_s1} {short_tail}") <= max_chars:
+        return f"{trimmed_s1} {short_tail}"
+        
+    return combined[:max_chars].rsplit(" ", 1)[0].rstrip(",;:- ") + "."
+
+
+def filter_redbubble_tags(tags_list: list, require_multiword: bool = False) -> list:
+    """
+    Filter and sanitize tags according to Redbubble 2026 guidelines.
+    Returns up to 15 tags where the first tag serves as the primary 'Main Tag'.
+    - Sanitizes trademarks and brand names.
+    - Strips banned spam tags ('best selling', 'trending', 'top selling', 'cheap', 'viral', 'discount', 'gift').
+    - If require_multiword=True, ensures 2 to 5 words per tag, rejecting single-word tags (banning 'art', 'photo', 'funny', 'poster', etc.).
+    """
+    forbidden_exact = {
+        "art", "artwork", "image", "photo", "photography", "poster", "print", "prints",
+        "funny", "t-shirt", "tshirt", "shirt", "sticker", "stickers", "case", "mug", "hoodie",
+        "trending", "best selling", "top selling", "bestseller", "popular", "hot sale", "cheap",
+        "viral", "discount", "free shipping", "gift", "gifts", "gift idea", "unesco heritage", "unesco world heritage"
+    }
+    banned_spam_substrings = (
+        "best selling", "trending", "top selling", "cheap", "viral", "discount"
+    )
+    if isinstance(tags_list, str):
+        tags_list = [t.strip() for t in tags_list.split(",") if t.strip()]
+    elif not isinstance(tags_list, (list, tuple, set)):
+        tags_list = []
+
+    clean = []
+    seen = set()
+    for raw in tags_list:
+        raw_sanitized = sanitize_redbubble_trademarks(str(raw))
+        tag = raw_sanitized.strip().lower()
+        tag = re.sub(r"[^\w\s-]", "", tag).strip()
+        if not tag or len(tag) > 60 or tag in seen:
+            continue
+        if tag in forbidden_exact:
+            continue
+        if any(spam in tag for spam in banned_spam_substrings):
+            continue
+        # Strict multi-word check (2 to 5 words)
+        word_count = len(tag.split())
+        if require_multiword and (word_count < 2 or word_count > 5):
+            continue
+        clean.append(tag)
+        seen.add(tag)
+        if len(clean) >= 15:
+            break
+            
+    return clean
+
+
+def split_redbubble_tags(tags: any, trailing_comma: bool = True) -> tuple:
+    """
+    Split tags into (main_tag, supporting_tags_str) with automatic trailing commas
+    for instant chip creation in Redbubble uploader.
+    """
+    if isinstance(tags, str):
+        tag_list = [t.strip() for t in tags.split(",") if t.strip()]
+    elif isinstance(tags, (list, tuple)):
+        tag_list = list(tags)
+    else:
+        tag_list = []
+        
+    if not tag_list:
+        return "", ""
+    main_tag = tag_list[0]
+    supporting_tags = ", ".join(tag_list[1:])
+    
+    if trailing_comma:
+        if main_tag and not main_tag.endswith(","):
+            main_tag = f"{main_tag},"
+        if supporting_tags and not supporting_tags.endswith(","):
+            supporting_tags = f"{supporting_tags},"
+            
+    return main_tag, supporting_tags
+
+
+def adapt_art_heroes_to_redbubble(title: str, description: str, keywords: any, profile: str = "wall_art") -> dict:
+    """
+    Transforms Art Heroes metadata into Redbubble metadata deterministically.
+    Strictly adheres to: 4-8 words title, <=245 chars story description, 1 Main Tag + supporting tags.
+    """
+    clean_t = clean_redbubble_title(title or "")
+    clean_d = clean_redbubble_description(description or "", max_chars=245)
+    
+    raw_kw = keywords
+    if isinstance(raw_kw, str):
+        raw_kw = [k.strip() for k in raw_kw.split(",") if k.strip()]
+    elif not isinstance(raw_kw, (list, tuple)):
+        raw_kw = []
+        
+    clean_tags = filter_redbubble_tags(raw_kw)
+    return {
+        "title": clean_t,
+        "description": clean_d,
+        "tags": clean_tags,
+        "profile": profile
+    }
+
+
 def parse_response_json(raw_text, target="Both", is_ai_generated=False):
     """Parse JSON and normalize based on target platform, sanitizing attributions for AI content."""
     text = raw_text.strip()
@@ -393,6 +709,69 @@ def parse_response_json(raw_text, target="Both", is_ai_generated=False):
             }
         }
 
+    if target in ("Redbubble", "Redbubble_WallArt", "Redbubble_Merch", "Redbubble (Wall Art)", "Redbubble (Merch)", "Merch"):
+        rb_data = data.get("redbubble") if isinstance(data.get("redbubble"), dict) else data
+        
+        # Tags extraction: support comma-separated string, list of strings, or legacy main_tag+supporting_tags
+        tags = []
+        main_t = rb_data.get("main_tag")
+        supp_t = rb_data.get("supporting_tags")
+        if main_t or supp_t:
+            if main_t and isinstance(main_t, str) and main_t.strip():
+                tags.append(main_t.strip())
+            if isinstance(supp_t, list):
+                tags.extend([str(k).strip() for k in supp_t if str(k).strip()])
+            elif isinstance(supp_t, str):
+                tags.extend([k.strip() for k in supp_t.split(",") if k.strip()])
+                
+        if not tags:
+            raw_tags = rb_data.get("tags") or rb_data.get("redbubble_tags") or rb_data.get("keywords", [])
+            if isinstance(raw_tags, str):
+                tags = [t.strip() for t in raw_tags.split(",") if t.strip()]
+            elif isinstance(raw_tags, list):
+                tags = [str(t).strip() for t in raw_tags if str(t).strip()]
+                
+        clean_tags = filter_redbubble_tags(tags, require_multiword=False)
+        # If there are plenty of multi-word tags (>= 6), enforce 2-5 words strictly per 2026 rule
+        multiword_tags = [t for t in clean_tags if 2 <= len(t.split()) <= 5]
+        if len(multiword_tags) >= 6:
+            clean_tags = multiword_tags[:15]
+        else:
+            clean_tags = clean_tags[:15]
+        
+        desc = rb_data.get("description") or rb_data.get("redbubble_description") or ""
+        clean_desc = normalize_redbubble_description(desc, is_ai=is_ai_generated)
+        
+        raw_title = rb_data.get("title") or rb_data.get("redbubble_title") or ""
+        clean_t = normalize_redbubble_title(raw_title)
+        
+        # Primary product detection
+        primary_prod = rb_data.get("primary_product") or rb_data.get("profile") or ""
+        if primary_prod:
+            prod_lower = str(primary_prod).lower()
+            if any(k in prod_lower for k in ("wall", "art", "canvas", "poster", "print")):
+                profile = "wall_art"
+                normalized_product = "Wall Art"
+            elif any(k in prod_lower for k in ("sticker", "t-shirt", "shirt", "apparel", "merch")):
+                profile = "merch"
+                normalized_product = "Sticker" if "sticker" in prod_lower else "T-Shirt"
+            else:
+                profile = "merch" if "merch" in target.lower() else "wall_art"
+                normalized_product = "Wall Art" if profile == "wall_art" else "T-Shirt"
+        else:
+            profile = "merch" if "merch" in target.lower() else "wall_art"
+            normalized_product = "Wall Art" if profile == "wall_art" else "T-Shirt"
+
+        return {
+            "redbubble": {
+                "title": clean_t,
+                "description": clean_desc,
+                "tags": clean_tags,
+                "profile": profile,
+                "primary_product": normalized_product
+            }
+        }
+
     if target in ("Stock", "Microstock"):
         result = {}
         # Parse Adobe Stock Hybrid if present
@@ -421,11 +800,21 @@ def parse_response_json(raw_text, target="Both", is_ai_generated=False):
         if is_ai_generated:
             desc = strip_ai_photo_attributions(desc)
             kws = filter_ai_keywords(kws)
+        stk_cat = stock_data.get("category") or stock_data.get("stock_category", "Travel")
+        raw_sh = stock_data.get("shutterstock_categories")
+        from dashboard.stock_metadata import map_to_shutterstock_categories
+        sh_cats = map_to_shutterstock_categories(
+            raw_sh or stk_cat,
+            title=stock_data.get("title") or stock_data.get("stock_title") or "",
+            description=desc,
+            keywords=kws
+        )
         result["stock"] = {
             "title": stock_data.get("title") or stock_data.get("stock_title"),
             "description": desc,
             "keywords": kws,
-            "category": stock_data.get("category") or stock_data.get("stock_category", "Travel")
+            "category": stk_cat,
+            "shutterstock_categories": sh_cats
         }
         return result
 
@@ -462,6 +851,16 @@ def parse_response_json(raw_text, target="Both", is_ai_generated=False):
             if "keywords" in adb:
                 adb["keywords"] = filter_ai_keywords(adb["keywords"])
 
+        if stk:
+            stk_cat = stk.get("category") or stk.get("stock_category", "Travel")
+            from dashboard.stock_metadata import map_to_shutterstock_categories
+            stk["shutterstock_categories"] = map_to_shutterstock_categories(
+                stk.get("shutterstock_categories") or stk_cat,
+                title=stk.get("title") or "",
+                description=stk.get("description") or "",
+                keywords=stk.get("keywords") or []
+            )
+
         res_all = {
             "artheroes": ah,
             "displate": disp,
@@ -469,6 +868,13 @@ def parse_response_json(raw_text, target="Both", is_ai_generated=False):
         }
         if adb:
             res_all["adobe"] = adb
+        if ah and ah.get("title"):
+            res_all["redbubble"] = adapt_art_heroes_to_redbubble(
+                ah.get("title", ""),
+                ah.get("description", ""),
+                ah.get("keywords", []),
+                profile="wall_art"
+            )
         return res_all
 
     # Target is "Both" (ArtHeroes + Displate)
@@ -538,6 +944,12 @@ CRITICAL MEDIUM CONSTRAINT (AI GENERATED CONTENT):
         base = ART_HEROES_PROMPT_TEMPLATE.format(description=description, attribution_instruction=attribution_instruction)
     elif target == "Displate":
         base = DISPLATE_PROMPT_TEMPLATE.format(description=description, attribution_instruction=attribution_instruction)
+    elif target == "Redbubble":
+        base = REDBUBBLE_2026_SEO_PROMPT_TEMPLATE.format(description=description)
+    elif target in ("Redbubble_WallArt", "Redbubble (Wall Art)"):
+        base = REDBUBBLE_WALLART_PROMPT_TEMPLATE.format(description=description)
+    elif target in ("Redbubble_Merch", "Redbubble (Merch)", "Merch"):
+        base = REDBUBBLE_MERCH_PROMPT_TEMPLATE.format(description=description)
     elif target in ("Stock", "Microstock"):
         if hybrid_active:
             base = ADOBE_HYBRID_STOCK_PROMPT_TEMPLATE.format(
@@ -600,8 +1012,9 @@ CRITICAL PHOTOGRAPHER / ARTIST CONTEXT:
 {user_context.strip()}
 
 MANDATORY INSTRUCTIONS REGARDING CONTEXT:
-1. Seamlessly integrate the specific location, landmarks, technique, and subject into the titles, descriptions, and keywords/tags.
-2. Ensure the exact geographic location and landmarks (e.g. castle, park, lake, city, country) are accurately featured in the title, story, and tags.
+1. Seamlessly integrate the specific subject, theme, characters, landmarks, or technique from the context into the titles, descriptions, and keywords/tags.
+2. If the context specifies a subject or theme (e.g. 'linux engineer', 'cyberpunk samurai', 'coffee lover'), make it the core focus of the title, narrative story, and search tags.
+3. If geographic location or landmark details are provided, accurately feature them; otherwise focus on the depicted subject, character, or theme.
 """
     return base
 

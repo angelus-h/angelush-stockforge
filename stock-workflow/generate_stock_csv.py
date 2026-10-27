@@ -10,10 +10,18 @@ Outputs:
 """
 
 import os
+import sys
 import csv
 import json
 import re
 import argparse
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from dashboard.stock_metadata import map_to_shutterstock_categories
 
 
 ADOBE_CATEGORIES = {
@@ -136,7 +144,12 @@ def generate_csvs(items, output_dir, generate_individual=True, strip_vecteezy_ex
             desc = item.get("shutterstock_description") or item.get("description") or item.get("title", "")
             desc = desc.replace('"', '').strip()
             keywords = clean_keywords(item.get("keywords", []))
-            categories = item.get("shutterstock_categories", "Buildings/Landmarks, Travel")
+            categories = map_to_shutterstock_categories(
+                item.get("shutterstock_categories") or item.get("category"),
+                title=item.get("title", ""),
+                description=desc,
+                keywords=keywords
+            )
             illustration = item.get("illustration", "no")
             mature = item.get("mature", "no")
             editorial = "yes" if str(item.get("editorial", "")).lower() in ["yes", "true", "1", "y"] else "no"
@@ -145,11 +158,11 @@ def generate_csvs(items, output_dir, generate_individual=True, strip_vecteezy_ex
 
     print(f"Generated Shutterstock batch CSV: {shutterstock_batch_path}")
 
-    # 3. Vecteezy Batch CSV (5 columns: Filename, Title, Description, Keywords, License)
+    # 3. Vecteezy Batch CSV (Strictly 4 columns: Filename, Title, Description, Keywords, UTF-8 without BOM)
     vecteezy_batch_path = os.path.join(output_dir, "vecteezy.csv")
     with open(vecteezy_batch_path, mode="w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
-        writer.writerow(["Filename", "Title", "Description", "Keywords", "License"])
+        writer.writerow(["Filename", "Title", "Description", "Keywords"])
         for item in items:
             raw_fn = item["filename"]
             fn = os.path.splitext(raw_fn)[0] if strip_vecteezy_ext else raw_fn
@@ -169,10 +182,8 @@ def generate_csvs(items, output_dir, generate_individual=True, strip_vecteezy_ex
                 or item.get("title", "")
             ).replace('"', '').strip()
             keywords = clean_vecteezy_keywords(item.get("keywords", []))
-            raw_license = str(item.get("vecteezy_license") or item.get("license") or default_vecteezy_license).lower().strip()
-            license_val = raw_license if raw_license in ["pro", "free", "editorial"] else default_vecteezy_license
 
-            writer.writerow([fn, title, desc, ", ".join(keywords), license_val])
+            writer.writerow([fn, title, desc, ", ".join(keywords)])
 
     print(f"Generated Vecteezy batch CSV: {vecteezy_batch_path}")
 
@@ -198,21 +209,27 @@ def generate_csvs(items, output_dir, generate_individual=True, strip_vecteezy_ex
                 writer.writerow(["Filename", "Description", "Keywords", "Categories", "Illustration", "Mature content", "Editorial"])
                 desc = (item.get("shutterstock_description") or item.get("description", "")).replace('"', '').strip()
                 editorial = "yes" if str(item.get("editorial", "")).lower() in ["yes", "true", "1", "y"] else "no"
+                single_cats = map_to_shutterstock_categories(
+                    item.get("shutterstock_categories") or item.get("category"),
+                    title=item.get("title", ""),
+                    description=desc,
+                    keywords=keywords_str
+                )
                 writer.writerow([
                     filename,
                     desc,
                     keywords_str,
-                    item.get("shutterstock_categories", "Buildings/Landmarks, Travel"),
+                    single_cats,
                     item.get("illustration", "no"),
                     item.get("mature", "no"),
                     editorial
                 ])
 
-            # Vecteezy single
+            # Vecteezy single (4 columns, clean UTF-8)
             single_vecteezy = os.path.join(output_dir, f"{base_name}_vecteezy.csv")
             with open(single_vecteezy, mode="w", newline="", encoding="utf-8") as f:
                 writer = csv.writer(f)
-                writer.writerow(["Filename", "Title", "Description", "Keywords", "License"])
+                writer.writerow(["Filename", "Title", "Description", "Keywords"])
                 fn = base_name if strip_vecteezy_ext else filename
                 raw_title = (
                     item.get("vecteezy_title")
@@ -230,9 +247,7 @@ def generate_csvs(items, output_dir, generate_individual=True, strip_vecteezy_ex
                     or item.get("title", "")
                 ).replace('"', '').strip()
                 vkws = clean_vecteezy_keywords(item.get("keywords", []))
-                raw_license = str(item.get("vecteezy_license") or item.get("license") or default_vecteezy_license).lower().strip()
-                license_val = raw_license if raw_license in ["pro", "free", "editorial"] else default_vecteezy_license
-                writer.writerow([fn, title, desc, ", ".join(vkws), license_val])
+                writer.writerow([fn, title, desc, ", ".join(vkws)])
 
         print(f"Generated individual per-image CSVs ({len(items)} images) in {output_dir}")
 

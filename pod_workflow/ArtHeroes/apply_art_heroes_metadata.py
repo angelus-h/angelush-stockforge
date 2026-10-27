@@ -27,11 +27,22 @@ def find_exiftool():
     raise FileNotFoundError("ExifTool executable not found in PATH or standard install directory.")
 
 
+def _escape_cstr(val: str) -> str:
+    """Escape backslashes and newlines for ExifTool #[CSTR] argfile directive."""
+    return (
+        val.replace("\\", "\\\\")
+        .replace("\r\n", "\\n")
+        .replace("\n", "\\n")
+        .replace("\r", "\\n")
+    )
+
+
 def apply_metadata_to_image(exiftool_path, image_path, meta):
     """Embed metadata across EXIF, IPTC, and XMP with bloat removal and UTF-8 encoding."""
-    title = meta["title"]
-    description = meta["description"]
-    keywords = meta["keywords"][:12]
+    title = (meta.get("title") or "").strip().replace("\r", " ").replace("\n", " ")
+    description = (meta.get("description") or "").strip()
+    keywords = (meta.get("keywords") or [])[:12]
+    esc_desc = _escape_cstr(description)
 
     cmd = [
         "-m",
@@ -45,11 +56,11 @@ def apply_metadata_to_image(exiftool_path, image_path, meta):
         "-IFD0:XPKeywords=",
         f"-IPTC:ObjectName={title[:64]}",
         f"-IPTC:Headline={title}",
-        f"-IPTC:Caption-Abstract={description}",
+        f"#[CSTR]-IPTC:Caption-Abstract={esc_desc}",
         f"-XMP-dc:Title={title}",
-        f"-XMP-dc:Description={description}",
-        f"-IFD0:ImageDescription={description}",
-        f"-ExifIFD:UserComment={description}",
+        f"#[CSTR]-XMP-dc:Description={esc_desc}",
+        f"#[CSTR]-IFD0:ImageDescription={esc_desc}",
+        f"#[CSTR]-ExifIFD:UserComment={esc_desc}",
         "-Artist=Angelus H",
         "-By-line=Angelus H",
         "-CopyrightNotice=Angelus H",
@@ -61,8 +72,10 @@ def apply_metadata_to_image(exiftool_path, image_path, meta):
     ]
 
     for kw in keywords:
-        cmd.append(f"-IPTC:Keywords={kw}")
-        cmd.append(f"-XMP-dc:Subject={kw}")
+        kw_clean = str(kw).strip().replace("\r", " ").replace("\n", " ")
+        if kw_clean:
+            cmd.append(f"-IPTC:Keywords={kw_clean}")
+            cmd.append(f"-XMP-dc:Subject={kw_clean}")
 
     cmd.append(str(image_path))
 
@@ -73,7 +86,13 @@ def apply_metadata_to_image(exiftool_path, image_path, meta):
 
     try:
         for _ in range(3):
-            res = subprocess.run([exiftool_path, "-@", argfile_path], capture_output=True, text=True, encoding="utf-8", errors="replace")
+            res = subprocess.run(
+                [exiftool_path, "-charset", "filename=utf8", "-@", argfile_path],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace"
+            )
             if res.returncode == 0 and "Error" not in res.stderr:
                 return
             time.sleep(0.3)

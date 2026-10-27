@@ -55,6 +55,10 @@ def init_db(db_path=None, force=False):
                 displate_title TEXT,
                 displate_description TEXT,
                 displate_tags TEXT,
+                redbubble_title TEXT,
+                redbubble_description TEXT,
+                redbubble_tags TEXT,
+                redbubble_profile TEXT DEFAULT 'wall_art',
                 artist TEXT DEFAULT 'Angelus H',
                 grade TEXT DEFAULT 'NONE',
                 qc_status TEXT DEFAULT 'UNCHECKED',
@@ -72,6 +76,7 @@ def init_db(db_path=None, force=False):
                 stock_description TEXT,
                 stock_keywords TEXT,
                 stock_category TEXT,
+                shutterstock_categories TEXT,
                 adobe_title TEXT,
                 adobe_description TEXT,
                 adobe_keywords TEXT,
@@ -84,6 +89,7 @@ def init_db(db_path=None, force=False):
         # Ensure migration columns exist for existing databases
         for col in [
             "displate_title TEXT", "displate_description TEXT", "displate_tags TEXT",
+            "redbubble_title TEXT", "redbubble_description TEXT", "redbubble_tags TEXT", "redbubble_profile TEXT DEFAULT 'wall_art'",
             "grade TEXT DEFAULT 'NONE'",
             "qc_status TEXT DEFAULT 'UNCHECKED'", "qc_sharpness REAL",
             "qc_dust_count INTEGER DEFAULT 0", "qc_noise REAL", "qc_warnings TEXT",
@@ -93,7 +99,7 @@ def init_db(db_path=None, force=False):
             "is_infrared INTEGER DEFAULT 0",
             "is_surreal INTEGER DEFAULT 0",
             "is_adobe_hybrid INTEGER DEFAULT 0",
-            "stock_title TEXT", "stock_description TEXT", "stock_keywords TEXT", "stock_category TEXT",
+            "stock_title TEXT", "stock_description TEXT", "stock_keywords TEXT", "stock_category TEXT", "shutterstock_categories TEXT",
             "adobe_title TEXT", "adobe_description TEXT", "adobe_keywords TEXT", "adobe_category TEXT",
             "uploaded_to TEXT DEFAULT ''"
         ]:
@@ -253,6 +259,8 @@ def get_images(platform=None, status=None, search_query=None, folder_path=None, 
     if platform and platform != "ALL":
         if platform == "Displate":
             query += " AND (platform = 'Displate' OR (displate_title IS NOT NULL AND displate_title != ''))"
+        elif platform == "Redbubble":
+            query += " AND (platform = 'Redbubble' OR (redbubble_title IS NOT NULL AND redbubble_title != ''))"
         elif platform == "ArtHeroes":
             query += " AND (platform = 'ArtHeroes' OR (title IS NOT NULL AND title != ''))"
         else:
@@ -290,9 +298,9 @@ def get_images(platform=None, status=None, search_query=None, folder_path=None, 
             params.append(f"%{uploaded_filter}%")
 
     if search_query:
-        query += " AND (file_name LIKE ? OR title LIKE ? OR keywords LIKE ? OR displate_title LIKE ? OR displate_tags LIKE ? OR stock_title LIKE ? OR stock_keywords LIKE ?)"
+        query += " AND (file_name LIKE ? OR title LIKE ? OR keywords LIKE ? OR displate_title LIKE ? OR displate_tags LIKE ? OR redbubble_title LIKE ? OR redbubble_tags LIKE ? OR stock_title LIKE ? OR stock_keywords LIKE ?)"
         like_str = f"%{search_query}%"
-        params.extend([like_str, like_str, like_str, like_str, like_str, like_str, like_str])
+        params.extend([like_str, like_str, like_str, like_str, like_str, like_str, like_str, like_str, like_str])
 
     query += " ORDER BY file_name ASC"
 
@@ -324,11 +332,13 @@ def get_image_by_id(image_id, db_path=None):
 
 def update_image(image_id, title=None, description=None, keywords=None, 
                  displate_title=None, displate_description=None, displate_tags=None,
+                 redbubble_title=None, redbubble_description=None, redbubble_tags=None, redbubble_profile=None,
                  status=None, platform=None, qc_status=None, qc_sharpness=None,
                  qc_dust_count=None, qc_noise=None, qc_warnings=None, custom_prompt=None, grade=None,
                  is_editorial=None, is_ai_generated=None, is_infrared=None, is_surreal=None, is_adobe_hybrid=None,
                  stock_title=None, stock_description=None,
                  stock_keywords=None, stock_category=None,
+                 shutterstock_categories=None,
                  adobe_title=None, adobe_description=None,
                  adobe_keywords=None, adobe_category=None,
                  uploaded_to=None, db_path=None, **kwargs):
@@ -354,6 +364,18 @@ def update_image(image_id, title=None, description=None, keywords=None,
     if displate_tags is not None:
         fields.append("displate_tags = ?")
         params.append(displate_tags)
+    if redbubble_title is not None:
+        fields.append("redbubble_title = ?")
+        params.append(redbubble_title)
+    if redbubble_description is not None:
+        fields.append("redbubble_description = ?")
+        params.append(redbubble_description)
+    if redbubble_tags is not None:
+        fields.append("redbubble_tags = ?")
+        params.append(redbubble_tags)
+    if redbubble_profile is not None:
+        fields.append("redbubble_profile = ?")
+        params.append(redbubble_profile)
     if is_editorial is not None:
         fields.append("is_editorial = ?")
         params.append(1 if is_editorial else 0)
@@ -381,6 +403,9 @@ def update_image(image_id, title=None, description=None, keywords=None,
     if stock_category is not None:
         fields.append("stock_category = ?")
         params.append(stock_category)
+    if shutterstock_categories is not None:
+        fields.append("shutterstock_categories = ?")
+        params.append(shutterstock_categories)
     if adobe_title is not None:
         fields.append("adobe_title = ?")
         params.append(adobe_title)
@@ -429,7 +454,7 @@ def update_image(image_id, title=None, description=None, keywords=None,
         if k in ("is_ai_generated", "is_infrared", "is_surreal", "is_editorial", "is_adobe_hybrid") and v is not None and f"{k} = ?" not in fields:
             fields.append(f"{k} = ?")
             params.append(1 if v else 0)
-        elif k in ("stock_title", "stock_description", "stock_keywords", "stock_category",
+        elif k in ("stock_title", "stock_description", "stock_keywords", "stock_category", "shutterstock_categories",
                   "adobe_title", "adobe_description", "adobe_keywords", "adobe_category") and v is not None and f"{k} = ?" not in fields:
             fields.append(f"{k} = ?")
             params.append(v)
@@ -497,7 +522,9 @@ def export_catalog_csv(output_csv_path, platform="ArtHeroes", folder_path=None, 
     images = get_images(platform="ALL", folder_path=folder_path, db_path=db_path)
     out_path = Path(output_csv_path)
 
-    with open(out_path, "w", newline="", encoding="utf-8-sig") as f:
+    # Pond5 PHP parser and Vecteezy web parser fail when UTF-8 BOM is present; require clean UTF-8
+    csv_encoding = "utf-8" if platform in ("Pond5", "Vecteezy") else "utf-8-sig"
+    with open(out_path, "w", newline="", encoding=csv_encoding) as f:
         writer = csv.writer(f)
         if platform == "Displate":
             writer.writerow(["Filename", "Title", "Description", "Tags", "Grade", "Status"])
@@ -509,6 +536,18 @@ def export_catalog_csv(output_csv_path, platform="ArtHeroes", folder_path=None, 
                     img["displate_tags"] or "",
                     img.get("grade") or "NONE",
                     img["status"] or ""
+                ])
+        elif platform in ("Redbubble", "RedBubble", "Merch"):
+            writer.writerow(["Filename", "Title", "Description", "Tags", "Profile", "Grade", "Status"])
+            for img in images:
+                writer.writerow([
+                    img["file_name"],
+                    img.get("redbubble_title") or "",
+                    img.get("redbubble_description") or "",
+                    img.get("redbubble_tags") or "",
+                    img.get("redbubble_profile") or "wall_art",
+                    img.get("grade") or "NONE",
+                    img.get("status") or ""
                 ])
         elif platform in ("Adobe Stock", "AdobeStock", "Adobe", "Stock"):
             writer.writerow(["Filename", "Title", "Keywords", "Category", "Releases"])
@@ -530,14 +569,14 @@ def export_catalog_csv(output_csv_path, platform="ArtHeroes", folder_path=None, 
                     ""
                 ])
         elif platform == "Vecteezy":
-            writer.writerow(["Filename", "Title", "Description", "Keywords", "License"])
+            # Vecteezy standard specification: strictly 4 columns, UTF-8 without BOM
+            writer.writerow(["Filename", "Title", "Description", "Keywords"])
             for img in images:
                 writer.writerow([
                     img["file_name"],
                     img.get("stock_title") or img.get("title") or "",
                     img.get("stock_description") or img.get("description") or img.get("stock_title") or "",
-                    img.get("stock_keywords") or img.get("keywords") or "",
-                    "Commercial"
+                    img.get("stock_keywords") or img.get("keywords") or ""
                 ])
         elif platform == "Pond5":
             writer.writerow(["originalfilename", "title", "description", "keywords", "editorial"])
@@ -586,13 +625,23 @@ def export_catalog_csv(output_csv_path, platform="ArtHeroes", folder_path=None, 
                     "yes" if img.get("is_editorial") else "no"
                 ])
         elif platform == "Shutterstock":
+            from dashboard.stock_metadata import map_to_shutterstock_categories
             writer.writerow(["Filename", "Description", "Keywords", "Categories", "Editorial", "Mature content", "illustration"])
             for img in images:
+                desc = img.get("stock_description") or img.get("description") or img.get("stock_title") or img.get("title") or ""
+                kws = img.get("stock_keywords") or img.get("keywords") or ""
+                t = img.get("stock_title") or img.get("title") or ""
+                sh_cats = map_to_shutterstock_categories(
+                    img.get("shutterstock_categories") or img.get("stock_category"),
+                    title=t,
+                    description=desc,
+                    keywords=kws
+                )
                 writer.writerow([
                     img["file_name"],
-                    img.get("stock_title") or img.get("description") or "",
-                    img.get("stock_keywords") or img.get("keywords") or "",
-                    img.get("stock_category") or "buildings/landmarks",
+                    desc,
+                    kws,
+                    sh_cats,
                     "yes" if img.get("is_editorial") else "no",
                     "no",
                     "no"

@@ -24,6 +24,11 @@ def print_human_report(report: QualityReport):
     print(f"Resolution: {report.width} x {report.height}")
     print(f"Format: {report.format}")
     print(f"Overall Status: {report.overall_status.value}")
+    noise_res = report.technical_quality.get("noise")
+    if noise_res:
+        n_score = f"{noise_res.score:.1f}" if noise_res.score is not None else "-"
+        n_status = "ACCEPTABLE (Clean)" if noise_res.status == Status.PASS else noise_res.status.value
+        print(f"Noise (Grain):  {n_score} [{n_status}]")
     
     if report.overall_status in [Status.REVIEW, Status.HIGH_RISK]:
         print("\nATTENTION REQUIRED:")

@@ -8,8 +8,15 @@ import argparse
 import time
 import re
 from datetime import datetime
+from pathlib import Path
 import google.generativeai as genai
 from PIL import Image
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from dashboard.stock_metadata import map_to_shutterstock_categories
 
 def format_editorial_date(date_str):
     if not date_str or date_str == "Unknown":
@@ -88,9 +95,7 @@ You are an expert Commercial & Editorial Stock Metadata Optimizer. Analyze the p
    - Description: IF Editorial, strictly use this format: `{loc_city}, {loc_country} - {editorial_date}: <factual description>`. DO NOT use ALL CAPS for city/country/date. IF Commercial, just write the standard description.
    - Categories: 1 or 2 categories separated by a comma without spaces. Strictly from official Shutterstock VIDEO list: animals/wildlife, arts, backgrounds/textures, buildings/landmarks, business/finance, education, food and drink, healthcare/medical, holidays, industrial, nature, objects, people, religion, science, signs/symbols, sports/recreation, technology, transportation. (CRITICAL RULES: "editorial" IS NOT A CATEGORY! "travel" DOES NOT EXIST on Shutterstock! Categories abstract, beauty/fashion, celebrities, interiors, miscellaneous, parks/outdoor, vintage ARE NOT ALLOWED FOR VIDEO! For historical reenactments/costume events use "people,nature" or "people,buildings/landmarks").
 4. **Pond5**:
-   - Title: strictly 40-80 characters.
-     * IF Editorial: strictly format according to official Pond5 guideline: `{loc_city}, {loc_country} {format_pond5_editorial_date(date_rec)}: <factual subject and action>` (e.g. `{loc_city}, {loc_country} {format_pond5_editorial_date(date_rec)}: Napoleonic Soldiers Marching`).
-     * IF Commercial: Formula `[Main subject] [Action] [Environment] [Type of shot]`.
+   - Title: strictly 40-80 characters. Clear, search-optimized title describing subject, action, location and shot: `[Main subject] [Action] [Environment] [Type of shot]`. DO NOT include dateline/date in title (dateline belongs strictly in Description; 80 chars must not be wasted on dates). Both Commercial and Editorial use descriptive titles.
    - Description: IF Editorial, strictly follow Pond5 editorial caption format: `{loc_city}, {loc_country} {format_pond5_editorial_date(date_rec)}: <factual description>`. IF Commercial, standard engaging description.
 5. **Dreamstime**:
    - Video Name: Short descriptive title. If Editorial, strictly format with dateline: `{loc_city}, {loc_country} - {editorial_date}: <short factual title>` (NO ALL-CAPS, e.g. `{loc_city}, {loc_country} - {editorial_date}: Napoleonic Soldiers Marching`).
@@ -154,7 +159,14 @@ def generate_metadata(model, filmstrip_path, video_meta, custom_context="", forc
                 text = text[:-3]
             text = text.strip()
             
-            data = json.loads(text)
+            try:
+                data = json.loads(text)
+            except Exception:
+                m = re.search(r'(\{[\s\S]*\})', text)
+                if m:
+                    data = json.loads(m.group(1))
+                else:
+                    raise
             return data
         except Exception as e:
             wait_time = (attempt + 1) * 5
@@ -172,6 +184,8 @@ def main():
     parser.add_argument("--context", "-c", default="", help="Specific event or additional context for metadata generation")
     parser.add_argument("--city", default=None, help="Fallback/override city if not found in GPS")
     parser.add_argument("--country", default=None, help="Fallback/override country if not found in GPS")
+    parser.add_argument("--no-rename", action="store_true", help="Do not rename original video files on disk")
+    parser.add_argument("--concurrency", "-j", type=int, default=4, help="Number of concurrent workers for AI metadata generation")
     args = parser.parse_args()
 
     base_dir = os.path.abspath(args.input)
@@ -210,18 +224,13 @@ def main():
     processed_files = {r["original_filename"] for r in results}
     
     filmstrips = glob.glob(os.path.join(frames_dir, "*_filmstrip.jpg"))
-    new_results = 0
-    
-    # Map filmstrip directly to exact filename matching base_name + extension
+    tasks = []
     for fs in filmstrips:
         base_name = os.path.basename(fs).replace("_filmstrip.jpg", "")
-        
-        # Check cache: already processed if any entry has original_filename matching base_name
         cached_entry = next((r for r in results if os.path.splitext(r["original_filename"])[0] == base_name), None)
         if cached_entry:
             continue
 
-        # Match original video strictly with matching extension
         orig_video = next((v for v in all_videos if os.path.splitext(v)[0] == base_name), None)
         if not orig_video:
             continue
@@ -232,43 +241,63 @@ def main():
             loc["city"] = args.city
         if args.country and (not loc.get("country") or loc.get("country") == "Unknown"):
             loc["country"] = args.country
-        
+        tasks.append((fs, orig_video, vid_meta))
+
+    import threading
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    cache_lock = threading.Lock()
+    new_results = 0
+
+    def process_one_video(task):
+        fs, orig_video, vid_meta = task
         metadata = generate_metadata(model, fs, vid_meta, custom_context=args.context, force_editorial=args.force_editorial)
-        if metadata:
-            orig_ext = os.path.splitext(orig_video)[1]
-            new_name = os.path.splitext(metadata["new_filename"])[0] + orig_ext
-            new_name = re.sub(r'[^a-z0-9_.]', '', new_name.lower())
-            # Mandatory default: ensure timelapse videos have 'timelapse' in the filename
-            all_text_check = " ".join([
-                metadata.get("adobe", {}).get("title", ""),
-                metadata.get("shutterstock", {}).get("description", ""),
-                metadata.get("keywords", ""),
-                metadata.get("pond5", {}).get("title", "")
-            ]).lower()
-            is_timelapse = any(w in all_text_check for w in ["time-lapse", "timelapse", "time lapse", "hyperlapse", "fast motion"])
-            if is_timelapse and "timelapse" not in new_name.lower():
-                base_nm, ext_nm = os.path.splitext(new_name)
-                new_name = f"{base_nm}_timelapse{ext_nm}"
-            metadata["new_filename"] = new_name
-            
-            if args.force_editorial:
-                metadata["editorial"] = True
-                loc_city = vid_meta.get("location", {}).get("city", "Unknown")
-                loc_country = vid_meta.get("location", {}).get("country", "Unknown")
-                date_rec = vid_meta.get("date_recorded", "Unknown Date")
-                ed_date = format_editorial_date(date_rec)
-                prefix = f"{loc_city}, {loc_country} - {ed_date}: "
-                shutter_desc = metadata.get("shutterstock", {}).get("description", "")
-                if not shutter_desc.startswith(f"{loc_city}, {loc_country}"):
-                    metadata.setdefault("shutterstock", {})["description"] = prefix + shutter_desc
-            
-            metadata["original_filename"] = orig_video
-            results.append(metadata)
-            new_results += 1
-            
-            with open(cache_file, "w", encoding="utf-8") as f:
-                json.dump(results, f, indent=2, ensure_ascii=False)
-            time.sleep(2) # rate limit mitigation
+        if not metadata:
+            return None
+        orig_ext = os.path.splitext(orig_video)[1]
+        new_name = os.path.splitext(metadata["new_filename"])[0] + orig_ext
+        new_name = re.sub(r'[^a-z0-9_.]', '', new_name.lower())
+        all_text_check = " ".join([
+            metadata.get("adobe", {}).get("title", ""),
+            metadata.get("shutterstock", {}).get("description", ""),
+            metadata.get("keywords", ""),
+            metadata.get("pond5", {}).get("title", "")
+        ]).lower()
+        is_timelapse = any(w in all_text_check for w in ["time-lapse", "timelapse", "time lapse", "hyperlapse", "fast motion"])
+        if is_timelapse and "timelapse" not in new_name.lower():
+            base_nm, ext_nm = os.path.splitext(new_name)
+            new_name = f"{base_nm}_timelapse{ext_nm}"
+        metadata["new_filename"] = new_name
+        
+        if args.force_editorial:
+            metadata["editorial"] = True
+            loc_city = vid_meta.get("location", {}).get("city", "Unknown")
+            loc_country = vid_meta.get("location", {}).get("country", "Unknown")
+            date_rec = vid_meta.get("date_recorded", "Unknown Date")
+            ed_date = format_editorial_date(date_rec)
+            prefix = f"{loc_city}, {loc_country} - {ed_date}: "
+            shutter_desc = metadata.get("shutterstock", {}).get("description", "")
+            if not shutter_desc.startswith(f"{loc_city}, {loc_country}"):
+                metadata.setdefault("shutterstock", {})["description"] = prefix + shutter_desc
+        
+        metadata["original_filename"] = orig_video
+        return metadata
+
+    if tasks:
+        workers = max(1, args.concurrency)
+        print(f"Generating AI metadata for {len(tasks)} videos using {workers} concurrent workers...")
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            future_to_task = {executor.submit(process_one_video, t): t for t in tasks}
+            for future in as_completed(future_to_task):
+                meta = future.result()
+                if meta:
+                    with cache_lock:
+                        results.append(meta)
+                        new_results += 1
+                        with open(cache_file, "w", encoding="utf-8") as f:
+                            json.dump(results, f, indent=2, ensure_ascii=False)
+                        print(f"[{len(results)}/{len(results)+len(tasks)-new_results}] Cached: {meta['new_filename']}")
+                time.sleep(0.5)
 
     print(f"Finished generating metadata. Newly processed: {new_results}. Total: {len(results)}")
     
@@ -287,24 +316,29 @@ def main():
         json.dump(results, f, indent=2, ensure_ascii=False)
 
     # Renaming of files
-    print("\nRenaming original video files...")
-    rename_count = 0
-    for r in results:
-        # The file might have its original name or already be partially renamed
-        old_path = os.path.join(base_dir, r["original_filename"])
-        new_path = os.path.join(base_dir, r["new_filename"])
+    if not args.no_rename:
+        print("\nRenaming original video files...")
+        rename_count = 0
+        for r in results:
+            # The file might have its original name or already be partially renamed
+            old_path = os.path.join(base_dir, r["original_filename"])
+            new_path = os.path.join(base_dir, r["new_filename"])
+            
+            if os.path.exists(old_path) and old_path != new_path:
+                try:
+                    os.rename(old_path, new_path)
+                    rename_count += 1
+                except Exception as e:
+                    print(f"Warning: Failed to rename {r['original_filename']} -> {r['new_filename']}: {e}")
         
-        if os.path.exists(old_path) and old_path != new_path:
-            try:
-                os.rename(old_path, new_path)
-                rename_count += 1
-            except Exception as e:
-                print(f"Warning: Failed to rename {r['original_filename']} -> {r['new_filename']}: {e}")
-    
-    if rename_count > 0:
-        print(f"Successfully renamed {rename_count} video files.")
+        if rename_count > 0:
+            print(f"Successfully renamed {rename_count} video files.")
+        else:
+            print("No files required renaming.")
     else:
-        print("No files required renaming.")
+        print("\nSkipping file renaming (--no-rename active). Preserving original filenames.")
+        for r in results:
+            r["new_filename"] = r["original_filename"]
     
     # CSV Generation
     def sanitize_adobe_title(title):
@@ -315,29 +349,18 @@ def main():
         return t
 
     def sanitize_pond5_title(title, city=None, country=None, date_recorded=None, is_editorial=False):
-        if is_editorial and city and country and date_recorded:
-            ed_date = format_pond5_editorial_date(date_recorded)
-            prefix = f"{city}, {country} {ed_date}: "
-            # Strip any existing dateline or date prefix
-            clean_t = re.sub(r'^[A-Za-z\s/,-]+(?:\d{4}[-/]\d{2}[-/]\d{2}|[A-Za-z]+\s+\d{1,2},\s*\d{4}):\s*', '', title or '').strip()
-            clean_t = re.sub(r'[,.;:!?"]', ' ', clean_t).strip()
-            clean_t = re.sub(r'\s+', ' ', clean_t)
-            full_title = prefix + clean_t
-            if len(full_title) > 80:
-                full_title = full_title[:80].rsplit(' ', 1)[0]
-            if len(full_title) < 40:
-                full_title = (full_title + " Scene").strip()
-            return full_title
-        else:
-            t = (title or '').strip()
-            t = re.sub(r'["]', '', t)
+        t = (title or "").strip()
+        # Strip any accidental dateline prefix (e.g. "City, Country YYYY/MM/DD: ") so title doesn't get truncated
+        t = re.sub(r'^[A-Za-z\s/,-]+(?:\d{4}[-/]\d{2}[-/]\d{2}|[A-Za-z]+\s+\d{1,2},\s*\d{4}):\s*', '', t).strip()
+        t = re.sub(r'[,.;:!?"]', ' ', t).strip()
+        t = re.sub(r'\s+', ' ', t)
+        if len(t) > 80:
+            t = t[:80].rsplit(' ', 1)[0]
+        if len(t) < 40:
+            t = (t + " 4k stock video footage").strip()
             if len(t) > 80:
                 t = t[:80].rsplit(' ', 1)[0]
-            if len(t) < 40:
-                t = (t + " 4k stock video footage").strip()
-                if len(t) > 80:
-                    t = t[:80]
-            return t
+        return t
 
     # 1. Adobe
     adobe_csv = os.path.join(out_dir, "adobe_stock_video.csv")
@@ -404,25 +427,7 @@ def main():
     }
 
     def sanitize_shutterstock_categories(cat_str, description=""):
-        parts = [p.strip() for p in (cat_str or "").replace(";", ",").split(",") if p.strip()]
-        valid_cats = []
-        for p in parts:
-            p_lower = p.lower()
-            if p_lower == "editorial":
-                continue
-            if p_lower == "vintage":
-                mapped = "people"
-            else:
-                mapped = SHUTTERSTOCK_VIDEO_VALID_CATS.get(p_lower)
-            if mapped and mapped not in valid_cats:
-                valid_cats.append(mapped)
-        if not valid_cats:
-            desc_lower = (description or "").lower()
-            if any(w in desc_lower for w in ["soldier", "people", "march", "reenact", "crowd", "man", "woman"]):
-                valid_cats = ["people"]
-            else:
-                valid_cats = ["buildings/landmarks"]
-        return ",".join(valid_cats[:2])
+        return map_to_shutterstock_categories(cat_str, description=description)
 
     # Helper to clean and format editorial descriptions without ALL CAPS
     def get_clean_editorial_description(desc, city, country, date_recorded):
@@ -541,6 +546,72 @@ def main():
             
             w.writerow([r["new_filename"], video_name, desc, c1, c2, c3, r["keywords"], "0.0", "0.0", "0.0", ed_val, "", ""])
             
+    # 5. Vecteezy CSV
+    vecteezy_csv = os.path.join(out_dir, "vecteezy_video.csv")
+    prohibited_words = {"beautiful", "stunning", "amazing", "gorgeous", "wonderful", "breathtaking", "incredible", "cool", "best", "lovely", "pretty", "scenic"}
+    with open(vecteezy_csv, "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(["Filename", "Title", "Description", "Keywords"])
+        for r in results:
+            raw_t = r.get("adobe", {}).get("title") or r.get("pond5", {}).get("title") or ""
+            t = re.sub(r'[,.;:!?"]', ' ', raw_t)
+            t = re.sub(r'\b(wide shot|4k|hd|stock video footage|pov)\b', '', t, flags=re.IGNORECASE)
+            for pw in prohibited_words:
+                t = re.sub(rf"\b{re.escape(pw)}\b", "", t, flags=re.IGNORECASE)
+            t = re.sub(r'\s+', ' ', t).strip()
+            words = t.split()
+            if len(words) > 8:
+                t = " ".join(words[:8]).rstrip(".,- ")
+            if t:
+                t = t[0].upper() + t[1:]
+            
+            raw_d = r.get("shutterstock", {}).get("description") or r.get("pond5", {}).get("description") or ""
+            d = raw_d.replace('"', '').strip()
+            for pw in prohibited_words:
+                d = re.sub(rf"\b{re.escape(pw)}\b", "", d, flags=re.IGNORECASE)
+            d = re.sub(r'\s+', ' ', d).strip()
+            if len(d) > 495:
+                d = d[:490].rsplit('.', 1)[0] + '.'
+            if d and d[0].islower():
+                d = d[0].upper() + d[1:]
+            
+            raw_kws = r.get("keywords", "")
+            raw_list = [k.strip().lower() for k in raw_kws.split(",") if k.strip()]
+            cleaned_kws = []
+            seen_k = set()
+            for kw in raw_list:
+                k = kw.replace("-", " ").replace("_", " ")
+                k = re.sub(r"[^\w\s]", "", k)
+                k = re.sub(r"\s+", " ", k).strip()
+                if not k or len(k) < 2 or any(pw in k.split() for pw in prohibited_words):
+                    continue
+                if k not in seen_k:
+                    seen_k.add(k)
+                    cleaned_kws.append(k)
+            if not r.get("editorial", False):
+                if "no people" not in seen_k:
+                    cleaned_kws.append("no people")
+                    seen_k.add("no people")
+            else:
+                if not any(any(pt in kw.split() for pt in ["people", "tourists", "visitors", "person", "crowd"]) for kw in cleaned_kws):
+                    cleaned_kws.append("people")
+                    seen_k.add("people")
+            for tax in ["horizontal", "outdoor", "day", "color"]:
+                if tax not in seen_k and len(cleaned_kws) < 28:
+                    cleaned_kws.append(tax)
+                    seen_k.add(tax)
+            if len(cleaned_kws) > 28:
+                cleaned_kws = cleaned_kws[:28]
+            while len(cleaned_kws) < 20:
+                for filler in ["footage", "clip", "cinematic", "real time", "establishing shot", "travel"]:
+                    if filler not in seen_k:
+                        cleaned_kws.append(filler)
+                        seen_k.add(filler)
+                        if len(cleaned_kws) >= 20:
+                            break
+            v_kws = ", ".join(cleaned_kws)
+            w.writerow([r["new_filename"], t, d, v_kws])
+
     print(f"CSVs generated in {out_dir}")
 
 if __name__ == "__main__":

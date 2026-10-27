@@ -230,16 +230,21 @@ def main():
             item.setdefault("shutterstock", {})["description"] = shutter_desc
             item["shutterstock"]["categories"] = shutter_cats
             
-            # Pond5
-            p5_prefix = f"{city}, {country} {p5_date}: "
-            short_action = re.sub(r'[,.;:!?"]', '', new_ed_desc)
-            if len(short_action) > 35:
-                short_action = short_action[:35].rsplit(' ', 1)[0]
-            p5_title = (p5_prefix + short_action).strip()
-            if len(p5_title) > 80:
-                p5_title = p5_title[:80].rsplit(' ', 1)[0]
-            if len(p5_title) < 40:
-                p5_title = (p5_title + " Scene").strip()
+            # Pond5 (clear, descriptive title between 40-80 chars)
+            adb_t = item.get("adobe", {}).get("title", "")
+            base_t = adb_t.strip() if adb_t else new_ed_desc.strip()
+            if base_t:
+                base_t = base_t[0].upper() + base_t[1:]
+            fn_lower = item.get("new_filename", "").lower()
+            if "timelapse" in fn_lower and "time" not in base_t.lower():
+                base_t = f"{base_t} Time Lapse"
+            if "wide" in fn_lower and "wide" not in base_t.lower() and len(base_t) <= 68:
+                base_t = f"{base_t} Wide Shot"
+            if len(base_t) > 80:
+                base_t = base_t[:80].rsplit(" ", 1)[0]
+            if len(base_t) < 40:
+                base_t = (base_t + " 4K Stock Video Footage").strip()[:80]
+            p5_title = base_t
             
             item.setdefault("pond5", {})["title"] = p5_title
             item["pond5"]["description"] = f"{city}, {country} {p5_date}: {new_ed_desc}"
